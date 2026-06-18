@@ -1,0 +1,2889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veille concurrentielle — Sofinco</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --tq: #0FA5B4;
+      --tq-light: rgba(15,165,180,0.08);
+      --tq-pale: rgba(15,165,180,0.03);
+      --tq-mid: rgba(15,165,180,0.12);
+      --green: #004B3C;
+      --red: #E12D2D;
+      --orange: #F59E0B;
+      --bg: #F7F9FA;
+      --surface: #FFFFFF;
+      --text: #1A1A1A;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --sw: 240px;
+      --r: 10px;
+      --sh: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --sh-md: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    html { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); background: var(--bg); }
+    body { display: flex; min-height: 100vh; }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+
+    /* ── SIDEBAR ──────────────────────────────── */
+    #sidebar {
+      width: var(--sw);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 200;
+      transition: transform 200ms ease;
+    }
+
+    .sb-logo {
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sb-logo-mark {
+      width: 34px; height: 34px;
+      background: var(--tq);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 17px; flex-shrink: 0;
+    }
+    .sb-logo-text { font-size: 12px; font-weight: 700; line-height: 1.3; }
+    .sb-logo-sub { font-size: 10px; color: var(--muted); }
+
+    .sb-nav { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px; font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: background 150ms ease, color 150ms ease;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--tq-light); color: var(--tq); }
+    .nav-item i { font-size: 18px; flex-shrink: 0; }
+    .nav-item span { flex: 1; }
+
+    .nb {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 99px;
+    }
+    .nb-pb { background: rgba(15,165,180,0.14); color: var(--tq); }
+    .nb-cr { background: rgba(0,75,60,0.12); color: var(--green); }
+    .nb-nxcb { background: rgba(225,45,45,0.12); color: var(--red); }
+
+    .sb-footer {
+      padding: 10px 8px 14px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    /* ── BUTTONS ──────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; border: none;
+      font-family: inherit; text-decoration: none;
+      white-space: nowrap;
+      transition: background 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--tq); color: #fff; }
+    .btn-primary:hover { background: #0d94a2; box-shadow: 0 2px 8px rgba(15,165,180,0.35); }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #ECEEF0; }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-full { width: 100%; justify-content: center; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 7px; }
+
+    /* ── MAIN ─────────────────────────────────── */
+    #main { margin-left: var(--sw); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    #topbar {
+      height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    #burger { display: none; padding: 6px; border-radius: 8px; }
+    .topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+    .topbar-date { font-size: 12px; color: var(--muted); }
+
+    #content { flex: 1; padding: 28px 32px; transition: opacity 180ms ease; }
+    #content.fading { opacity: 0; }
+
+    /* ── VIEWS ────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── BADGES ───────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 99px;
+      font-size: 10px; font-weight: 600; line-height: 1.5;
+    }
+    .b-new { background: rgba(245,158,11,0.15); color: var(--orange); }
+    .b-date { background: rgba(245,158,11,0.12); color: var(--orange); }
+    .b-gray { background: #F3F4F6; color: var(--muted); }
+    .b-tq { background: rgba(15,165,180,0.12); color: var(--tq); }
+    .b-green { background: #DCFCE7; color: #16A34A; }
+    .b-red { background: #FEE2E2; color: var(--red); }
+
+    /* ── HOME ─────────────────────────────────── */
+    .counter-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border-left: 4px solid var(--orange);
+      box-shadow: var(--sh);
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .counter-num { font-size: 48px; font-weight: 700; color: var(--tq); line-height: 1; }
+    .counter-label { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+    .products-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 32px; }
+
+    .product-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      padding: 20px;
+      box-shadow: var(--sh);
+      cursor: pointer;
+      transition: box-shadow 200ms ease, transform 200ms ease;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .product-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+
+    .pc-header { display: flex; align-items: center; gap: 10px; }
+    .pc-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .ic-pb { background: rgba(15,165,180,0.1); color: var(--tq); }
+    .ic-cr { background: rgba(0,75,60,0.1); color: var(--green); }
+    .ic-nxcb { background: rgba(225,45,45,0.1); color: var(--red); }
+    .pc-title { font-size: 15px; font-weight: 600; }
+    .pc-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    .pc-stats { display: flex; gap: 20px; }
+    .stat-n { font-size: 22px; font-weight: 700; }
+    .stat-l { font-size: 11px; color: var(--muted); }
+    .c-tq { color: var(--tq); }
+    .c-or { color: var(--orange); }
+
+    /* ── NEWS FEED ────────────────────────────── */
+    .section-hd {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 16px; font-weight: 600; margin-bottom: 16px;
+    }
+    .section-hd i { color: var(--tq); }
+
+    .news-feed { display: flex; flex-direction: column; gap: 8px; }
+    .news-item {
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--sh);
+      transition: box-shadow 150ms ease;
+    }
+    .news-item:hover { box-shadow: var(--sh-md); }
+    .news-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .d-pb { background: var(--tq); }
+    .d-cr { background: var(--green); }
+    .d-nxcb { background: var(--red); }
+    .news-body { flex: 1; }
+    .news-meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .news-text { font-size: 13px; }
+    .empty-state { text-align: center; padding: 56px 20px; color: var(--muted); }
+    .empty-state i { font-size: 44px; display: block; margin-bottom: 10px; color: #D1D5DB; }
+
+    /* ── PRODUCT PAGE ─────────────────────────── */
+    .prod-hd { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .prod-icon-lg {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .prod-title { font-size: 22px; font-weight: 700; }
+    .prod-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    .tabs {
+      display: flex; gap: 2px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 4px;
+      margin-bottom: 24px; width: fit-content;
+    }
+    .tab-btn {
+      padding: 8px 18px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; color: var(--muted);
+      transition: background 150ms, color 150ms, box-shadow 150ms;
+      border: none; background: transparent; font-family: inherit;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--sh); }
+
+    /* ── ACTOR CARDS ──────────────────────────── */
+    .actors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .actor-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      padding: 14px;
+      box-shadow: var(--sh);
+      cursor: pointer;
+      transition: box-shadow 180ms, transform 180ms, border-color 180ms;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .actor-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+    .actor-card.is-us { border-color: var(--tq); background: rgba(15,165,180,0.015); }
+
+    .ac-top { display: flex; align-items: center; gap: 9px; }
+    .ac-favicon {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border);
+      object-fit: contain; background: #fff; padding: 4px; flex-shrink: 0;
+    }
+    .ac-placeholder {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    }
+    .ac-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .ac-group { font-size: 10px; color: var(--muted); line-height: 1.4; }
+    .ac-links { display: flex; gap: 6px; }
+    .ac-link {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+      padding: 6px 6px; border-radius: 7px;
+      font-size: 10px; font-weight: 500;
+      border: 1px solid var(--border); color: var(--muted);
+      text-decoration: none;
+      transition: background 150ms, color 150ms, border-color 150ms;
+      white-space: nowrap;
+    }
+    .ac-link:hover { background: var(--tq); color: #fff; border-color: var(--tq); }
+    .ac-link i { font-size: 10px; flex-shrink: 0; }
+    .ac-voir {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 7px 10px; border-radius: 7px;
+      font-size: 11px; font-weight: 500;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+      transition: background 150ms, color 150ms, border-color 150ms;
+    }
+    .actor-card:hover .ac-voir { background: var(--tq); color: #fff; border-color: var(--tq); }
+    .actor-card.is-us .ac-voir { border-color: var(--tq); color: var(--tq); background: var(--tq-light); }
+    .actor-card.is-us:hover .ac-voir { background: var(--tq); color: #fff; }
+
+    /* Fiche acteur (modal-detail réutilisé) */
+    .fiche-hd { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .fiche-favicon {
+      width: 52px; height: 52px; border-radius: 10px;
+      border: 1px solid var(--border); object-fit: contain; background: #fff; padding: 6px; flex-shrink: 0;
+    }
+    .fiche-placeholder {
+      width: 52px; height: 52px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    }
+    .fiche-actor-name { font-size: 18px; font-weight: 700; }
+    .fiche-actor-group { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .fiche-links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .fiche-sections { display: flex; flex-direction: column; gap: 14px; }
+    .fiche-sec-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--tq); margin-bottom: 8px;
+    }
+    .fiche-rows { display: flex; flex-direction: column; gap: 0; }
+    .fiche-row {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .fiche-row:last-child { border-bottom: none; }
+    .fiche-critere { color: var(--muted); font-size: 12px; min-width: 160px; flex-shrink: 0; }
+    .fiche-val { flex: 1; font-weight: 500; }
+    .fiche-promo {
+      background: rgba(15,165,180,0.06); border: 1px solid rgba(15,165,180,0.2);
+      border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .fiche-promo-rate { font-size: 28px; font-weight: 700; color: var(--tq); line-height: 1; }
+    .fiche-promo-detail { font-size: 12px; color: var(--muted); }
+
+    /* ── TABLEAU : texte peut revenir à la ligne ── */
+    .tbl-wrap td { white-space: normal; min-width: 90px; }
+    .tbl-wrap td:first-child { white-space: normal; }
+
+    /* ── TABLE ────────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); background: var(--surface); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; white-space: nowrap; }
+    th { background: var(--bg); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; }
+    th:first-child { z-index: 16; }
+    td:first-child, th:first-child {
+      position: sticky; left: 0; z-index: 5;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      min-width: 170px; max-width: 210px;
+      white-space: normal;
+    }
+    th:first-child { background: var(--bg); }
+
+    .col-us { background: var(--tq-pale) !important; border-left: 3px solid var(--tq) !important; }
+    th.col-us { background: rgba(15,165,180,0.06) !important; }
+
+    .sec-row td {
+      background: #F0FAFA; color: var(--tq);
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 7px 14px;
+    }
+    .sec-row td:first-child { background: #F0FAFA; border-right: 1px solid var(--border); }
+
+    .sec-gap td { height: 28px; background: var(--bg); border: none; }
+    .sec-gap td:first-child { background: var(--bg); border-right: none; }
+
+    tbody tr:not(.sec-row):not(.sec-gap):hover td { background: #F9FAFB; cursor: pointer; }
+    tbody tr:not(.sec-row):not(.sec-gap):hover td:first-child { background: #F9FAFB; }
+    tbody tr:not(.sec-row):not(.sec-gap):hover .col-us { background: rgba(15,165,180,0.06) !important; }
+
+    .cv-yes { color: #16A34A; background: #DCFCE7; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .cv-no { color: var(--red); background: #FEE2E2; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .cv-pct { background: rgba(15,165,180,0.1); color: var(--tq); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .cv-date { background: rgba(245,158,11,0.1); color: var(--orange); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .cv-ni { background: #F3F4F6; color: var(--muted); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .cv-dash { color: var(--border); }
+
+    .pb-note {
+      margin: 16px 0;
+      padding: 10px 14px;
+      background: rgba(245,158,11,0.07);
+      border-left: 3px solid var(--orange);
+      border-radius: 0 6px 6px 0;
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* ── COMPARISON ───────────────────────────── */
+    .cmp-picker {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--sh);
+    }
+    .cmp-picker-lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .cmp-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cmp-check-lbl {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer; font-size: 12px; font-weight: 500;
+      transition: all 150ms ease;
+    }
+    .cmp-check-lbl input { display: none; }
+    .cmp-check-lbl.on { border-color: var(--tq); background: var(--tq-light); color: var(--tq); }
+    .cmp-check-lbl.locked { opacity: 0.7; cursor: default; }
+
+    .cmp-us-col { background: rgba(15,165,180,0.08) !important; border-left: 3px solid var(--tq) !important; }
+    th.cmp-us-hd { background: rgba(15,165,180,0.12) !important; color: var(--tq) !important; }
+    .cell-hl { background: #FEF9C3 !important; }
+
+    /* ── DIFF ─────────────────────────────────── */
+    .diff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap: 16px; }
+    .diff-card {
+      background: var(--surface);
+      border-radius: var(--r); border: 1px solid var(--border);
+      padding: 18px; box-shadow: var(--sh);
+      transition: box-shadow 200ms;
+    }
+    .diff-card:hover { box-shadow: var(--sh-md); }
+    .diff-card.is-us { border-color: var(--tq); }
+    .diff-actor-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .diff-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .diff-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px;
+      background: rgba(15,165,180,0.1); color: var(--tq);
+      border-radius: 99px; font-size: 11px; font-weight: 500;
+    }
+    .diff-conclusion {
+      background: #F0FAFA;
+      border-left: 3px solid var(--orange);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 12px;
+      font-size: 12px; color: var(--muted); line-height: 1.6;
+    }
+    .diff-none { color: var(--muted); font-style: italic; font-size: 12px; }
+
+    /* ── PROMOS ───────────────────────────────── */
+    .promos-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+    .promo-card {
+      background: var(--surface);
+      border-radius: var(--r); border: 1px solid var(--border);
+      box-shadow: var(--sh);
+      display: flex; overflow: hidden;
+      transition: box-shadow 200ms, transform 200ms;
+    }
+    .promo-card:hover { box-shadow: var(--sh-md); transform: translateY(-1px); }
+    .promo-logo-col {
+      width: 88px; min-width: 88px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; padding: 14px;
+    }
+    .promo-logo { width: 54px; height: 54px; object-fit: contain; border-radius: 8px; }
+    .promo-body { flex: 1; padding: 14px 20px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .promo-info { flex: 1; min-width: 200px; }
+    .promo-actor { font-size: 14px; font-weight: 600; }
+    .promo-group { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .promo-rate { font-size: 30px; font-weight: 700; color: var(--tq); line-height: 1; }
+    .promo-rate-lbl { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .promo-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .promo-cta { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+
+    /* ── MODALS ───────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.38); z-index: 500;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .overlay.show { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-lg { width: 860px; }
+    .modal-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--surface); z-index: 1;
+    }
+    .modal-title { font-size: 16px; font-weight: 600; }
+    .modal-x {
+      border: none; background: none; cursor: pointer;
+      color: var(--muted); font-size: 20px; padding: 4px; border-radius: 6px;
+      transition: background 150ms;
+    }
+    .modal-x:hover { background: var(--bg); color: var(--text); }
+    .modal-body { padding: 24px; }
+
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 40px; text-align: center; cursor: pointer;
+      transition: border-color 150ms, background 150ms;
+    }
+    .drop-zone:hover, .drop-zone.drag { border-color: var(--tq); background: var(--tq-light); }
+    .drop-zone i { font-size: 40px; color: var(--tq); display: block; margin-bottom: 12px; }
+    .drop-zone p { color: var(--muted); font-size: 13px; }
+    .drop-zone .dz-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+
+    .mail-ta {
+      width: 100%; height: 300px;
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px; font-family: monospace; font-size: 12px;
+      resize: vertical; color: var(--text); background: var(--bg);
+    }
+
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 10px; }
+    .detail-ac {
+      background: var(--bg); border-radius: 8px;
+      border: 1px solid var(--border); padding: 12px;
+    }
+    .detail-ac.is-us { border-color: var(--tq); background: var(--tq-light); }
+    .detail-ac-name { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+    .detail-ac-val { font-size: 14px; font-weight: 500; }
+
+    /* ── RESPONSIVE ───────────────────────────── */
+    @media (max-width: 1024px) {
+      #sidebar { transform: translateX(-240px); width: 240px; }
+      #sidebar.open { transform: translateX(0); box-shadow: var(--sh-md); }
+      #main { margin-left: 0; }
+      #burger { display: flex; }
+      #topbar { padding: 0 16px; }
+      #content { padding: 20px 16px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .actors-grid { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 640px) {
+      .actors-grid { grid-template-columns: 1fr; }
+      .promo-body { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── UTILS ────────────────────────────────── */
+    .mt-3 { margin-top: 12px; }
+    .mt-4 { margin-top: 16px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: 8px; }
+    .justify-end { justify-content: flex-end; }
+    .text-muted { color: var(--muted); }
+    .text-sm { font-size: 12px; }
+    .fw-6 { font-weight: 600; }
+    .bg-note { background: var(--bg); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--muted); }
+
+    /* ── TAUX DASHBOARD ───────────────────────── */
+    .usure-strip {
+      display: flex; gap: 12px; margin-bottom: 20px;
+      position: sticky; top: 54px; z-index: 50;
+    }
+    .usure-kpi {
+      flex: 1; background: var(--surface);
+      border: 1.5px solid var(--border); border-radius: var(--r);
+      padding: 14px 18px; box-shadow: var(--sh);
+      cursor: pointer; transition: border-color 150ms, background 150ms;
+    }
+    .usure-kpi:hover { border-color: #ef4444; background: #fff9f9; }
+    .usure-kpi.u-active { border-color: #ef4444; background: #fef2f2; }
+    .usure-kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 4px; }
+    .usure-kpi-rate { font-size: 28px; font-weight: 700; color: #ef4444; line-height: 1; }
+    .usure-kpi-sub { font-size: 11px; color: var(--muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+    .usure-kpi-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: #fee2e2; color: #dc2626; }
+
+    .taux-filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .taux-filter-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); flex-shrink: 0; }
+    .taux-filter-group { display: flex; gap: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+    .taux-filter-btn {
+      padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      cursor: pointer; color: var(--muted); border: none; background: transparent;
+      font-family: inherit; transition: all 150ms; white-space: nowrap;
+    }
+    .taux-filter-btn:hover { color: var(--text); }
+    .taux-filter-btn.tf-active { background: var(--surface); color: var(--text); box-shadow: var(--sh); }
+
+    .taux-grid { display: grid; grid-template-columns: 1fr 310px; gap: 16px; margin-bottom: 20px; }
+    .taux-chart-card, .taux-sim-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px; box-shadow: var(--sh);
+    }
+    .taux-card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .taux-card-title i { color: var(--tq); font-size: 16px; }
+    .chart-wrap { position: relative; height: 360px; }
+
+    .sim-slider { width: 100%; accent-color: var(--tq); cursor: pointer; }
+    .sim-amount { font-size: 22px; font-weight: 700; color: var(--tq); }
+    .sim-duree-row { display: flex; gap: 3px; }
+    .sim-duree-btn {
+      flex: 1; padding: 5px 4px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; color: var(--muted); border: 1px solid var(--border); background: transparent;
+      font-family: inherit; text-align: center; transition: all 150ms;
+    }
+    .sim-duree-btn.sd-active { background: var(--tq); color: #fff; border-color: var(--tq); }
+    .sim-results { display: flex; flex-direction: column; gap: 5px; max-height: 230px; overflow-y: auto; margin-top: 10px; }
+    .sim-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 7px; background: var(--bg);
+    }
+    .sim-row.sr-us { background: rgba(15,165,180,0.07); border: 1px solid rgba(15,165,180,0.2); }
+    .sim-row-name { flex: 1; font-size: 12px; font-weight: 500; }
+    .sim-row-mensualite { font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+    .rate-val { padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; white-space: nowrap; display: inline-block; }
+    .r-green  { background: #dcfce7; color: #16a34a; }
+    .r-orange { background: rgba(245,158,11,0.14); color: #b45309; }
+    .r-red    { background: #fee2e2; color: #dc2626; }
+    .r-nil    { color: var(--border); }
+    .r-na     { background: #f3f4f6; color: var(--muted); font-size: 10px; }
+
+    .var-badge { display: inline-flex; align-items: center; gap: 2px; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; vertical-align: middle; }
+    .vb-up     { background: #fee2e2; color: #dc2626; }
+    .vb-down   { background: #dcfce7; color: #16a34a; }
+    .vb-stable { background: #f3f4f6; color: var(--muted); }
+
+    .upct-wrap { display: flex; align-items: center; gap: 6px; min-width: 80px; }
+    .upct-bar  { height: 5px; flex: 1; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .upct-fill { height: 100%; border-radius: 3px; transition: width 400ms ease; }
+    .upct-lbl  { font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .upct-green  { color: #16a34a; }
+    .upct-orange { color: #b45309; }
+    .upct-red    { color: #dc2626; }
+
+    .us-row > td { background: rgba(15,165,180,0.03) !important; }
+    .us-row > td:first-child { border-left: 3px solid var(--tq) !important; }
+    .grp-sep > td {
+      background: #f8fafc; color: var(--muted); font-size: 10px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 6px 16px; border-top: 2px solid var(--border);
+    }
+    .grp-sep > td:first-child { border-left: none !important; border-right: 1px solid var(--border); }
+
+    @media (max-width: 960px) {
+      .taux-grid { grid-template-columns: 1fr; }
+      .usure-strip { position: static; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark"><i class="ti ti-chart-bar"></i></div>
+    <div>
+      <div class="sb-logo-text">Veille concurrentielle</div>
+      <div class="sb-logo-sub">Sofinco</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="nav-item active" data-nav="home">
+      <i class="ti ti-home"></i>
+      <span>Accueil</span>
+    </div>
+    <div class="nav-item" data-nav="pb">
+      <i class="ti ti-pig-money"></i>
+      <span>Prêt Personnel</span>
+      <span class="nb nb-pb">PP</span>
+    </div>
+    <div class="nav-item" data-nav="cr">
+      <i class="ti ti-refresh"></i>
+      <span>Crédit Renouvelable</span>
+      <span class="nb nb-cr">CR</span>
+    </div>
+    <div class="nav-item" data-nav="nxcb">
+      <i class="ti ti-credit-card"></i>
+      <span>Paiement Fractionné</span>
+      <span class="nb nb-nxcb">Nx</span>
+    </div>
+  </nav>
+
+  <div class="sb-footer">
+    <button class="btn btn-primary btn-full" id="btn-import">
+      <i class="ti ti-upload"></i> Mettre à jour les données
+    </button>
+    <button class="btn btn-secondary btn-full" id="btn-mail">
+      <i class="ti ti-mail"></i> Exporter résumé courriel
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════ -->
+<div id="main">
+  <header id="topbar">
+    <button class="btn btn-ghost" id="burger"><i class="ti ti-menu-2" style="font-size:20px"></i></button>
+    <span class="topbar-title" id="topbar-title">Accueil</span>
+    <span class="topbar-date" id="topbar-date"></span>
+  </header>
+
+  <div id="content">
+    <div id="view-home" class="view active"></div>
+    <div id="view-product" class="view"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — IMPORT
+════════════════════════════════════════════ -->
+<div class="overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">Importer les données Excel</span>
+      <button class="modal-x" id="import-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="drop-zone">
+        <i class="ti ti-file-spreadsheet"></i>
+        <p class="dz-title">Glisser le fichier Excel ici</p>
+        <p>ou cliquer pour sélectionner — format .xlsx uniquement</p>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx" style="display:none">
+      <div class="bg-note mt-4">
+        <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — COURRIEL
+════════════════════════════════════════════ -->
+<div class="overlay" id="modal-mail">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">Résumé courriel</span>
+      <button class="modal-x" id="mail-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <textarea class="mail-ta" id="mail-body" readonly></textarea>
+      <div class="flex justify-end mt-3">
+        <button class="btn btn-primary" id="mail-copy"><i class="ti ti-copy"></i> Copier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — DÉTAIL LIGNE
+════════════════════════════════════════════ -->
+<div class="overlay" id="modal-detail">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <span class="modal-title" id="detail-title"></span>
+      <button class="modal-x" id="detail-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ──────────────────────────────────────────
+     CONSTANTES
+  ────────────────────────────────────────── */
+  var GROUPS = {
+    Sofinco: 'CA Consumer Finance',
+    Cetelem: 'BNP Paribas Personal Finance',
+    Cofidis: 'Crédit Mutuel',
+    Oney: 'Groupe BPCE',
+    Franfinance: 'Société Générale',
+    FLOA: 'BNP Paribas',
+    Younited: 'Fintech indépendante',
+    Boursobank: 'Société Générale',
+    Klarna: 'Fintech suédoise',
+    Alma: 'Fintech française'
+  };
+
+  var DOMAINS = {
+    Sofinco: 'sofinco.fr',
+    Cetelem: 'cetelem.fr',
+    Cofidis: 'cofidis.fr',
+    Oney: 'oney.fr',
+    Franfinance: 'franfinance.fr',
+    FLOA: 'floa.fr',
+    Younited: 'younited-credit.com',
+    Boursobank: 'boursobank.com',
+    Klarna: 'klarna.com',
+    Alma: 'getalma.eu'
+  };
+
+  var PROD_URLS = {
+    pb: {
+      Sofinco: 'https://www.sofinco.fr/pret-personnel',
+      Cetelem: 'https://www.cetelem.fr/pret-personnel',
+      Cofidis: 'https://www.cofidis.fr/pret-personnel',
+      Oney: 'https://www.oney.fr/credit/pret-personnel',
+      Franfinance: 'https://www.franfinance.fr/pret-personnel',
+      FLOA: 'https://www.floa.fr/pret-personnel',
+      Younited: 'https://www.younited-credit.com/pret-personnel',
+      Boursobank: 'https://www.boursobank.com/credit/pret-personnel'
+    },
+    cr: {
+      Sofinco: 'https://www.sofinco.fr/credit-renouvelable',
+      Cetelem: 'https://www.cetelem.fr/credit-renouvelable',
+      Cofidis: 'https://www.cofidis.fr/credit-renouvelable',
+      FLOA: 'https://www.floa.fr/credit-renouvelable',
+      Oney: 'https://www.oney.fr/credit/credit-renouvelable'
+    },
+    nxcb: {
+      Sofinco: 'https://www.sofinco.fr/paiement-fractionne',
+      Cetelem: 'https://www.cetelem.fr/paiement-fractionne',
+      Cofidis: 'https://www.cofidis.fr/paiement-3x-4x',
+      Oney: 'https://www.oney.fr/paiement-3x-4x',
+      FLOA: 'https://www.floa.fr/paiement-3x-4x',
+      Klarna: 'https://www.klarna.com/fr/paiement-en-3-fois',
+      Alma: 'https://getalma.eu/marchands'
+    }
+  };
+
+  var P_COLORS = { pb: 'var(--tq)', cr: 'var(--green)', nxcb: 'var(--red)' };
+  var P_ICONS  = { pb: 'ti-pig-money', cr: 'ti-refresh', nxcb: 'ti-credit-card' };
+  var P_IC_CLS = { pb: 'ic-pb', cr: 'ic-cr', nxcb: 'ic-nxcb' };
+  var P_DOT    = { pb: 'd-pb', cr: 'd-cr', nxcb: 'd-nxcb' };
+
+  /* ──────────────────────────────────────────
+     DONNÉES
+  ────────────────────────────────────────── */
+  var DATA = {
+    produits: [
+      { id: 'pb',   label: 'Prêt Personnel',      shortLabel: 'PP', excelSheet: 'PB',
+        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Franfinance','FLOA','Younited','Boursobank'],
+        sections: [], updatedAt: null },
+      { id: 'cr',   label: 'Crédit Renouvelable',  shortLabel: 'CR', excelSheet: 'CR',
+        acteurs: ['Sofinco','Cetelem','Cofidis','FLOA','Oney'],
+        sections: [], updatedAt: null },
+      { id: 'nxcb', label: 'Paiement Fractionné',  shortLabel: 'Nx', excelSheet: 'NxCB',
+        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','Klarna','Alma'],
+        sections: [], updatedAt: null }
+    ],
+    promos: {},
+    differenciateurs: {},
+    taux: {}
+  };
+
+  /* ──────────────────────────────────────────
+     DONNÉES INITIALES (SEED)
+  ────────────────────────────────────────── */
+  var SEED = {
+    produits: [
+      /* ── PRÊT PERSONNEL ─────────────────── */
+      {
+        id: 'pb',
+        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Franfinance','FLOA','Younited','Boursobank'],
+        updatedAt: '2026-05-07',
+        sections: [
+          {
+            title: 'Offre & positionnement',
+            rows: [
+              { critere: "Nom de l'offre", values: {
+                  Sofinco: "Prêt Personnel Sofinco", Cetelem: "Prêt Personnel Cetelem",
+                  Cofidis: "Prêt Personnel Cofidis", Oney: "Prêt Personnel Oney",
+                  Franfinance: "Prêt personnel Franfinance", FLOA: "Prêt Personnel Classique FLOA",
+                  Younited: "Prêt Personnel Younited", Boursobank: "Prêt Personnel Boursobank" }},
+              { critere: "Nombre d'offres", values: {
+                  Sofinco: "1 générique + déclinaisons projet", Cetelem: "1 générique + déclinaisons projet",
+                  Cofidis: "1 générique + déclinaisons projet", Oney: "1 générique multi-projets",
+                  Franfinance: "1 générique + déclinaisons projet", FLOA: "1 générique multi-projets",
+                  Younited: "1 générique multi-projets", Boursobank: "1 générique projet personnel" }},
+              { critere: "Approche / Cible", values: {
+                  Sofinco: "Tous projets usage libre", Cetelem: "Tous projets voyage véhicule imprévus",
+                  Cofidis: "Tous projets auto travaux déco voyage trésorerie",
+                  Oney: "Majeur résidant en France revenus réguliers",
+                  Franfinance: "Tous projets amélioration habitat mobilier",
+                  FLOA: "Usage libre auto voyage",
+                  Younited: "Tous projets trésorerie travaux auto loisirs",
+                  Boursobank: "Projets personnels hors immobilier — client BoursoBank 3 mois min" }}
+            ]
+          },
+          {
+            title: 'Produit',
+            rows: [
+              { critere: "Montant min", values: {
+                  Sofinco: "3 001€", Cetelem: "500€", Cofidis: "500€",
+                  Oney: "3 000€ (6 000€ Auto/Travaux)", Franfinance: "1 500€",
+                  FLOA: "3 001€", Younited: "1 000€", Boursobank: "3 000€" }},
+              { critere: "Montant max", values: {
+                  Sofinco: "75 000€", Cetelem: "75 000€", Cofidis: "35 000€",
+                  Oney: "75 000€ (50 000€ en pratique)", Franfinance: "21 500€",
+                  FLOA: "6 000€", Younited: "60 000€", Boursobank: "30 000€" }},
+              { critere: "Durée min", values: {
+                  Sofinco: "12 mois", Cetelem: "7 mois", Cofidis: "6 mois",
+                  Oney: "4 mois", Franfinance: "12 mois",
+                  FLOA: "6 mois", Younited: "6 mois", Boursobank: "12 mois" }},
+              { critere: "Durée max", values: {
+                  Sofinco: "120 mois", Cetelem: "84 mois", Cofidis: "84 mois",
+                  Oney: "60 mois (84 mois Auto/Travaux)", Franfinance: "60 mois",
+                  FLOA: "84 mois", Younited: "84 mois", Boursobank: "60 mois" }},
+              { critere: "Grille de taux", values: {
+                  Sofinco: "À faire", Cetelem: "À faire", Cofidis: "À faire",
+                  Oney: "À faire", Franfinance: "À faire",
+                  FLOA: "À faire", Younited: "À faire", Boursobank: "À faire" }},
+              { critere: "Assurance", values: {
+                  Sofinco: "Emprunteur facultative", Cetelem: "Emprunteur facultative",
+                  Cofidis: "Emprunteur facultative", Oney: "Emprunteur facultative",
+                  Franfinance: "Emprunteur facultative", FLOA: "Emprunteur facultative",
+                  Younited: "Emprunteur facultative", Boursobank: "Emprunteur facultative" }}
+            ]
+          },
+          {
+            title: 'Parcours & accès',
+            rows: [
+              { critere: "Justificatifs", values: {
+                  Sofinco: "CNI + justif. domicile + avis imposition + RIB",
+                  Cetelem: "CNI + justif. revenus + RIB + justif. domicile <6 mois",
+                  Cofidis: "≤3 000€ : CNI + justif. domicile / >3 000€ : + justif. revenus",
+                  Oney: "CNI + justif. domicile + avis imposition + RIB",
+                  Franfinance: "CNI + justif. domicile + RIB + justif. revenus + tableaux amortissement",
+                  FLOA: "CNI + RIB + justif. domicile + bulletin salaire + avis imposition",
+                  Younited: "CNI + justif. domicile + 3 bulletins salaire + avis imposition",
+                  Boursobank: "Parcours Flash : analyse auto si revenus BoursoBank 3 mois+ sinon avis imposition" }},
+              { critere: "Simulation en ligne", values: {
+                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
+                  Franfinance: "Oui", FLOA: "Oui", Younited: "Oui", Boursobank: "Oui" }},
+              { critere: "Temps souscription", values: {
+                  Sofinco: "N.I.", Cetelem: "8 min", Cofidis: "N.I.", Oney: "N.I.",
+                  Franfinance: "N.I.", FLOA: "Quelques minutes", Younited: "Quelques minutes",
+                  Boursobank: "Flash : quelques secondes" }},
+              { critere: "Réponse de principe", values: {
+                  Sofinco: "Immédiate", Cetelem: "Immédiate", Cofidis: "Immédiate",
+                  Oney: "Quasi immédiate", Franfinance: "Immédiate",
+                  FLOA: "Quasi immédiate", Younited: "Immédiate", Boursobank: "Immédiate Flash" }}
+            ]
+          },
+          {
+            title: 'Conditions commerciales',
+            rows: [
+              { critere: "Taux promo", values: {
+                  Sofinco: "4,50% TAEG", Cetelem: "4,50% TAEG", Cofidis: "4,70% TAEG",
+                  Oney: "4,70% TAEG", Franfinance: "4,89% TAEG",
+                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
+              { critere: "Durée promo", values: {
+                  Sofinco: "13-48 mois / 15-20k€", Cetelem: "48 mois / 14k€",
+                  Cofidis: "60 mois / 10-15k€", Oney: "54-60 mois / 15-21 599€",
+                  Franfinance: "48 mois / 15k€",
+                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
+              { critere: "Fin de promo", values: {
+                  Sofinco: "20/05/2026", Cetelem: "01/06/2026", Cofidis: "17/05/2026",
+                  Oney: "11/05/2026", Franfinance: "14/05/2026",
+                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
+              { critere: "Frais de dossier", values: {
+                  Sofinco: "0€", Cetelem: "0€", Cofidis: "0€", Oney: "0€",
+                  Franfinance: "0€", FLOA: "0€", Younited: "0€", Boursobank: "0€" }}
+            ]
+          },
+          {
+            title: 'Mise à disposition des fonds',
+            rows: [
+              { critere: "Délai", values: {
+                  Sofinco: "J+7 hors WE/JF", Cetelem: "J+8 option puis 48h",
+                  Cofidis: "J+8 min", Oney: "J+8 min",
+                  Franfinance: "J+8 option / J+15 défaut", FLOA: "J+15 défaut / J+8 express",
+                  Younited: "48h ouvrées post délai légal", Boursobank: "7j possible" }},
+              { critere: "Type déblocage", values: {
+                  Sofinco: "Une fois par virement", Cetelem: "Une fois par virement",
+                  Cofidis: "Une fois par virement", Oney: "Une fois par virement",
+                  Franfinance: "Une fois par virement", FLOA: "Une fois par virement",
+                  Younited: "Une fois par virement", Boursobank: "Une fois par virement" }},
+              { critere: "Déblocage conditionné", values: {
+                  Sofinco: "Non", Cetelem: "Non", Cofidis: "Non", Oney: "Non",
+                  Franfinance: "Non", FLOA: "Non", Younited: "Non", Boursobank: "Non" }}
+            ]
+          },
+          {
+            title: 'Flexibilité',
+            rows: [
+              { critere: "Pause paiement", values: {
+                  Sofinco: "2x/an dès 6 mois gratuit", Cetelem: "2x/an frais 4%",
+                  Cofidis: "2x/an frais 4%", Oney: "2x/an gratuit",
+                  Franfinance: "2x/an via conseiller", FLOA: "2x/an frais 4%",
+                  Younited: "N.I.", Boursobank: "1-3 éch/12 mois dès 7e mois gratuit" }},
+              { critere: "Modulation échéances", values: {
+                  Sofinco: "H+B min 60% mensualité",
+                  Cetelem: "H max 3x / B max -30% min 50€ sans frais dès 6 mois",
+                  Cofidis: "H+B via espace client", Oney: "N.I.",
+                  Franfinance: "H max 3x / B max -30% min 50€ via conseiller dès 6 mois",
+                  FLOA: "H max 3x / B max -30% min 50€ dès 6 mois",
+                  Younited: "N.I.", Boursobank: "H+B payant 30€" }},
+              { critere: "Remboursement anticipé", values: {
+                  Sofinco: "IRA si >10 000€ rachat concurrence",
+                  Cetelem: "IRA légale si rachat >10 000€ gratuit fonds propres",
+                  Cofidis: "Gratuit fonds propres IRA légale si rachat >10 000€",
+                  Oney: "IRA légale si rachat >10 000€ gratuit fonds propres",
+                  Franfinance: "IRA légale si rachat >10 000€ gratuit fonds propres",
+                  FLOA: "IRA légale si rachat >10 000€ gratuit fonds propres",
+                  Younited: "Attestation possible frais possibles",
+                  Boursobank: "IRA si rachat >10 000€ gratuit fonds propres" }}
+            ]
+          }
+        ]
+      },
+
+      /* ── CRÉDIT RENOUVELABLE ─────────────── */
+      {
+        id: 'cr',
+        acteurs: ['Cofidis','Cetelem','FLOA','Oney','Sofinco'],
+        updatedAt: '2026-05-07',
+        sections: [
+          {
+            title: 'Offre & positionnement',
+            rows: [
+              { critere: "Nom de l'offre", values: {
+                  Cofidis: "Accessio", Cetelem: "Cpay", FLOA: "Prêt dispo",
+                  Oney: "N.I.", Sofinco: "Virement+" }},
+              { critere: "Approche", values: {
+                  Cofidis: "Grand public petits projets",
+                  Cetelem: "Grand public achats ponctuels imprévus",
+                  FLOA: "Grand public digital-first",
+                  Oney: "Grand public trésorerie sans justificatif",
+                  Sofinco: "Grand public" }},
+              { critere: "Usage", values: {
+                  Cofidis: "Usage libre trésorerie flexible",
+                  Cetelem: "Usage libre une ou plusieurs dépenses",
+                  FLOA: "Trésorerie flexible utilisation totale ou partielle",
+                  Oney: "Virement sur compte usage libre",
+                  Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Paramètres produit',
+            rows: [
+              { critere: "Montant min réserve", values: {
+                  Cofidis: "500€", Cetelem: "500€", FLOA: "500€",
+                  Oney: "50€", Sofinco: "1 501€" }},
+              { critere: "Montant max réserve", values: {
+                  Cofidis: "6 000€", Cetelem: "4 500-6 000€", FLOA: "6 000€",
+                  Oney: "3 000€", Sofinco: "10 000€" }},
+              { critere: "Durées", values: {
+                  Cofidis: "36/60 mois", Cetelem: "36/60 mois", FLOA: "36/60 mois",
+                  Oney: "36/60 mois", Sofinco: "N.I." }},
+              { critere: "Montant min utilisation", values: {
+                  Cofidis: "15€", Cetelem: "15,24€", FLOA: "N.I.",
+                  Oney: "15€", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Taux et coûts',
+            rows: [
+              { critere: "Grille de taux", values: {
+                  Cofidis: "15,86%-23,25%", Cetelem: "15,87%-23,56%", FLOA: "N.I.",
+                  Oney: "≤6 000€:23,30% / 3 000-6 000€:15,87% / >6 000€:8,67%",
+                  Sofinco: "150-6 000€ TAEG 7,90% / 1 500-6 000€ TAEG 9,80%" }},
+              { critere: "Frais de dossier", values: {
+                  Cofidis: "Aucun", Cetelem: "N.I.", FLOA: "Aucun",
+                  Oney: "N.I.", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Assurance',
+            rows: [
+              { critere: "Assurance proposée", values: {
+                  Cofidis: "Oui facultative", Cetelem: "Oui facultative", FLOA: "Oui facultative",
+                  Oney: "Oui facultative", Sofinco: "Oui facultative" }},
+              { critere: "Type assurance", values: {
+                  Cofidis: "Décès PTIA IIT perte emploi + maladies redoutées hospitalisation divorce",
+                  Cetelem: "N.I.", FLOA: "N.I.", Oney: "N.I.", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Remboursement',
+            rows: [
+              { critere: "Nombre de barèmes", values: {
+                  Cofidis: "4-5 selon Sémaphore", Cetelem: "N.I.", FLOA: "N.I.",
+                  Oney: "N.I.", Sofinco: "N.I." }},
+              { critere: "Changement de barème", values: {
+                  Cofidis: "5 barèmes standard + 4 barèmes durée choisie",
+                  Cetelem: "N.I.",
+                  FLOA: "Oui si changement offre ou évolution encours",
+                  Oney: "N.I.", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Flexibilité',
+            rows: [
+              { critere: "Report mensualité", values: {
+                  Cofidis: "Oui", Cetelem: "Non", FLOA: "Oui",
+                  Oney: "Non", Sofinco: "Oui" }},
+              { critere: "Nombre reports/an", values: {
+                  Cofidis: "N.I.", Cetelem: "Max 2x/an", FLOA: "Max 2x/an",
+                  Oney: "N.I.", Sofinco: "Max 2x/an" }},
+              { critere: "Remboursement anticipé", values: {
+                  Cofidis: "Oui", Cetelem: "Non", FLOA: "Oui",
+                  Oney: "Non", Sofinco: "Non" }},
+              { critere: "Indemnités défaut", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "8% (4% si report)",
+                  Oney: "N.I.", Sofinco: "N.I." }},
+              { critere: "Augmentation capital", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Oui page dédiée site",
+                  Oney: "N.I.", Sofinco: "N.I." }},
+              { critere: "Modulation mensualité", values: {
+                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
+                  Oney: "Oui", Sofinco: "Non" }}
+            ]
+          },
+          {
+            title: 'Parcours & souscription',
+            rows: [
+              { critere: "Parcours", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Web + app 100% digital",
+                  Oney: "N.I.", Sofinco: "Web + app + agence + téléphone" }},
+              { critere: "Simulation en ligne", values: {
+                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
+                  Oney: "Non", Sofinco: "Oui" }},
+              { critere: "Signature électronique", values: {
+                  Cofidis: "Non", Cetelem: "Non", FLOA: "Oui",
+                  Oney: "Non", Sofinco: "Oui" }},
+              { critere: "Temps souscription", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "15 min",
+                  Oney: "N.I.", Sofinco: "N.I." }},
+              { critere: "Réponse immédiate", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Oui première réponse immédiate",
+                  Oney: "N.I.", Sofinco: "N.I." }},
+              { critere: "Co-emprunteur", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "N.I.",
+                  Oney: "Non", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Mise à disposition',
+            rows: [
+              { critere: "Délai", values: {
+                  Cofidis: "1-3 jours ouvrés SEPA / J+8 pour augmentation",
+                  Cetelem: "Après rétractation selon utilisation",
+                  FLOA: "À partir du J+8 / financement ~48h",
+                  Oney: "Sous 48h", Sofinco: "N.I." }},
+              { critere: "Mode activation", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Via espace client",
+                  Oney: "N.I.", Sofinco: "N.I." }}
+            ]
+          },
+          {
+            title: 'Carte & Usage',
+            rows: [
+              { critere: "Carte associée", values: {
+                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
+                  Oney: "Non", Sofinco: "Oui" }},
+              { critere: "Nom carte", values: {
+                  Cofidis: "Carte 4 étoiles + Cofidis Pay", Cetelem: "Cpay",
+                  FLOA: "Carte Cdiscount + carte Gold", Oney: "N.I.",
+                  Sofinco: "Carte Visa Sofinco + Visa Premier + Partenaires" }},
+              { critere: "Cotisation carte", values: {
+                  Cofidis: "Gratuite", Cetelem: "14,90€/an",
+                  FLOA: "Cdiscount 1,25€/mois / Gold 4,50€/mois",
+                  Oney: "N.I.", Sofinco: "Variable selon partenaires" }}
+            ]
+          },
+          {
+            title: 'Services & fidélisation',
+            rows: [
+              { critere: "Programme fidélité", values: {
+                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Cashback mis en avant",
+                  Oney: "N.I.", Sofinco: "Programme Sofinco Avantages" }},
+              { critere: "Arbitrage post-achat", values: {
+                  Cofidis: "Oui via carte/Cofidis Pay", Cetelem: "Oui post-paiement Cpay",
+                  FLOA: "Oui changer d'avis après l'achat",
+                  Oney: "Oui Transfert comptant/crédit", Sofinco: "N.I." }}
+            ]
+          }
+        ]
+      },
+
+      /* ── PAIEMENT FRACTIONNÉ ─────────────── */
+      {
+        id: 'nxcb',
+        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','Klarna','Alma'],
+        updatedAt: '2026-05-07',
+        sections: [
+          {
+            title: 'Offre & positionnement',
+            rows: [
+              { critere: "Nom de l'offre", values: {
+                  Sofinco: "3xCB 4xCB", Cetelem: "4xCB Pledg N fois CB",
+                  Cofidis: "3xCB 4xCB Pay 3x 4x", Oney: "Oney 3x 4x",
+                  FLOA: "FLOA 3x 4x", Klarna: "Paiement en 3 fois",
+                  Alma: "Paiement en 2/3/4 fois" }},
+              { critere: "Cible", values: {
+                  Sofinco: "Particuliers marchands partenaires web et magasin",
+                  Cetelem: "Particuliers enseignes partenaires Cpay/Cetelem",
+                  Cofidis: "Particuliers marchands partenaires web et magasin",
+                  Oney: "Particuliers marchands partenaires web et magasin",
+                  FLOA: "Particuliers marchands partenaires web et magasin",
+                  Klarna: "Consommateurs marchands éligibles Klarna",
+                  Alma: "Consommateurs marchands Alma" }},
+              { critere: "Usage", values: {
+                  Sofinco: "Étaler achat ponctuel booster conversion",
+                  Cetelem: "Paiement fractionné + logique carte/CR/fidélité",
+                  Cofidis: "3 ou 4 échéances parcours simple rapide",
+                  Oney: "Paiement fractionné",
+                  FLOA: "Fractionner achat partenaire réponse immédiate",
+                  Klarna: "3 mensualités sans frais",
+                  Alma: "Paiement fractionné rapide moins d'une minute" }}
+            ]
+          },
+          {
+            title: 'Structure de paiement',
+            rows: [
+              { critere: "Fractionnements", values: {
+                  Sofinco: "2, 3, 4", Cetelem: "Variable", Cofidis: "3, 4",
+                  Oney: "3, 4", FLOA: "3, 4", Klarna: "3", Alma: "2, 3, 4" }},
+              { critere: "Échéances fixes", values: {
+                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
+                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
+              { critere: "Apport initial", values: {
+                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.",
+                  Oney: "1er paiement à l'achat", FLOA: "1ère échéance à l'achat",
+                  Klarna: "1er paiement à l'achat", Alma: "N.I." }},
+              { critere: "Carte éligible", values: {
+                  Sofinco: "Visa/Mastercard/CB",
+                  Cetelem: "CB/Visa/Mastercard selon enseigne",
+                  Cofidis: "CB/Visa/Mastercard",
+                  Oney: "Visa/Mastercard/CB exclusions selon offre",
+                  FLOA: "Visa/Mastercard/CB valides jusqu'à dernière échéance",
+                  Klarna: "Compte Klarna + carte liée",
+                  Alma: "Carte bancaire éligible" }}
+            ]
+          },
+          {
+            title: 'Montants',
+            rows: [
+              { critere: "Montant min achat", values: {
+                  Sofinco: "100€", Cetelem: "60€", Cofidis: "100€",
+                  Oney: "100€", FLOA: "50€", Klarna: "N.I.", Alma: "N.I." }},
+              { critere: "Montant max achat", values: {
+                  Sofinco: "3 000€", Cetelem: "16 000€", Cofidis: "2 300€",
+                  Oney: "6 000€", FLOA: "6 000€", Klarna: "N.I.", Alma: "N.I." }}
+            ]
+          },
+          {
+            title: 'Distribution',
+            rows: [
+              { critere: "Disponible web", values: {
+                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
+                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
+              { critere: "Disponible magasin", values: {
+                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
+                  Oney: "Oui", FLOA: "Oui", Klarna: "Plutôt web/app", Alma: "Oui" }},
+              { critere: "Enseignes partenaires", values: {
+                  Sofinco: "Fnac Darty Castorama Ikea La Redoute Printemps",
+                  Cetelem: "But Conforama E.Leclerc Ford Airbnb",
+                  Cofidis: "Feu Vert Cuisinella Afflelou Huawei Rue du Commerce IKKS",
+                  Oney: "Boulanger Cdiscount Electro Dépôt Leroy Merlin Back Market",
+                  FLOA: "Casino Cdiscount Easycash Veepee Bricomarché Galerie Lafayette Samsung",
+                  Klarna: "Amazon Sephora Temu JD Sport Carrefour SHEIN Fnac Vinted",
+                  Alma: "La Redoute Maison du Monde SNCF Zadig&Voltaire Showroom Privé Jardiland" }}
+            ]
+          },
+          {
+            title: 'Tarification client',
+            rows: [
+              { critere: "Sans frais client", values: {
+                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
+                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
+              { critere: "Mode calcul frais", values: {
+                  Sofinco: "Variable commerçant ou client", Cetelem: "N.I.",
+                  Cofidis: "Variable commerçant ou client",
+                  Oney: "1,67% en 3x plafond 30€ / 2,50% en 4x plafond 60€",
+                  FLOA: "Variable selon partenaire",
+                  Klarna: "Pas d'intérêt sur 3 fois frais retard si impayé",
+                  Alma: "N.I." }},
+              { critere: "TAEG", values: {
+                  Sofinco: "TAEG fixe si frais refacturés client", Cetelem: "N.I.",
+                  Cofidis: "N.I.",
+                  Oney: "22,59% en 3x / 22,63% en 4x",
+                  FLOA: "TAEG max 23,45% sur 3X",
+                  Klarna: "Pas de TAEG sur 3 fois sans frais",
+                  Alma: "N.I." }},
+              { critere: "Frais retard", values: {
+                  Sofinco: "Oui selon CG", Cetelem: "N.I.", Cofidis: "Oui selon CG",
+                  Oney: "Oui selon CG",
+                  FLOA: "8% capital dû ou échéances impayées",
+                  Klarna: "Frais retard possibles",
+                  Alma: "Oui selon CG" }}
+            ]
+          },
+          {
+            title: 'Parcours client',
+            rows: [
+              { critere: "Parcours adhésion", values: {
+                  Sofinco: "Choix 2x/3x/4x saisie infos réponse immédiate",
+                  Cetelem: "Variable selon enseigne/carte",
+                  Cofidis: "Formulaire en ligne validation échéancier",
+                  Oney: "Choix checkout CB réponse immédiate",
+                  FLOA: "Choix 3X/4X paiement validation immédiate",
+                  Klarna: "Compte/app Klarna + carte liée",
+                  Alma: "Parcours digital court checkout" }},
+              { critere: "PJ demandées", values: {
+                  Sofinco: "N.I.",
+                  Cetelem: "Variable selon enseigne / 3x4x web souvent sans PJ",
+                  Cofidis: "Formulaire + carte bancaire",
+                  Oney: "Aucune PJ standard",
+                  FLOA: "Aucune en général / pièce identité possible contrôle fraude",
+                  Klarna: "N.I.", Alma: "N.I." }},
+              { critere: "Signature", values: {
+                  Sofinco: "Acceptation digitale", Cetelem: "Variable selon parcours",
+                  Cofidis: "Signature électronique", Oney: "Acceptation digitale",
+                  FLOA: "Acceptation digitale",
+                  Klarna: "Acceptation digitale/app", Alma: "Acceptation digitale" }},
+              { critere: "Application", values: {
+                  Sofinco: "Pas nécessaire",
+                  Cetelem: "Oui univers cartes/Cpay",
+                  Cofidis: "Oui espace client mais 3x/4x surtout checkout",
+                  Oney: "Oui environnement Compte Oney",
+                  FLOA: "Pas d'app requise pour 3X/4X marchand",
+                  Klarna: "Oui app centrale",
+                  Alma: "Oui espace client Alma" }}
+            ]
+          },
+          {
+            title: 'Assurance & services',
+            rows: [
+              { critere: "Assurance", values: {
+                  Sofinco: "Non mise en avant NxCB court",
+                  Cetelem: "Possible via univers crédit/cartes",
+                  Cofidis: "Non spécifique au 3xCB/4xCB",
+                  Oney: "Sans assurance sur 3x4x standard",
+                  FLOA: "N.I.", Klarna: "N.I.", Alma: "N.I." }},
+              { critere: "Programme fidélité", values: {
+                  Sofinco: "Pas natif NxCB court",
+                  Cetelem: "Avantages Cpay/cashback via carte",
+                  Cofidis: "Avantages possibles via carte",
+                  Oney: "Pas natif 3x4x court",
+                  FLOA: "Mon Cashback by FLOA",
+                  Klarna: "App shopping services paiement flexibles",
+                  Alma: "Suivi paiement anticipé options gestion" }}
+            ]
+          }
+        ]
+      }
+    ],
+
+    promos: {
+      pb: [
+        { actor: 'Sofinco',     taux: '4,50% TAEG', duree: '13-48 mois', montant: '15-20k€',      dateFin: '20/05/2026', canal: 'Digital site web', lien: 'https://www.sofinco.fr/pret-personnel' },
+        { actor: 'Cetelem',     taux: '4,50% TAEG', duree: '48 mois',    montant: '14k€',          dateFin: '01/06/2026', canal: 'Digital site web', lien: 'https://www.cetelem.fr/pret-personnel' },
+        { actor: 'Cofidis',     taux: '4,70% TAEG', duree: '60 mois',    montant: '10-15k€',       dateFin: '17/05/2026', canal: 'Digital site web', lien: 'https://www.cofidis.fr/pret-personnel' },
+        { actor: 'Oney',        taux: '4,70% TAEG', duree: '54-60 mois', montant: '15-21 599€',    dateFin: '11/05/2026', canal: 'Digital site web', lien: 'https://www.oney.fr/credit/pret-personnel' },
+        { actor: 'Franfinance', taux: '4,89% TAEG', duree: '48 mois',    montant: '15k€',          dateFin: '14/05/2026', canal: 'Digital site web', lien: 'https://www.franfinance.fr/pret-personnel' }
+      ]
+    },
+
+    differenciateurs: {
+      pb: {
+        Sofinco:     { tags: ['Durée max : 120 mois (unique)', 'Pause paiement gratuite', 'Délai déblocage J+7'],
+                       conclusion: 'Sofinco se distingue par la durée maximale la plus longue du marché (120 mois) et une pause paiement gratuite.' },
+        Cetelem:     { tags: ['Durée min : 7 mois', 'Souscription en 8 min', 'Modulation sans frais dès 6 mois'],
+                       conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais.' },
+        Cofidis:     { tags: ['Montant min : 500€', 'Déblocage possible par chèque', 'Modulation via espace client'],
+                       conclusion: 'Cofidis accessible dès 500€ avec un parcours 100% digital.' },
+        Oney:        { tags: ['Durée min : 4 mois (unique)', 'Montant max : 75 000€', 'Pause paiement gratuite'],
+                       conclusion: 'Oney propose la durée minimale la plus courte du benchmark avec une grande amplitude de montants.' },
+        Franfinance: { tags: ['Filiale Société Générale', 'Taux promo compétitif 4,89%', 'Conseiller dédié modulation'],
+                       conclusion: 'Franfinance se distingue par son ancrage bancaire Société Générale et son accompagnement conseiller.' },
+        FLOA:        { tags: ['Montant max : 6 000€ seulement', 'Déblocage J+8 express', 'Modulation dès 6 mois'],
+                       conclusion: 'FLOA positionné sur les petits montants avec un parcours express.' },
+        Younited:    { tags: ['Fintech indépendante', '100% digital', 'Réponse définitive rapide'],
+                       conclusion: 'Younited se différencie comme fintech pure avec un parcours entièrement digital.' },
+        Boursobank:  { tags: ['Client BoursoBank requis', 'Parcours Flash automatisé', 'Analyse revenus automatique'],
+                       conclusion: 'Boursobank réservé à ses clients avec un parcours Flash ultra-rapide pour les dossiers éligibles.' }
+      }
+    }
+  };
+
+  /* ──────────────────────────────────────────
+     DONNÉES TAUX CRÉDIT RENOUVELABLE
+  ────────────────────────────────────────── */
+  var TAUX_CR_DATA = {
+    updatedAt: '2026-05-01',
+    prevDate:  '2026-04-01',
+    usure: [
+      { id: 'b1', label: '0 € – 3 000 €',    taux: 0.2352 },
+      { id: 'b2', label: '3 000 – 6 000 €',  taux: 0.1573 },
+      { id: 'b3', label: 'Plus de 6 000 €',  taux: 0.0861 }
+    ],
+    actors: [
+      /* ─ Établissements bancaires ─ */
+      { nom: 'AXA Banque', produit: "Larg'O", cat: 'bancaire', rows: [
+          { tranche: 'De 1 € à 1 500 €',      b1: 0.1695, b1v: 0,    b2: null,   b2v: null, b3: null,  b3v: null  },
+          { tranche: 'De 1 500 € à 3 000 €',  b1: null,   b1v: null, b2: 0.169,  b2v: 0,    b3: null,  b3v: null  },
+          { tranche: 'De 3 000 € à 6 000 €',  b1: 0.234,  b1v: 0,    b2: 0.0968, b2v: 0,    b3: null,  b3v: null  },
+          { tranche: 'Plus de 6 000 €',        b1: null,   b1v: null, b2: null,   b2v: null, b3: null,  b3v: null  }
+        ], comment: '' },
+      { nom: 'Banque Populaire', produit: 'Facelia', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.234, b1v: 0, b2: 0.1565, b2v: 0, b3: 0.0856, b3v: 0 }
+        ], comment: '' },
+      { nom: 'BNP Paribas', produit: 'Provisio', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.139, b1v: 0, b2: 0.099, b2v: 0, b3: 0.065, b3v: 0 }
+        ], comment: '' },
+      { nom: "Caisse d'Épargne", produit: 'Izicarte', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.234, b1v: 0, b2: 0.1565, b2v: 0, b3: 0.0856, b3v: 0 }
+        ], comment: '' },
+      { nom: 'CIC', produit: 'Etalis+', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.1434, b1v: 0, b2: null, b2v: null, b3: null, b3v: null }
+        ], comment: '' },
+      { nom: 'CIC', produit: 'Crédit Liberté', cat: 'bancaire', rows: [
+          { tranche: '12 – 36 mois', b1: 0.0696, b1v: 0, b2: 0.0627, b2v: 0, b3: 0.0627, b3v: 0 },
+          { tranche: '37 – 60 mois', b1: 0.0808, b1v: 0, b2: 0.0638, b2v: 0, b3: 0.0638, b3v: 0 }
+        ], comment: 'Anciennement "Crédit en Réserve". Montants de 3 000 € à 50 000 €' },
+      { nom: 'Crédit Mutuel', produit: 'Etalis+', cat: 'bancaire', rows: [
+          { tranche: 'Max', b1: 0.1434, b1v: 0, b2: null, b2v: null, b3: null, b3v: null }
+        ], comment: '' },
+      { nom: 'La Banque Postale', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.145, b1v: 0, b2: 0.1386, b2v: 0, b3: 0.0784, b3v: 0 }
+        ], comment: '' },
+      { nom: 'LCL', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.169, b1v: 0, b2: 0.115, b2v: 0, b3: 0.067, b3v: 0 }
+        ], comment: '' },
+      { nom: 'Monabanq', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.2085, b1v: 0, b2: 0.1572, b2v: 0, b3: 0.0857, b3v: 0.0002 }
+        ], comment: '' },
+      { nom: 'SG', produit: 'Alterna', cat: 'bancaire', rows: [
+          { tranche: '', b1: 0.2085, b1v: 0, b2: 0.1249, b2v: 0, b3: 0.0745, b3v: 0 }
+        ], comment: '' },
+      /* ─ Sociétés financières ─ */
+      { nom: 'Carrefour Banque', produit: 'Crédit PASS', cat: 'financiere', rows: [
+          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1572, b2v: 0, b3: 0.086, b3v: 0 }
+        ], comment: '' },
+      { nom: 'Cetelem / Cofinoga', produit: 'Crédit renouvelable', cat: 'financiere', rows: [
+          { tranche: "Jusqu'à 3 mois",   b1: 0.1799, b1v: 0,      b2: 0.1573, b2v: 0,      b3: null, b3v: null },
+          { tranche: 'Sur 4 à 5 mois',   b1: 0.1799, b1v: 0,      b2: 0.1573, b2v: 0.0003, b3: null, b3v: null },
+          { tranche: 'Sur 6 à 10 mois',  b1: 0.2351, b1v: 0.0009, b2: 0.1573, b2v: 0.0007, b3: null, b3v: null },
+          { tranche: 'Sur 11 à 60 mois', b1: 0.2351, b1v: 0.0008, b2: null,   b2v: null,   b3: null, b3v: null },
+          { tranche: 'Sur 11 à 20 mois', b1: null,   b1v: null,   b2: 0.1573, b2v: 0.0004, b3: null, b3v: null },
+          { tranche: 'Sur 21 à 60 mois', b1: null,   b1v: null,   b2: 0.1573, b2v: 0,      b3: null, b3v: null }
+        ], comment: 'Depuis janvier 2023, Cofinoga applique la même tarification que Cetelem' },
+      { nom: 'Cofidis', produit: 'Accessio', cat: 'financiere', rows: [
+          { tranche: 'Vitesse confort',  b1: 0.232,  b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null },
+          { tranche: 'Vitesse rapide',   b1: 0.1991, b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null },
+          { tranche: 'Vitesse express',  b1: 0.159,  b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null }
+        ], comment: '' },
+      { nom: 'FLOA Bank', produit: 'Prêt dispo', cat: 'financiere', rows: [
+          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null }
+        ], comment: '' },
+      { nom: 'Franfinance', produit: 'Budget Plus', cat: 'financiere', rows: [
+          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1573, b2v: 0, b3: null, b3v: null }
+        ], comment: '' },
+      { nom: 'Oney', produit: 'Virement +', cat: 'financiere', rows: [
+          { tranche: '', b1: 0.233, b1v: 0, b2: 0.1573, b2v: 0, b3: 0.0861, b3v: 0 }
+        ], comment: '' },
+      { nom: 'Sofinco', produit: 'Crédit renouvelable Agile', cat: 'financiere', isUs: true, rows: [
+          { tranche: '', b1: 0.235, b1v: 0, b2: 0.157, b2v: 0, b3: 0.086, b3v: 0 }
+        ], comment: "Offre permanente : 150-6 000 € sur 10 mois (7,90 %) · 1 500-6 000 € sur 18-24 mois (9,80 %)" }
+    ]
+  };
+
+  /* ──────────────────────────────────────────
+     STATE
+  ────────────────────────────────────────── */
+  var state = {
+    view: 'home',
+    productId: null,
+    tab: 'tableau',
+    compareActors: { pb: ['Sofinco','Cetelem'], cr: ['Sofinco','Cetelem'], nxcb: ['Sofinco','Cetelem'] },
+    tauxBracket: 'b1',
+    tauxCat: 'all',
+    simMontant: 3000,
+    simDuree: 36
+  };
+
+  var tauxSort       = { col: 'b1', dir: -1 };
+  var _tauxChartInst = null;
+
+  /* ──────────────────────────────────────────
+     LOCALSTORAGE
+  ────────────────────────────────────────── */
+  var LS_KEY = 'sofinco-veille-v3';
+
+  var LS = {
+    _d: function () { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) { return {}; } },
+    get: function (k, d) { var o = this._d(); return k in o ? o[k] : d; },
+    set: function (k, v) { try { var o = this._d(); o[k] = v; localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch(e) {} }
+  };
+
+  function getChangelog () { return LS.get('changelog', []); }
+  function pushChangelog (entries) {
+    var c = getChangelog();
+    entries.forEach(function (e) { c.unshift(e); });
+    LS.set('changelog', c.slice(0, 600));
+  }
+  function getBaseline () { return LS.get('baseline', null); }
+  function setBaseline (snap) { LS.set('baseline', snap); }
+
+  /* ──────────────────────────────────────────
+     UTILITAIRES
+  ────────────────────────────────────────── */
+  function $ (id) { return document.getElementById(id); }
+
+  function esc (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function today () { return new Date().toISOString().slice(0, 10); }
+
+  function fmtDate (iso) {
+    if (!iso) return '—';
+    var p = String(iso).split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+  }
+
+  function isNew (dateStr) {
+    if (!dateStr) return false;
+    return (Date.now() - new Date(dateStr).getTime()) < 7 * 864e5;
+  }
+
+  function isThisMonth (dateStr) {
+    if (!dateStr) return false;
+    var d = new Date(dateStr), n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
+  }
+
+  function productById (id) {
+    for (var i = 0; i < DATA.produits.length; i++) {
+      if (DATA.produits[i].id === id) return DATA.produits[i];
+    }
+    return null;
+  }
+
+  function pLabel (id) { var p = productById(id); return p ? p.shortLabel : id.toUpperCase(); }
+
+  function faviconImg (actor, size) {
+    size = size || 38;
+    var domain = DOMAINS[actor];
+    var initials = String(actor || '').slice(0, 2).toUpperCase();
+    if (domain) {
+      var url = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+      return '<img src="' + esc(url) + '" alt="' + esc(actor) + '" class="ac-favicon"' +
+        ' style="width:' + size + 'px;height:' + size + 'px"' +
+        ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        '<div class="ac-placeholder" style="display:none;width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
+    }
+    return '<div class="ac-placeholder" style="width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
+  }
+
+  function renderCell (v) {
+    var s = v != null ? String(v).trim() : '';
+    if (!s || s === '—' || s === '-') return '<span class="cv-dash">—</span>';
+    if (s === 'N.I.') return '<span class="cv-ni">N.I.</span>';
+    var sl = s.toLowerCase();
+    if (sl === 'oui') return '<span class="cv-yes">✓ Oui</span>';
+    if (sl === 'non') return '<span class="cv-no">✗ Non</span>';
+    if (s.indexOf('%') >= 0) return '<span class="cv-pct">' + esc(s) + '</span>';
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s) || /^\d{4}-\d{2}-\d{2}$/.test(s))
+      return '<span class="cv-date">' + esc(s) + '</span>';
+    return esc(s);
+  }
+
+  function normPid (raw) {
+    var s = String(raw || '').toLowerCase().trim()
+      .replace(/[éè]/g, 'e').replace(/[àâ]/g, 'a');
+    if (s === 'pb' || s === 'pret personnel' || s === 'pp') return 'pb';
+    if (s === 'cr' || s === 'credit renouvelable') return 'cr';
+    if (s === 'nxcb' || s === 'nx' || s === 'paiement fractionne') return 'nxcb';
+    return 'pb';
+  }
+
+  /* ──────────────────────────────────────────
+     SNAPSHOT & DIFF
+  ────────────────────────────────────────── */
+  function makeSnapshot () {
+    var snap = {};
+    DATA.produits.forEach(function (p) {
+      var ps = {};
+      p.sections.forEach(function (sec) {
+        sec.rows.forEach(function (row) {
+          p.acteurs.forEach(function (actor) {
+            ps[sec.title + '||' + row.critere + '||' + actor] = row.values[actor] || '';
+          });
+        });
+      });
+      snap[p.id] = ps;
+    });
+    return snap;
+  }
+
+  function diffSnapshots (old, next, date) {
+    var entries = [];
+    DATA.produits.forEach(function (p) {
+      var op = (old && old[p.id]) || {};
+      var np = (next && next[p.id]) || {};
+      var keys = {};
+      Object.keys(op).forEach(function (k) { keys[k] = 1; });
+      Object.keys(np).forEach(function (k) { keys[k] = 1; });
+      Object.keys(keys).forEach(function (k) {
+        var ov = op[k] || '', nv = np[k] || '';
+        if (ov !== nv) {
+          var pts = k.split('||');
+          entries.push({ date: date, productId: p.id, section: pts[0], critere: pts[1], actor: pts[2], from: ov, to: nv });
+        }
+      });
+    });
+    return entries;
+  }
+
+  /* ──────────────────────────────────────────
+     PARSING EXCEL
+  ────────────────────────────────────────── */
+  function parseProductSheet (sheet, def) {
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (!rows.length) return;
+
+    var headerRow = rows[0];
+    var actors = [];
+    for (var c = 1; c < headerRow.length; c++) {
+      var h = String(headerRow[c] || '').trim();
+      if (h) actors.push(h);
+    }
+    if (actors.length) def.acteurs = actors;
+
+    var sections = [], cur = { title: 'Sans section', rows: [] };
+
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      var crit = String(row[0] || '').trim();
+      if (!crit) continue;
+
+      var hasVals = actors.some(function (_, idx) {
+        var v = row[idx + 1];
+        return v != null && String(v).trim() !== '';
+      });
+
+      if (!hasVals) {
+        if (cur.rows.length || cur.title !== 'Sans section') sections.push(cur);
+        cur = { title: crit, rows: [] };
+        continue;
+      }
+
+      var vals = {};
+      actors.forEach(function (actor, idx) {
+        var v = row[idx + 1];
+        vals[actor] = v != null ? String(v).trim() : '';
+      });
+      cur.rows.push({ critere: crit, values: vals });
+    }
+    if (cur.rows.length) sections.push(cur);
+    def.sections = sections;
+    def.updatedAt = today();
+  }
+
+  function parsePromosSheet (sheet) {
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) return null;
+    var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+    var out = {};
+
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      var get = function (name) {
+        var idx = hdrs.indexOf(name);
+        return idx >= 0 ? String(row[idx] || '').trim() : '';
+      };
+      var actor = get('acteur');
+      if (!actor) continue;
+      var pid = normPid(get('produit') || 'pb');
+      if (!out[pid]) out[pid] = [];
+      out[pid].push({
+        actor: actor,
+        taux: get('taux'),
+        duree: get('durée') || get('duree'),
+        montant: get('montant exemple') || get('montant'),
+        dateFin: get('date fin') || get('datefin'),
+        canal: get('canal'),
+        lien: get('lien')
+      });
+    }
+    return out;
+  }
+
+  function parseDiffSheet (sheet) {
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) return null;
+    var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+    var out = {};
+
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      var get = function (name) {
+        var idx = hdrs.indexOf(name);
+        return idx >= 0 ? String(row[idx] || '').trim() : '';
+      };
+      var actor = get('acteur');
+      if (!actor) continue;
+      var pid = normPid(get('produit') || 'pb');
+      if (!out[pid]) out[pid] = {};
+      var tags = [get('tag1'), get('tag2'), get('tag3')].filter(Boolean);
+      out[pid][actor] = { tags: tags, conclusion: get('conclusion') };
+    }
+    return out;
+  }
+
+  function handleWorkbook (wb) {
+    var oldSnap = makeSnapshot();
+    var importDate = today();
+
+    DATA.produits.forEach(function (def) {
+      if (wb.SheetNames.indexOf(def.excelSheet) >= 0) {
+        parseProductSheet(wb.Sheets[def.excelSheet], def);
+      }
+    });
+    if (wb.SheetNames.indexOf('PROMOS') >= 0) {
+      var p = parsePromosSheet(wb.Sheets['PROMOS']);
+      if (p) DATA.promos = p;
+    }
+    if (wb.SheetNames.indexOf('DIFFERENCIATEURS') >= 0) {
+      var d = parseDiffSheet(wb.Sheets['DIFFERENCIATEURS']);
+      if (d) DATA.differenciateurs = d;
+    }
+
+    var newSnap = makeSnapshot();
+    var entries = diffSnapshots(oldSnap, newSnap, importDate);
+    if (entries.length) pushChangelog(entries);
+    setBaseline(newSnap);
+
+    $('modal-import').classList.remove('show');
+    render();
+  }
+
+  function readXlsx (file) {
+    if (!file.name.match(/\.xlsx$/i)) { alert('Fichier .xlsx requis.'); return; }
+    var r = new FileReader();
+    r.onload = function (e) {
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        handleWorkbook(wb);
+      } catch (err) {
+        alert('Erreur de lecture : ' + err.message);
+      }
+    };
+    r.readAsArrayBuffer(file);
+  }
+
+  /* ──────────────────────────────────────────
+     TEXTE COURRIEL
+  ────────────────────────────────────────── */
+  function mailText () {
+    var cl = getChangelog();
+    var lines = ['Résumé veille concurrentielle — Sofinco', 'Date : ' + fmtDate(today()), ''];
+    DATA.produits.forEach(function (p) {
+      lines.push('=== ' + p.label.toUpperCase() + ' ===');
+      var changes = cl.filter(function (e) { return e.productId === p.id && isThisMonth(e.date); });
+      if (!p.sections.length) { lines.push('Aucune donnée importée.'); }
+      else if (!changes.length) { lines.push('Aucun changement détecté ce mois.'); }
+      else {
+        lines.push('Changements ce mois (' + changes.length + ') :');
+        changes.slice(0, 15).forEach(function (e) {
+          lines.push('  • ' + e.actor + ' — ' + e.critere + ' : ' + (e.from || '(vide)') + ' → ' + (e.to || '(vide)'));
+        });
+      }
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — NAV
+  ────────────────────────────────────────── */
+  function renderNav () {
+    document.querySelectorAll('[data-nav]').forEach(function (el) { el.classList.remove('active'); });
+    var key = state.view === 'home' ? 'home' : state.productId;
+    var el = document.querySelector('[data-nav="' + key + '"]');
+    if (el) el.classList.add('active');
+
+    var p = state.productId ? productById(state.productId) : null;
+    $('topbar-title').textContent = p ? p.label : 'Accueil';
+    $('topbar-date').textContent = fmtDate(today());
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — ACCUEIL
+  ────────────────────────────────────────── */
+  function renderHome () {
+    var cl = getChangelog();
+    var monthN = cl.filter(function (e) { return isThisMonth(e.date); }).length;
+    var html = '';
+
+    /* Compteur */
+    html += '<div class="counter-card">';
+    html += '<div><div class="counter-num">' + monthN + '</div>';
+    html += '<div class="counter-label">changement' + (monthN !== 1 ? 's' : '') + ' ce mois</div></div>';
+    html += '<div class="text-muted text-sm">Dernière consultation : ' + fmtDate(today()) + '</div>';
+    html += '</div>';
+
+    /* Cards produit */
+    html += '<div class="products-grid">';
+    DATA.produits.forEach(function (p) {
+      var promoCount = (DATA.promos[p.id] || []).length;
+      var changeCount = cl.filter(function (e) { return e.productId === p.id && isThisMonth(e.date); }).length;
+      var updated = p.updatedAt && isNew(p.updatedAt);
+
+      html += '<div class="product-card" onclick="navigate(\'' + p.id + '\')">';
+      html += '<div class="pc-header">';
+      html += '<div class="pc-icon ' + P_IC_CLS[p.id] + '"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
+      html += '<div>';
+      html += '<div class="pc-title">' + esc(p.label) + '</div>';
+      html += '<div class="pc-sub">' + (p.updatedAt ? 'MAJ : ' + fmtDate(p.updatedAt) : 'Aucune donnée') + '</div>';
+      html += '</div></div>';
+
+      if (updated) html += '<div><span class="badge b-new">● Nouveau</span></div>';
+      else html += '<div></div>';
+
+      html += '<div class="pc-stats">';
+      html += '<div><div class="stat-n c-tq">' + promoCount + '</div><div class="stat-l">promos actives</div></div>';
+      html += '<div><div class="stat-n c-or">' + changeCount + '</div><div class="stat-l">changements ce mois</div></div>';
+      html += '</div>';
+      html += '<button class="btn btn-primary btn-full" onclick="event.stopPropagation();navigate(\'' + p.id + '\')"><i class="ti ti-arrow-right"></i> Accéder</button>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    /* Fil actualités */
+    html += '<div class="section-hd"><i class="ti ti-bell"></i> Actualités</div>';
+    html += '<div class="news-feed">';
+    if (!cl.length) {
+      html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité</div>';
+      html += '<div class="text-sm mt-3">Importez un fichier Excel pour commencer.</div></div>';
+    } else {
+      cl.slice(0, 60).forEach(function (e) {
+        html += '<div class="news-item">';
+        html += '<div class="news-dot ' + (P_DOT[e.productId] || 'd-pb') + '"></div>';
+        html += '<div class="news-body">';
+        html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + pLabel(e.productId) + ' &nbsp;·&nbsp; ' + esc(e.actor) + '</div>';
+        html += '<div class="news-text"><strong>' + esc(e.critere) + '</strong> : <em>' + esc(e.from || '(vide)') + '</em> → <strong>' + esc(e.to || '(vide)') + '</strong></div>';
+        html += '</div>';
+        if (isNew(e.date)) html += '<span class="badge b-new">Nouveau</span>';
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+
+    $('view-home').innerHTML = html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — PAGE PRODUIT
+  ────────────────────────────────────────── */
+  function renderProduct () {
+    var p = productById(state.productId);
+    if (!p) return;
+
+    var html = '';
+
+    /* En-tête produit */
+    html += '<div class="prod-hd">';
+    html += '<div class="prod-icon-lg ' + P_IC_CLS[p.id] + '"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
+    html += '<div>';
+    html += '<div class="prod-title">' + esc(p.label) + '</div>';
+    html += '<div class="prod-sub">' + p.acteurs.length + ' acteurs &nbsp;·&nbsp; ';
+    html += (p.updatedAt ? 'Mis à jour le ' + fmtDate(p.updatedAt) : 'Aucune donnée importée') + '</div>';
+    html += '</div></div>';
+
+    /* Onglets */
+    var TABS = [
+      { id: 'tableau',          icon: 'ti-table',      label: 'Tableau' },
+      { id: 'comparaison',      icon: 'ti-columns',    label: 'Comparaison' },
+      { id: 'differenciateurs', icon: 'ti-star',       label: 'Différenciateurs' },
+      { id: 'promos',           icon: 'ti-tag',        label: 'Promos' }
+    ];
+    if (p.id === 'cr') TABS.push({ id: 'taux', icon: 'ti-chart-bar', label: 'Taux' });
+    html += '<div class="tabs">';
+    TABS.forEach(function (t) {
+      var a = state.tab === t.id ? ' active' : '';
+      html += '<button class="tab-btn' + a + '" onclick="switchTab(\'' + t.id + '\')">';
+      html += '<i class="ti ' + t.icon + '"></i>' + t.label + '</button>';
+    });
+    html += '</div>';
+
+    /* Contenu onglet */
+    html += '<div id="tab-content">';
+    if      (state.tab === 'tableau')          html += renderTableau(p);
+    else if (state.tab === 'comparaison')      html += renderComparison(p);
+    else if (state.tab === 'differenciateurs') html += renderDifferenciateurs(p);
+    else if (state.tab === 'promos')           html += renderPromos(p);
+    else if (state.tab === 'taux')             html += renderTaux(p);
+    html += '</div>';
+
+    $('view-product').innerHTML = html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — TABLEAU
+  ────────────────────────────────────────── */
+  function renderTableau (p) {
+    var html = '';
+    var actors = p.acteurs;
+
+    /* Cards acteurs compactes */
+    html += '<div class="actors-grid">';
+    actors.forEach(function (actor) {
+      var isUs   = actor === 'Sofinco';
+      var domain  = DOMAINS[actor] || '';
+      var siteUrl = domain ? 'https://www.' + domain : '#';
+      var prodUrl = (PROD_URLS[p.id] && PROD_URLS[p.id][actor]) || siteUrl;
+
+      html += '<div class="actor-card' + (isUs ? ' is-us' : '') + '" onclick="openActorFiche(\'' + esc(p.id) + '\',\'' + esc(actor) + '\')">';
+      html += '<div class="ac-top">';
+      html += faviconImg(actor, 34);
+      html += '<div style="min-width:0">';
+      html += '<div class="ac-name">' + esc(actor);
+      if (isUs) html += '&nbsp;<span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</div>';
+      html += '<div class="ac-group">' + esc(GROUPS[actor] || '') + '</div>';
+      html += '</div></div>';
+
+      html += '<div class="ac-links">';
+      html += '<a href="' + esc(siteUrl) + '" target="_blank" rel="noopener" class="ac-link" onclick="event.stopPropagation()"><i class="ti ti-external-link"></i>Site</a>';
+      html += '<a href="' + esc(prodUrl) + '" target="_blank" rel="noopener" class="ac-link" onclick="event.stopPropagation()"><i class="ti ti-external-link"></i>Produit</a>';
+      html += '</div>';
+
+      html += '<div class="ac-voir"><i class="ti ti-eye" style="font-size:11px"></i>Voir la fiche</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    /* Note PB */
+    if (p.id === 'pb') {
+      html += '<div class="pb-note">📌 <strong>À terme :</strong> distinction Prêt Affecté / Prêt Non Affecté à intégrer</div>';
+    }
+
+    if (!p.sections.length) {
+      html += '<div class="empty-state"><i class="ti ti-table-off"></i>';
+      html += '<div>Aucune donnée disponible</div>';
+      html += '<div class="text-sm mt-3">Importez un fichier Excel pour afficher le tableau.</div></div>';
+      return html;
+    }
+
+    /* Tableau détaillé */
+    html += '<div class="tbl-wrap"><table>';
+    /* En-tête */
+    html += '<thead><tr><th>Critère</th>';
+    actors.forEach(function (actor) {
+      var isUs = actor === 'Sofinco';
+      html += '<th' + (isUs ? ' class="col-us"' : '') + '>' + esc(actor);
+      if (isUs) html += ' <span style="font-size:9px;background:var(--tq);color:#fff;padding:1px 5px;border-radius:99px">Nous</span>';
+      html += '</th>';
+    });
+    html += '</tr></thead>';
+
+    /* Corps */
+    html += '<tbody>';
+    p.sections.forEach(function (sec, si) {
+      if (si > 0) {
+        html += '<tr class="sec-gap"><td colspan="' + (actors.length + 1) + '"></td></tr>';
+      }
+      html += '<tr class="sec-row"><td colspan="' + (actors.length + 1) + '">' + esc(sec.title) + '</td></tr>';
+      sec.rows.forEach(function (row) {
+        html += '<tr onclick="openDetail(\'' + esc(p.id) + '\',\'' + esc(row.critere).replace(/'/g, "\\'") + '\')">';
+        html += '<td>' + esc(row.critere) + '</td>';
+        actors.forEach(function (actor) {
+          var isUs = actor === 'Sofinco';
+          html += '<td' + (isUs ? ' class="col-us"' : '') + '>' + renderCell(row.values[actor]) + '</td>';
+        });
+        html += '</tr>';
+      });
+    });
+    html += '</tbody></table></div>';
+
+    return html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — COMPARAISON
+  ────────────────────────────────────────── */
+  function renderComparison (p) {
+    var sel = (state.compareActors[p.id] || ['Sofinco','Cetelem']).slice();
+    if (sel.indexOf('Sofinco') < 0) sel.unshift('Sofinco');
+    var html = '';
+
+    /* Sélecteur */
+    html += '<div class="cmp-picker">';
+    html += '<div class="cmp-picker-lbl">Sélectionner les acteurs à comparer</div>';
+    html += '<div class="cmp-checks">';
+    p.acteurs.forEach(function (actor) {
+      var isUs = actor === 'Sofinco';
+      var on = sel.indexOf(actor) >= 0;
+      html += '<label class="cmp-check-lbl' + (on ? ' on' : '') + (isUs ? ' locked' : '') + '"';
+      if (!isUs) html += ' onclick="toggleCompare(\'' + p.id + '\',\'' + esc(actor) + '\')"';
+      html += '>';
+      html += faviconImg(actor, 20);
+      html += ' ' + esc(actor);
+      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</label>';
+    });
+    html += '</div></div>';
+
+    if (!p.sections.length) {
+      html += '<div class="empty-state"><i class="ti ti-table-off"></i><div>Aucune donnée disponible</div></div>';
+      return html;
+    }
+
+    /* Tableau */
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr><th>Critère</th>';
+    sel.forEach(function (actor) {
+      var isUs = actor === 'Sofinco';
+      html += '<th class="' + (isUs ? 'cmp-us-hd' : '') + '">' + esc(actor);
+      if (isUs) html += ' <span style="font-size:9px">Nous</span>';
+      html += '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    p.sections.forEach(function (sec, si) {
+      if (si > 0) html += '<tr class="sec-gap"><td colspan="' + (sel.length + 1) + '"></td></tr>';
+      html += '<tr class="sec-row"><td colspan="' + (sel.length + 1) + '">' + esc(sec.title) + '</td></tr>';
+      sec.rows.forEach(function (row) {
+        var sofVal = (row.values['Sofinco'] || '').trim().toLowerCase();
+        html += '<tr>';
+        html += '<td>' + esc(row.critere) + '</td>';
+        sel.forEach(function (actor) {
+          var isUs = actor === 'Sofinco';
+          var v = row.values[actor] || '';
+          var diff = !isUs && v.trim().toLowerCase() !== sofVal;
+          var cls = (isUs ? 'cmp-us-col' : '') + (diff ? ' cell-hl' : '');
+          html += '<td' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' + renderCell(v) + '</td>';
+        });
+        html += '</tr>';
+      });
+    });
+    html += '</tbody></table></div>';
+
+    return html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — DIFFÉRENCIATEURS
+  ────────────────────────────────────────── */
+  function renderDifferenciateurs (p) {
+    var diffs = DATA.differenciateurs[p.id] || {};
+    var html = '';
+
+    if (!Object.keys(diffs).length) {
+      html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
+      html += '<div>Aucun différenciateur disponible</div>';
+      html += '<div class="text-sm mt-3">Importez un fichier Excel avec l\'onglet DIFFERENCIATEURS.</div></div>';
+      return html;
+    }
+
+    html += '<div class="diff-grid">';
+    p.acteurs.forEach(function (actor) {
+      var d = diffs[actor];
+      if (!d) return;
+      var isUs = actor === 'Sofinco';
+
+      html += '<div class="diff-card' + (isUs ? ' is-us' : '') + '">';
+      html += '<div class="diff-actor-hd">';
+      html += faviconImg(actor, 36);
+      html += '<div>';
+      html += '<div class="ac-name">' + esc(actor);
+      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</div>';
+      html += '<div class="ac-group">' + esc(GROUPS[actor] || '') + '</div>';
+      html += '</div></div>';
+
+      if (d.tags && d.tags.length) {
+        html += '<div class="diff-tags">';
+        d.tags.forEach(function (tag) {
+          html += '<span class="diff-tag"><i class="ti ti-check" style="font-size:10px"></i>' + esc(tag) + '</span>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="diff-none">Aucun tag différenciateur</div>';
+      }
+
+      if (d.conclusion) {
+        html += '<div class="diff-conclusion">' + esc(d.conclusion) + '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+
+    return html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — PROMOS
+  ────────────────────────────────────────── */
+  function renderPromos (p) {
+    var promos = DATA.promos[p.id] || [];
+    var html = '';
+
+    if (!promos.length) {
+      html += '<div class="empty-state"><i class="ti ti-tag-off"></i>';
+      html += '<div>Aucune promo disponible</div>';
+      html += '<div class="text-sm mt-3">Importez un fichier Excel avec l\'onglet PROMOS.</div></div>';
+      return html;
+    }
+
+    /* Cards horizontales */
+    html += '<div class="promos-list">';
+    promos.forEach(function (promo) {
+      var domain = DOMAINS[promo.actor] || '';
+      var faviconSrc = domain ? 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64' : '';
+      var prodUrl = (PROD_URLS[p.id] && PROD_URLS[p.id][promo.actor]) || (domain ? 'https://www.' + domain : '#');
+      var lien = promo.lien || prodUrl;
+      var initials = String(promo.actor || '').slice(0, 2).toUpperCase();
+
+      html += '<div class="promo-card">';
+      /* Logo */
+      html += '<div class="promo-logo-col">';
+      if (faviconSrc) {
+        html += '<img src="' + esc(faviconSrc) + '" class="promo-logo" alt="' + esc(promo.actor) + '"' +
+          ' onerror="this.style.display=\'none\'">';
+      } else {
+        html += '<div class="ac-placeholder" style="width:54px;height:54px">' + esc(initials) + '</div>';
+      }
+      html += '</div>';
+
+      /* Corps */
+      html += '<div class="promo-body">';
+      html += '<div class="promo-info">';
+      html += '<div class="promo-actor">' + esc(promo.actor) + '</div>';
+      html += '<div class="promo-group">' + esc(GROUPS[promo.actor] || '') + '</div>';
+      html += '<div class="promo-rate">' + esc(promo.taux || '—') + '</div>';
+      html += '<div class="promo-rate-lbl">TAEG</div>';
+      html += '<div class="promo-meta">';
+      if (promo.duree)   html += '<span class="badge b-gray"><i class="ti ti-clock" style="font-size:10px"></i>' + esc(promo.duree) + '</span>';
+      if (promo.montant) html += '<span class="badge b-gray"><i class="ti ti-currency-euro" style="font-size:10px"></i>' + esc(promo.montant) + '</span>';
+      if (promo.dateFin) html += '<span class="badge b-date"><i class="ti ti-calendar" style="font-size:10px"></i>Fin : ' + esc(promo.dateFin) + '</span>';
+      if (promo.canal)   html += '<span class="badge b-gray">' + esc(promo.canal) + '</span>';
+      html += '</div></div>';
+
+      html += '<div class="promo-cta">';
+      html += '<a href="' + esc(lien) + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="ti ti-external-link"></i> Voir la page</a>';
+      html += '</div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    /* Tableau récapitulatif */
+    html += '<div class="section-hd"><i class="ti ti-list"></i> Récapitulatif</div>';
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr><th>Acteur</th><th>Statut</th><th>Taux TAEG</th><th>Date fin</th></tr></thead>';
+    html += '<tbody>';
+    p.acteurs.forEach(function (actor) {
+      var pr = null;
+      promos.forEach(function (x) { if (x.actor === actor) pr = x; });
+      html += '<tr><td><strong>' + esc(actor) + '</strong></td>';
+      if (pr) {
+        html += '<td><span class="badge b-tq">Promo active</span></td>';
+        html += '<td>' + renderCell(pr.taux) + '</td>';
+        html += '<td>' + (pr.dateFin ? '<span class="badge b-date">' + esc(pr.dateFin) + '</span>' : '—') + '</td>';
+      } else {
+        html += '<td><span class="badge b-gray">Standard</span></td><td>—</td><td>—</td>';
+      }
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    return html;
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER — TAUX (CR uniquement)
+  ────────────────────────────────────────── */
+  function getRepRate (actor, bk) {
+    if (!bk) return null;
+    for (var i = 0; i < actor.rows.length; i++) {
+      var v = actor.rows[i][bk];
+      if (v !== null && v !== undefined) return v;
+    }
+    return null;
+  }
+
+  function rateColorCls (rate, usure) {
+    if (rate === null || rate === undefined || !usure) return 'r-nil';
+    var p = rate / usure;
+    if (p >= 0.93) return 'r-red';
+    if (p >= 0.78) return 'r-orange';
+    return 'r-green';
+  }
+
+  function renderRateCell (rate, variation, usure) {
+    var h = '<td style="white-space:nowrap">';
+    if (rate === null || rate === undefined) {
+      h += '<span class="cv-dash">—</span>';
+    } else {
+      h += '<span class="rate-val ' + rateColorCls(rate, usure) + '">' + (rate * 100).toFixed(2) + ' %</span>';
+      if (variation !== null && variation !== undefined) {
+        if (variation > 0.00001)       h += '&nbsp;<span class="var-badge vb-up">↑ +' + (variation * 100).toFixed(2) + ' pts</span>';
+        else if (variation < -0.00001) h += '&nbsp;<span class="var-badge vb-down">↓ ' + (variation * 100).toFixed(2) + ' pts</span>';
+        else                           h += '&nbsp;<span class="var-badge vb-stable">=</span>';
+      }
+    }
+    return h + '</td>';
+  }
+
+  function renderUpctCell (rate, usure) {
+    var h = '<td>';
+    if (rate === null || rate === undefined || !usure) {
+      h += '<span class="cv-dash">—</span>';
+    } else {
+      var pct  = Math.min(1, rate / usure);
+      var pctD = (pct * 100).toFixed(0);
+      var fill = pct >= 0.93 ? '#ef4444' : (pct >= 0.78 ? '#f59e0b' : '#22c55e');
+      var lCls = pct >= 0.93 ? 'upct-red' : (pct >= 0.78 ? 'upct-orange' : 'upct-green');
+      h += '<div class="upct-wrap">';
+      h += '<div class="upct-bar"><div class="upct-fill" style="width:' + (pct * 100).toFixed(1) + '%;background:' + fill + '"></div></div>';
+      h += '<span class="upct-lbl ' + lCls + '">' + pctD + ' %</span>';
+      h += '</div>';
+    }
+    return h + '</td>';
+  }
+
+  function renderSimRows (actors, bk, usureArr, montant, duree) {
+    var usureMap = {};
+    usureArr.forEach(function (u) { usureMap[u.id] = u.taux; });
+    var actualBk = bk;
+    if (montant <= 3000) actualBk = 'b1';
+    else if (montant <= 6000) actualBk = 'b2';
+    else actualBk = 'b3';
+    var usure = usureMap[actualBk];
+    var results = [];
+    actors.forEach(function (actor) {
+      var rate = getRepRate(actor, actualBk);
+      if (rate === null) return;
+      var r = rate / 12;
+      var mens = r < 0.0001 ? montant / duree : montant * r / (1 - Math.pow(1 + r, -duree));
+      results.push({ nom: actor.nom, rate: rate, mens: mens, isUs: actor.isUs });
+    });
+    results.sort(function (a, b) { return a.mens - b.mens; });
+    if (!results.length) return '<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Aucun taux disponible pour cette tranche.</div>';
+    return results.map(function (r) {
+      var cls = rateColorCls(r.rate, usure);
+      return '<div class="sim-row' + (r.isUs ? ' sr-us' : '') + '">' +
+        '<div class="sim-row-name">' + (r.isUs ? '<strong>' : '') + esc(r.nom) + (r.isUs ? '</strong>' : '') + '</div>' +
+        '<span class="rate-val ' + cls + '" style="font-size:10px">' + (r.rate * 100).toFixed(2) + '%</span>' +
+        '<div class="sim-row-mensualite">' + r.mens.toFixed(2) + ' €/m</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderTaux (p) {
+    if (p.id !== 'cr') return '<div class="empty-state"><i class="ti ti-chart-off"></i><div>Données disponibles uniquement pour le Crédit Renouvelable.</div></div>';
+    var d = DATA.taux && DATA.taux.cr;
+    if (!d) return '<div class="empty-state"><i class="ti ti-chart-off"></i><div>Aucune donnée de taux.</div></div>';
+
+    var bk  = state.tauxBracket || 'b1';
+    var cat = state.tauxCat     || 'all';
+    var usureMap = {};
+    d.usure.forEach(function (u) { usureMap[u.id] = u; });
+    var selUsure = usureMap[bk];
+
+    var actors = d.actors.filter(function (a) { return cat === 'all' || a.cat === cat; });
+
+    var html = '';
+
+    /* ── Bande taux d'usure ─ */
+    html += '<div class="usure-strip">';
+    d.usure.forEach(function (u) {
+      var isActive = bk === u.id;
+      html += '<div class="usure-kpi' + (isActive ? ' u-active' : '') + '" onclick="switchTauxBracket(\'' + u.id + '\')">';
+      html += '<div class="usure-kpi-label">Taux d\'usure &nbsp;·&nbsp; ' + esc(u.label) + '</div>';
+      html += '<div class="usure-kpi-rate">' + (u.taux * 100).toFixed(2) + ' %</div>';
+      html += '<div class="usure-kpi-sub"><span class="usure-kpi-badge">Plafond légal</span>Mai 2026' + (isActive ? ' &nbsp;·&nbsp; <strong>Sélectionné</strong>' : '') + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    /* ── Barre de filtres ─ */
+    html += '<div class="taux-filter-bar">';
+    html += '<span class="taux-filter-label">Tranche</span>';
+    html += '<div class="taux-filter-group">';
+    [['b1','0 – 3 000 €'], ['b2','3 000 – 6 000 €'], ['b3','6 000 € +']].forEach(function (br) {
+      html += '<button class="taux-filter-btn' + (bk === br[0] ? ' tf-active' : '') + '" onclick="switchTauxBracket(\'' + br[0] + '\')">' + br[1] + '</button>';
+    });
+    html += '</div>';
+    html += '<span class="taux-filter-label" style="margin-left:8px">Type</span>';
+    html += '<div class="taux-filter-group">';
+    [['all','Tous'], ['bancaire','Bancaires'], ['financiere','Financières']].forEach(function (c) {
+      html += '<button class="taux-filter-btn' + (cat === c[0] ? ' tf-active' : '') + '" onclick="switchTauxCat(\'' + c[0] + '\')">' + c[1] + '</button>';
+    });
+    html += '</div>';
+    html += '<div style="margin-left:auto">';
+    html += '<button class="btn btn-secondary btn-sm" onclick="exportTauxXlsx()"><i class="ti ti-download"></i> Export Excel</button>';
+    html += '</div>';
+    html += '</div>';
+
+    /* ── Grille 2 colonnes : graphique + simulateur ─ */
+    html += '<div class="taux-grid">';
+
+    /* Graphique */
+    html += '<div class="taux-chart-card">';
+    html += '<div class="taux-card-title"><i class="ti ti-chart-bar"></i>Benchmark taux — ' + esc(selUsure ? selUsure.label : '') + '</div>';
+    if (selUsure) {
+      html += '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
+      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#22c55e;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Marge confortable (&lt;78 % usure)</span></div>';
+      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Vigilance (78-93 %)</span></div>';
+      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Proche plafond (&gt;93 %)</span></div>';
+      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#0FA5B4;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Sofinco</span></div>';
+      html += '</div>';
+    }
+    html += '<div class="chart-wrap"><canvas id="taux-bar-chart"></canvas></div>';
+    html += '</div>';
+
+    /* Simulateur */
+    var simM = state.simMontant || 3000;
+    var simD = state.simDuree   || 36;
+    html += '<div class="taux-sim-card">';
+    html += '<div class="taux-card-title"><i class="ti ti-calculator"></i>Simulateur mensualité</div>';
+    html += '<div style="margin-bottom:10px">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+    html += '<span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Montant</span>';
+    html += '<span class="sim-amount" id="sim-montant-lbl">' + simM.toLocaleString('fr-FR') + ' €</span>';
+    html += '</div>';
+    html += '<input type="range" class="sim-slider" id="sim-montant" min="500" max="10000" step="100" value="' + simM + '" oninput="simUpdate()">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>500 €</span><span>|&nbsp;3 000 €&nbsp;|</span><span>6 000 €</span><span>10 000 €</span></div>';
+    html += '</div>';
+    html += '<div style="margin-bottom:12px">';
+    html += '<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Durée</div>';
+    html += '<div class="sim-duree-row">';
+    [12, 24, 36, 48, 60].forEach(function (n) {
+      html += '<button class="sim-duree-btn' + (simD === n ? ' sd-active' : '') + '" onclick="switchSimDuree(' + n + ')">' + n + 'm</button>';
+    });
+    html += '</div>';
+    html += '</div>';
+    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px">Mensualités estimées</div>';
+    html += '<div class="sim-results" id="sim-results">';
+    html += renderSimRows(actors, bk, d.usure, simM, simD);
+    html += '</div>';
+    html += '<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.4">Calcul indicatif par amortissement constant. Hors assurance et frais annexes.</div>';
+    html += '</div>';
+
+    html += '</div>'; /* fin taux-grid */
+
+    /* ── Tableau détaillé ─ */
+    html += '<div class="section-hd" style="margin-bottom:12px"><i class="ti ti-table"></i>Détail par établissement &nbsp;<span style="font-size:11px;font-weight:400;color:var(--muted)">— cliquer sur un en-tête pour trier</span></div>';
+
+    var usB1 = usureMap.b1 ? usureMap.b1.taux : null;
+    var usB2 = usureMap.b2 ? usureMap.b2.taux : null;
+    var usB3 = usureMap.b3 ? usureMap.b3.taux : null;
+
+    /* Tri acteurs — catégories toujours regroupées, tri secondaire par colonne */
+    var sorted = actors.slice().sort(function (a, b) {
+      /* 1. Bancaires avant sociétés financières */
+      if (a.cat !== b.cat) return a.cat === 'bancaire' ? -1 : 1;
+      /* 2. Sofinco toujours en bas de son groupe */
+      if (a.isUs !== b.isUs) return a.isUs ? 1 : -1;
+      /* 3. Tri selon la colonne choisie */
+      if (tauxSort.col === 'nom') return tauxSort.dir * a.nom.localeCompare(b.nom, 'fr');
+      var ra = getRepRate(a, tauxSort.col);
+      var rb = getRepRate(b, tauxSort.col);
+      var va = ra !== null ? ra : (tauxSort.dir > 0 ? 999 : -1);
+      var vb = rb !== null ? rb : (tauxSort.dir > 0 ? 999 : -1);
+      return tauxSort.dir * (va - vb);
+    });
+
+    function thSort (col, lbl) {
+      var arr = tauxSort.col === col ? (tauxSort.dir > 0 ? ' ↑' : ' ↓') : '';
+      return '<th style="cursor:pointer;white-space:nowrap" onclick="sortTaux(\'' + col + '\')">' + lbl + '<span style="color:var(--tq);font-size:10px">' + arr + '</span></th>';
+    }
+
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr>';
+    html += thSort('nom', 'Établissement');
+    html += '<th>Produit</th><th>Sous-tranche</th>';
+    html += thSort('b1', '0 – 3 000 €');
+    html += '<th style="white-space:nowrap">% plafond</th>';
+    html += thSort('b2', '3 000 – 6 000 €');
+    html += '<th style="white-space:nowrap">% plafond</th>';
+    html += thSort('b3', '&gt; 6 000 €');
+    html += '<th style="white-space:nowrap">% plafond</th>';
+    html += '<th>Note</th>';
+    html += '</tr></thead><tbody>';
+
+    var prevCat = null;
+    sorted.forEach(function (actor) {
+      if (actor.cat !== prevCat) {
+        prevCat = actor.cat;
+        var lbl = actor.cat === 'bancaire' ? 'Établissements bancaires' : 'Sociétés financières';
+        html += '<tr class="grp-sep"><td colspan="10">' + lbl + '</td></tr>';
+      }
+      var isUs = actor.isUs;
+      var rc   = actor.rows.length;
+      actor.rows.forEach(function (row, ri) {
+        html += '<tr' + (isUs ? ' class="us-row"' : '') + '>';
+        if (ri === 0) {
+          html += '<td rowspan="' + rc + '" style="font-weight:600;vertical-align:middle">';
+          html += esc(actor.nom);
+          if (isUs) html += '&nbsp;<span class="badge b-tq" style="font-size:9px">Nous</span>';
+          html += '</td>';
+          html += '<td rowspan="' + rc + '" style="font-size:12px;color:var(--muted);vertical-align:middle">' + esc(actor.produit) + '</td>';
+        }
+        html += '<td style="font-size:12px;color:var(--muted)">' + esc(row.tranche || '—') + '</td>';
+        html += renderRateCell(row.b1, row.b1v, usB1);
+        html += renderUpctCell(row.b1, usB1);
+        html += renderRateCell(row.b2, row.b2v, usB2);
+        html += renderUpctCell(row.b2, usB2);
+        html += renderRateCell(row.b3, row.b3v, usB3);
+        html += renderUpctCell(row.b3, usB3);
+        if (ri === 0) {
+          html += '<td rowspan="' + rc + '" style="font-size:11px;color:var(--muted);vertical-align:middle;max-width:180px;white-space:normal">' + esc(actor.comment || '') + '</td>';
+        }
+        html += '</tr>';
+      });
+    });
+
+    html += '</tbody></table></div>';
+    html += '<div class="bg-note mt-3">Source : Observatoire de la concurrence (Banque de France) — taux standards mai 2026. Taux d\'usure : plafond légal au-delà duquel tout prêt est interdit. NA = non applicable.</div>';
+
+    setTimeout(function () { initTauxChart(actors, bk, d.usure); }, 0);
+    return html;
+  }
+
+  /* ──────────────────────────────────────────
+     CHART TAUX (Chart.js)
+  ────────────────────────────────────────── */
+  function initTauxChart (actors, bk, usureArr) {
+    var canvas = document.getElementById('taux-bar-chart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (_tauxChartInst) { _tauxChartInst.destroy(); _tauxChartInst = null; }
+
+    var usureMap = {};
+    usureArr.forEach(function (u) { usureMap[u.id] = u.taux; });
+    var usureTaux = usureMap[bk];
+
+    /* Un point par acteur (taux représentatif) */
+    var points = [];
+    actors.forEach(function (actor) {
+      var rate = getRepRate(actor, bk);
+      if (rate !== null) {
+        points.push({ nom: actor.nom + (actor.rows.length > 1 ? ' *' : ''), rate: rate, isUs: actor.isUs });
+      }
+    });
+    points.sort(function (a, b) { return b.rate - a.rate; });
+
+    var labels = points.map(function (d) { return d.nom; });
+    var rates  = points.map(function (d) { return +(d.rate * 100).toFixed(2); });
+    var bgColors = points.map(function (d) {
+      if (d.isUs) return 'rgba(15,165,180,0.82)';
+      if (!usureTaux) return 'rgba(107,114,128,0.65)';
+      var p = d.rate / usureTaux;
+      return p >= 0.93 ? 'rgba(239,68,68,0.75)' : p >= 0.78 ? 'rgba(245,158,11,0.75)' : 'rgba(34,197,94,0.75)';
+    });
+
+    var xMax = usureTaux ? Math.ceil(usureTaux * 100 * 1.06 * 2) / 2 : 26;
+
+    /* Plugin inline pour tracer la ligne d'usure */
+    var usureLinePlugin = {
+      id: 'usureLine',
+      afterDraw: function (chart) {
+        if (!usureTaux) return;
+        var xAxis = chart.scales.x;
+        var yAxis = chart.scales.y;
+        var ctx   = chart.ctx;
+        var xPos  = xAxis.getPixelForValue(usureTaux * 100);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(xPos, yAxis.top);
+        ctx.lineTo(xPos, yAxis.bottom);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth   = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle  = '#ef4444';
+        ctx.font       = 'bold 10px Inter, sans-serif';
+        ctx.textAlign  = 'left';
+        ctx.fillText('Plafond ' + (usureTaux * 100).toFixed(2) + '%', xPos + 4, yAxis.top + 14);
+        ctx.restore();
+      }
+    };
+
+    _tauxChartInst = new Chart(canvas, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Taux mai 2026', data: rates, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false }] },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) { return ' ' + ctx.raw + ' %'; },
+              afterLabel: function (ctx) {
+                if (!usureTaux) return '';
+                return ' (' + (ctx.raw / (usureTaux * 100) * 100).toFixed(0) + ' % du plafond)';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { min: 0, max: xMax,
+               ticks: { callback: function (v) { return v + '%'; }, font: { size: 11 } },
+               grid: { color: 'rgba(0,0,0,0.05)' } },
+          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+        }
+      },
+      plugins: [usureLinePlugin]
+    });
+  }
+
+  /* ──────────────────────────────────────────
+     TAUX — CONTRÔLES INTERACTIFS
+  ────────────────────────────────────────── */
+  function switchTauxBracket (bk) {
+    state.tauxBracket = bk;
+    renderProduct();
+  }
+
+  function switchTauxCat (cat) {
+    state.tauxCat = cat;
+    renderProduct();
+  }
+
+  function sortTaux (col) {
+    tauxSort.dir = tauxSort.col === col ? -tauxSort.dir : (col === 'nom' ? 1 : -1);
+    tauxSort.col = col;
+    renderProduct();
+  }
+
+  function simUpdate () {
+    var slider = document.getElementById('sim-montant');
+    if (!slider) return;
+    state.simMontant = parseInt(slider.value, 10);
+    var lbl = document.getElementById('sim-montant-lbl');
+    if (lbl) lbl.textContent = state.simMontant.toLocaleString('fr-FR') + ' €';
+    var d = DATA.taux && DATA.taux.cr;
+    if (!d) return;
+    var actors = d.actors.filter(function (a) { return state.tauxCat === 'all' || a.cat === state.tauxCat; });
+    var res = document.getElementById('sim-results');
+    if (res) res.innerHTML = renderSimRows(actors, state.tauxBracket, d.usure, state.simMontant, state.simDuree || 36);
+  }
+
+  function switchSimDuree (n) {
+    state.simDuree = n;
+    renderProduct();
+  }
+
+  /* ──────────────────────────────────────────
+     EXPORT EXCEL TAUX
+  ────────────────────────────────────────── */
+  function exportTauxXlsx () {
+    var d = DATA.taux && DATA.taux.cr;
+    if (!d) return;
+
+    var rows = [];
+    rows.push(['Benchmark Taux Crédit Renouvelable', '', '', '', 'Source : Observatoire de la concurrence', '', '', '', '', '', 'Mai 2026']);
+    rows.push([]);
+    rows.push(['', '', '', '', '0 € – 3 000 €', '', '', '3 000 – 6 000 €', '', '', 'Plus de 6 000 €', '', '']);
+    rows.push(['Établissement', 'Produit', 'Catégorie', 'Sous-tranche',
+      'Avr. 2026', 'Mai 2026', 'Variation',
+      'Avr. 2026', 'Mai 2026', 'Variation',
+      'Avr. 2026', 'Mai 2026', 'Variation', 'Note']);
+
+    /* Ligne taux d'usure */
+    var usureMap = {};
+    d.usure.forEach(function (u) { usureMap[u.id] = u.taux; });
+    rows.push(['TAUX D\'USURE', 'Banque de France', 'Référence', '',
+      usureMap.b1, usureMap.b1, 0,
+      usureMap.b2, usureMap.b2, 0,
+      usureMap.b3, usureMap.b3, 0, '']);
+    rows.push([]);
+
+    d.actors.forEach(function (actor) {
+      actor.rows.forEach(function (row, ri) {
+        rows.push([
+          ri === 0 ? actor.nom : '',
+          ri === 0 ? actor.produit : '',
+          ri === 0 ? (actor.cat === 'bancaire' ? 'Banque' : 'Soc. financière') : '',
+          row.tranche || '',
+          row.b1 !== null ? +(((row.b1 || 0) - (row.b1v || 0)).toFixed(6)) : null,
+          row.b1 !== null ? row.b1 : null,
+          row.b1 !== null ? (row.b1v || 0) : null,
+          row.b2 !== null ? +(((row.b2 || 0) - (row.b2v || 0)).toFixed(6)) : null,
+          row.b2 !== null ? row.b2 : null,
+          row.b2 !== null ? (row.b2v || 0) : null,
+          row.b3 !== null ? +(((row.b3 || 0) - (row.b3v || 0)).toFixed(6)) : null,
+          row.b3 !== null ? row.b3 : null,
+          row.b3 !== null ? (row.b3v || 0) : null,
+          ri === 0 ? (actor.comment || '') : ''
+        ]);
+      });
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+    /* Largeurs colonnes */
+    ws['!cols'] = [22,26,16,20, 10,10,10, 12,12,10, 12,12,10, 40].map(function (w) { return { wch: w }; });
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Taux CR');
+    XLSX.writeFile(wb, 'benchmark-taux-cr-' + d.updatedAt + '.xlsx');
+  }
+
+  /* ──────────────────────────────────────────
+     MODALE DÉTAIL LIGNE
+  ────────────────────────────────────────── */
+  function openDetail (productId, critere) {
+    var p = productById(productId);
+    if (!p) return;
+    var row = null;
+    p.sections.forEach(function (sec) {
+      sec.rows.forEach(function (r) { if (r.critere === critere) row = r; });
+    });
+    if (!row) return;
+
+    $('detail-title').textContent = critere;
+    var html = '<div class="detail-grid">';
+    p.acteurs.forEach(function (actor) {
+      var isUs = actor === 'Sofinco';
+      html += '<div class="detail-ac' + (isUs ? ' is-us' : '') + '">';
+      html += '<div class="detail-ac-name">' + esc(actor) + (isUs ? ' (Nous)' : '') + '</div>';
+      html += '<div class="detail-ac-val">' + renderCell(row.values[actor]) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    $('detail-body').innerHTML = html;
+    $('modal-detail').classList.add('show');
+  }
+
+  /* ──────────────────────────────────────────
+     FICHE ACTEUR
+  ────────────────────────────────────────── */
+  var FICHE_SECTIONS = {
+    pb: [
+      { label: 'Offre', keys: ["Nom de l'offre", "Nombre d'offres", "Approche / Cible"] },
+      { label: 'Montants & durées', keys: ['Montant min', 'Montant max', 'Durée min', 'Durée max'] },
+      { label: 'Conditions commerciales', keys: ['Taux promo', 'Durée promo', 'Fin de promo', 'Frais de dossier'] },
+      { label: 'Mise à disposition', keys: ['Délai', 'Type déblocage', 'Déblocage conditionné'] },
+      { label: 'Flexibilité', keys: ['Pause paiement', 'Modulation échéances', 'Remboursement anticipé'] },
+      { label: 'Parcours', keys: ['Justificatifs', 'Temps souscription', 'Réponse de principe'] }
+    ],
+    cr: [
+      { label: 'Offre', keys: ["Nom de l'offre", 'Approche', 'Usage'] },
+      { label: 'Paramètres', keys: ['Montant min réserve', 'Montant max réserve', 'Durées', 'Montant min utilisation'] },
+      { label: 'Tarification', keys: ['Grille de taux', 'Frais de dossier'] },
+      { label: 'Carte', keys: ['Carte associée', 'Nom carte', 'Cotisation carte'] },
+      { label: 'Flexibilité', keys: ['Report mensualité', 'Nombre reports/an', 'Remboursement anticipé', 'Modulation mensualité'] },
+      { label: 'Services', keys: ['Programme fidélité', 'Arbitrage post-achat'] }
+    ],
+    nxcb: [
+      { label: 'Offre', keys: ["Nom de l'offre", 'Cible', 'Usage'] },
+      { label: 'Structure', keys: ['Fractionnements', 'Apport initial', 'Carte éligible'] },
+      { label: 'Montants', keys: ['Montant min achat', 'Montant max achat'] },
+      { label: 'Tarification', keys: ['Sans frais client', 'TAEG', 'Frais retard'] },
+      { label: 'Distribution', keys: ['Disponible web', 'Disponible magasin', 'Enseignes partenaires'] },
+      { label: 'Parcours', keys: ['Parcours adhésion', 'Signature', 'Application'] }
+    ]
+  };
+
+  function openActorFiche (productId, actor) {
+    var p = productById(productId);
+    if (!p) return;
+
+    var isUs    = actor === 'Sofinco';
+    var domain  = DOMAINS[actor] || '';
+    var siteUrl = domain ? 'https://www.' + domain : '#';
+    var prodUrl = (PROD_URLS[productId] && PROD_URLS[productId][actor]) || siteUrl;
+    var initials = String(actor).slice(0, 2).toUpperCase();
+
+    /* Promo pour cet acteur */
+    var promo = null;
+    (DATA.promos[productId] || []).forEach(function (pr) { if (pr.actor === actor) promo = pr; });
+
+    /* Helpers pour récupérer une valeur dans les sections */
+    function getVal (critere) {
+      var v = '';
+      p.sections.forEach(function (sec) {
+        sec.rows.forEach(function (row) {
+          if (row.critere === critere && row.values[actor] != null) v = row.values[actor];
+        });
+      });
+      return v;
+    }
+
+    var html = '';
+
+    /* En-tête */
+    html += '<div class="fiche-hd">';
+    if (domain) {
+      var furl = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+      html += '<img src="' + esc(furl) + '" class="fiche-favicon" alt="' + esc(actor) + '"' +
+        ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        '<div class="fiche-placeholder" style="display:none">' + esc(initials) + '</div>';
+    } else {
+      html += '<div class="fiche-placeholder">' + esc(initials) + '</div>';
+    }
+    html += '<div>';
+    html += '<div class="fiche-actor-name">' + esc(actor);
+    if (isUs) html += ' <span class="badge b-tq" style="font-size:10px">Nous</span>';
+    html += '</div>';
+    html += '<div class="fiche-actor-group">' + esc(GROUPS[actor] || '') + '</div>';
+    html += '<div class="fiche-links">';
+    html += '<a href="' + esc(siteUrl) + '" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="ti ti-external-link"></i>Site officiel</a>';
+    html += '<a href="' + esc(prodUrl) + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="ti ti-external-link"></i>Page produit</a>';
+    html += '</div></div></div>';
+
+    /* Bloc promo si disponible */
+    if (promo) {
+      html += '<div class="fiche-promo">';
+      html += '<div><div class="fiche-promo-rate">' + esc(promo.taux || '—') + '</div>';
+      html += '<div style="font-size:10px;color:var(--muted);margin-top:2px">TAEG promotionnel</div></div>';
+      html += '<div class="fiche-promo-detail">';
+      if (promo.duree)   html += '<div><i class="ti ti-clock" style="font-size:11px"></i> ' + esc(promo.duree) + '</div>';
+      if (promo.montant) html += '<div><i class="ti ti-currency-euro" style="font-size:11px"></i> ' + esc(promo.montant) + '</div>';
+      if (promo.dateFin) html += '<div><span class="badge b-date" style="font-size:10px"><i class="ti ti-calendar" style="font-size:10px"></i> Fin : ' + esc(promo.dateFin) + '</span></div>';
+      html += '</div></div>';
+    }
+
+    /* Sections de critères */
+    var sections = FICHE_SECTIONS[productId] || [];
+    html += '<div class="fiche-sections">';
+    sections.forEach(function (sec) {
+      var rows = sec.keys.map(function (k) { return { critere: k, val: getVal(k) }; })
+                         .filter(function (r) { return r.val !== ''; });
+      if (!rows.length) return;
+      html += '<div>';
+      html += '<div class="fiche-sec-title">' + esc(sec.label) + '</div>';
+      html += '<div class="fiche-rows">';
+      rows.forEach(function (r) {
+        html += '<div class="fiche-row">';
+        html += '<span class="fiche-critere">' + esc(r.critere) + '</span>';
+        html += '<span class="fiche-val">' + renderCell(r.val) + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    $('detail-title').textContent = actor + ' — ' + p.label;
+    $('detail-body').innerHTML = html;
+    $('modal-detail').classList.add('show');
+  }
+
+  /* ──────────────────────────────────────────
+     NAVIGATION & TRANSITIONS
+  ────────────────────────────────────────── */
+  function navigate (id) {
+    fade(function () {
+      if (id === 'home' || !id) {
+        state.view = 'home'; state.productId = null;
+      } else {
+        state.view = 'product'; state.productId = id; state.tab = 'tableau';
+      }
+      render();
+    });
+  }
+
+  function switchTab (tabId) {
+    state.tab = tabId;
+    renderProduct();
+  }
+
+  function toggleCompare (productId, actor) {
+    var sel = (state.compareActors[productId] || ['Sofinco']).slice();
+    var idx = sel.indexOf(actor);
+    if (idx >= 0) sel.splice(idx, 1); else sel.push(actor);
+    state.compareActors[productId] = sel;
+    renderProduct();
+  }
+
+  function fade (fn) {
+    var c = $('content');
+    c.classList.add('fading');
+    setTimeout(function () { fn(); c.classList.remove('fading'); }, 180);
+  }
+
+  /* ──────────────────────────────────────────
+     RENDER PRINCIPAL
+  ────────────────────────────────────────── */
+  function render () {
+    renderNav();
+    var vh = $('view-home'), vp = $('view-product');
+    if (state.view === 'home') {
+      vh.classList.add('active'); vp.classList.remove('active');
+      renderHome();
+    } else {
+      vh.classList.remove('active'); vp.classList.add('active');
+      renderProduct();
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     INIT
+  ────────────────────────────────────────── */
+  function init () {
+    /* Navigation latérale */
+    document.querySelectorAll('[data-nav]').forEach(function (el) {
+      el.addEventListener('click', function () { navigate(el.getAttribute('data-nav')); });
+    });
+
+    /* Burger */
+    $('burger').addEventListener('click', function () {
+      $('sidebar').classList.toggle('open');
+    });
+    document.addEventListener('click', function (e) {
+      var sb = $('sidebar');
+      if (sb.classList.contains('open') && !sb.contains(e.target) && e.target !== $('burger')) {
+        sb.classList.remove('open');
+      }
+    });
+
+    /* Modal import */
+    $('btn-import').addEventListener('click', function () { $('modal-import').classList.add('show'); });
+    $('import-close').addEventListener('click', function () { $('modal-import').classList.remove('show'); });
+    $('modal-import').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+
+    var zone = $('drop-zone'), fin = $('file-input');
+    zone.addEventListener('click', function () { fin.click(); });
+    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag'); });
+    zone.addEventListener('dragleave', function () { zone.classList.remove('drag'); });
+    zone.addEventListener('drop', function (e) {
+      e.preventDefault(); zone.classList.remove('drag');
+      var f = e.dataTransfer.files[0]; if (f) readXlsx(f);
+    });
+    fin.addEventListener('change', function () {
+      var f = fin.files[0]; if (f) readXlsx(f); fin.value = '';
+    });
+
+    /* Modal courriel */
+    $('btn-mail').addEventListener('click', function () {
+      $('mail-body').value = mailText();
+      $('modal-mail').classList.add('show');
+    });
+    $('mail-close').addEventListener('click', function () { $('modal-mail').classList.remove('show'); });
+    $('modal-mail').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+    $('mail-copy').addEventListener('click', function () {
+      var ta = $('mail-body'); ta.select();
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value);
+      else document.execCommand('copy');
+    });
+
+    /* Modal détail */
+    $('detail-close').addEventListener('click', function () { $('modal-detail').classList.remove('show'); });
+    $('modal-detail').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+
+    /* Fusion données initiales (SEED) si produit vide */
+    SEED.produits.forEach(function (sp) {
+      var p = productById(sp.id);
+      if (p && !p.sections.length) {
+        p.acteurs   = sp.acteurs.slice();
+        p.sections  = sp.sections;
+        p.updatedAt = sp.updatedAt;
+      }
+    });
+    if (!Object.keys(DATA.promos).length)          DATA.promos = SEED.promos;
+    if (!Object.keys(DATA.differenciateurs).length) DATA.differenciateurs = SEED.differenciateurs;
+    DATA.taux = { cr: TAUX_CR_DATA };
+
+    render();
+  }
+
+  /* Exposer pour les handlers inline */
+  window.navigate          = navigate;
+  window.switchTab         = switchTab;
+  window.toggleCompare     = toggleCompare;
+  window.openDetail        = openDetail;
+  window.openActorFiche    = openActorFiche;
+  window.switchTauxBracket = switchTauxBracket;
+  window.switchTauxCat     = switchTauxCat;
+  window.sortTaux          = sortTaux;
+  window.simUpdate         = simUpdate;
+  window.switchSimDuree    = switchSimDuree;
+  window.exportTauxXlsx   = exportTauxXlsx;
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
