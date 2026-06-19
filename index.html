@@ -163,15 +163,21 @@
     .b-red { background: #FEE2E2; color: var(--red); }
 
     /* ── HOME ─────────────────────────────────── */
-    .home-hd { margin-bottom: 24px; }
-    .home-title { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; color: var(--text); }
-    .home-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .home-banner {
+      background: linear-gradient(135deg, rgba(15,165,180,0.12) 0%, var(--bg) 100%);
+      border-radius: var(--r);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .home-title { font-size: 33px; font-weight: 800; letter-spacing: -0.3px; color: #085041; }
+    .home-subtitle { font-size: 15px; color: #1F8A92; margin-top: 6px; max-width: 520px; }
 
     .shortcuts-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 32px; }
     .shortcut-card {
       background: var(--surface);
       border-radius: var(--r);
       border: 1px solid var(--border);
+      border-left: 3px solid var(--sc-color);
       box-shadow: var(--sh);
       padding: 18px 10px;
       text-align: center;
@@ -183,16 +189,41 @@
       width: 42px; height: 42px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; font-size: 19px;
       margin: 0 auto 10px;
+      color: var(--sc-color);
     }
     .shortcut-label { font-size: 12px; font-weight: 600; line-height: 1.3; }
+
+    .sc-pb    { --sc-color: var(--tq); border-left-color: var(--tq); }
+    .sc-cr    { --sc-color: var(--green); border-left-color: var(--green); }
+    .sc-nxcb  { --sc-color: var(--red); border-left-color: var(--red); }
+    .sc-rac   { --sc-color: #378ADD; border-left-color: #378ADD; }
+    .sc-carte { --sc-color: #534AB7; border-left-color: #534AB7; }
+    .sc-pb    .shortcut-icon { background: rgba(15,165,180,0.12); }
+    .sc-cr    .shortcut-icon { background: rgba(0,75,60,0.12); }
+    .sc-nxcb  .shortcut-icon { background: rgba(225,45,45,0.12); }
+    .sc-rac   .shortcut-icon { background: rgba(55,138,221,0.12); }
+    .sc-carte .shortcut-icon { background: rgba(83,74,183,0.12); }
 
     .impact-badge {
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
       padding: 3px 8px; border-radius: 99px; flex-shrink: 0; white-space: nowrap;
     }
-    .impact-surveiller { background: rgba(245,158,11,0.14); color: var(--orange); }
-    .impact-menace { background: rgba(225,45,45,0.12); color: var(--red); }
+    .impact-surveiller { background: #FEF3E0; color: #B45309; }
+    .impact-menace { background: #FDE6E6; color: #A11D1D; }
     .impact-neutre { background: #F3F4F6; color: var(--muted); }
+
+    .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
+    .week-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh);
+      padding: 4px 18px;
+    }
+    .week-stat { padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .week-stat:last-child { border-bottom: none; }
+    .week-num { font-size: 28px; font-weight: 700; line-height: 1; }
+    .week-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
     .counter-card {
       background: var(--surface);
@@ -587,6 +618,7 @@
       .products-grid { grid-template-columns: 1fr; }
       .shortcuts-grid { grid-template-columns: repeat(2,1fr); }
       .actors-grid { grid-template-columns: repeat(2,1fr); }
+      .home-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .actors-grid { grid-template-columns: 1fr; }
@@ -941,6 +973,8 @@
     carte: ['Carte', '']
   };
   var IMPACT_CLS = { 'à surveiller': 'impact-surveiller', 'menace directe': 'impact-menace', 'neutre': 'impact-neutre' };
+  var IMPACT_BORDER = { 'à surveiller': '#F59E0B', 'menace directe': '#A11D1D', 'neutre': 'transparent' };
+  var SHORTCUT_CLS = { pb: 'sc-pb', cr: 'sc-cr', nxcb: 'sc-nxcb', rac: 'sc-rac', carte: 'sc-carte' };
 
   /* ──────────────────────────────────────────
      DONNÉES
@@ -2198,7 +2232,7 @@
     if (el) el.classList.add('active');
 
     var p = state.productId ? productById(state.productId) : null;
-    $('topbar-title').textContent = state.view === 'actus' ? 'Actualités' : (p ? p.label : 'Accueil');
+    $('topbar-title').textContent = state.view === 'home' ? '' : (state.view === 'actus' ? 'Actualités' : (p ? p.label : ''));
     $('topbar-date').textContent = fmtDate(today());
   }
 
@@ -2208,8 +2242,8 @@
   function renderHome () {
     var html = '';
 
-    /* En-tête */
-    html += '<div class="home-hd">';
+    /* Bandeau titre */
+    html += '<div class="home-banner">';
     html += '<div class="home-title">SofincoEdge</div>';
     html += '<div class="home-subtitle">Suivre en continu l\'offre et les mouvements de la concurrence</div>';
     html += '</div>';
@@ -2218,26 +2252,49 @@
     html += '<div class="shortcuts-grid">';
     DATA.produits.forEach(function (p) {
       var lines = HOME_SHORTCUT_LINES[p.id] || [p.label, ''];
-      html += '<div class="shortcut-card" onclick="navigate(\'' + p.id + '\')">';
-      html += '<div class="shortcut-icon ' + P_IC_CLS[p.id] + '"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
+      html += '<div class="shortcut-card ' + (SHORTCUT_CLS[p.id] || '') + '" onclick="navigate(\'' + p.id + '\')">';
+      html += '<div class="shortcut-icon"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
       html += '<div class="shortcut-label">' + esc(lines[0]) + (lines[1] ? '<br>' + esc(lines[1]) : '') + '</div>';
       html += '</div>';
     });
     html += '</div>';
 
+    var all = actuList();
+    var sorted = all.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 5);
+    var watchCount = all.filter(function (e) {
+      return (e.impact === 'à surveiller' || e.impact === 'menace directe') && actuWithinPeriode(e.date, '7');
+    }).length;
+    var actorSet = {};
+    DATA.produits.forEach(function (p) { p.acteurs.forEach(function (a) { actorSet[a] = 1; }); });
+    var actorCount = Object.keys(actorSet).length;
+    var productCount = DATA.produits.length;
+
+    html += '<div class="home-grid">';
+
     /* Dernières actualités */
+    html += '<div>';
     html += '<div class="section-hd"><i class="ti ti-bell"></i> Dernières actualités';
     html += '<button class="btn btn-secondary" style="margin-left:auto;font-size:12px" onclick="navigate(\'actus\')">Voir tout <i class="ti ti-arrow-right"></i></button>';
     html += '</div>';
-
-    var all = actuList();
-    var sorted = all.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 5);
     html += '<div class="news-feed">';
     if (!sorted.length) {
       html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité</div></div>';
     } else {
       sorted.forEach(function (e) { html += renderActuMiniItem(e, all.indexOf(e)); });
     }
+    html += '</div>';
+    html += '</div>';
+
+    /* Cette semaine */
+    html += '<div>';
+    html += '<div class="section-hd"><i class="ti ti-calendar-stats"></i> Cette semaine</div>';
+    html += '<div class="week-card">';
+    html += '<div class="week-stat"><div class="week-num" style="color:' + (watchCount ? 'var(--red)' : 'var(--text)') + '">' + watchCount + '</div><div class="week-label">actu' + (watchCount !== 1 ? 's' : '') + ' à surveiller / menace directe</div></div>';
+    html += '<div class="week-stat"><div class="week-num" style="color:var(--tq)">' + actorCount + '</div><div class="week-label">acteurs suivis</div></div>';
+    html += '<div class="week-stat"><div class="week-num">' + productCount + '</div><div class="week-label">produits suivis</div></div>';
+    html += '</div>';
+    html += '</div>';
+
     html += '</div>';
 
     $('view-home').innerHTML = html;
@@ -2578,7 +2635,8 @@
   }
 
   function renderActuMiniItem (e, idx) {
-    var html = '<div class="news-item" onclick="openActuDetail(' + idx + ')">';
+    var borderColor = IMPACT_BORDER[e.impact] || 'transparent';
+    var html = '<div class="news-item" style="border-left:3px solid ' + borderColor + '" onclick="openActuDetail(' + idx + ')">';
     html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
     html += '<div class="news-body">';
     html += '<div class="news-meta">' + esc(e.acteur) + ' &nbsp;·&nbsp; ' +
