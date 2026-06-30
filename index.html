@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  SofincoEdge — source de données Supabase
+  Configurer supabase-config.js : url + anonKey (Dashboard Supabase → Project Settings → API)
+  Migrations : supabase/migrations/  |  Seed : npm run build:seed && npm run seed:supabase
+-->
 <html lang="fr">
 <head>
   <meta charset="utf-8">
@@ -10,6 +15,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="js/supabase-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -46,6 +54,22 @@
       background-attachment: fixed;
     }
     body { display: flex; min-height: 100vh; }
+
+    #data-loading, #data-error {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(247,249,250,0.92); backdrop-filter: blur(4px);
+    }
+    #data-error { display: none; flex-direction: column; gap: 12px; padding: 24px; text-align: center; }
+    .data-load-box {
+      background: var(--surface); border-radius: var(--r); padding: 28px 36px;
+      box-shadow: var(--sh-md); display: flex; align-items: center; gap: 12px;
+      font-size: 14px; font-weight: 500; color: var(--navy);
+    }
+    .data-load-box i { font-size: 22px; color: var(--tq-ink); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .data-err-title { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .data-err-msg { font-size: 13px; color: var(--muted); max-width: 480px; line-height: 1.5; }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .stagger-item { animation: fadeInUp 380ms ease both; }
@@ -933,6 +957,9 @@
     <span class="topbar-date" id="topbar-date"></span>
   </header>
 
+  <div id="data-loading"><div class="data-load-box"><i class="ti ti-loader-2"></i> Chargement des données…</div></div>
+  <div id="data-error"><div class="data-err-title"><i class="ti ti-plug-connected-x"></i> Connexion Supabase impossible</div><div class="data-err-msg" id="data-error-msg"></div></div>
+
   <div id="content">
     <div id="view-home" class="view active"></div>
     <div id="view-product" class="view"></div>
@@ -1004,37 +1031,11 @@
   /* ──────────────────────────────────────────
      CONSTANTES
   ────────────────────────────────────────── */
-  var GROUPS = {
-    Sofinco: 'CA Consumer Finance',
-    Cetelem: 'BNP Paribas Personal Finance',
-    Cofidis: 'Crédit Mutuel',
-    Oney: 'Groupe BPCE',
-    Franfinance: 'Société Générale',
-    FLOA: 'BNP Paribas',
-    Younited: 'Fintech indépendante',
-    Boursobank: 'Société Générale',
-    Klarna: 'Fintech suédoise',
-    Alma: 'Fintech française',
-    'La Banque Postale': 'Groupe La Banque Postale',
-    'Carrefour Banque': 'Groupe Carrefour',
-    Revolut: 'Fintech britannique'
-  };
-
-  var DOMAINS = {
-    Sofinco: 'sofinco.fr',
-    Cetelem: 'cetelem.fr',
-    Cofidis: 'cofidis.fr',
-    Oney: 'oney.fr',
-    Franfinance: 'franfinance.fr',
-    FLOA: 'floa.fr',
-    Younited: 'younited-credit.com',
-    Boursobank: 'boursobank.com',
-    Klarna: 'klarna.com',
-    Alma: 'getalma.eu',
-    'La Banque Postale': 'labanquepostale.fr',
-    'Carrefour Banque': 'carrefour-banque.fr',
-    Revolut: 'revolut.com'
-  };
+  var GROUPS = {};
+  var DOMAINS = {};
+  var actorIdByNom = {};
+  var sbClient = null;
+  var dataReady = false;
 
   var PROD_URLS = {
     pb: {
@@ -1098,23 +1099,7 @@
      DONNÉES
   ────────────────────────────────────────── */
   var DATA = {
-    produits: [
-      { id: 'pb',   label: 'Prêt Personnel',      shortLabel: 'PP', excelSheet: 'PB',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Franfinance','FLOA','Younited','Boursobank'],
-        sections: [], updatedAt: null },
-      { id: 'cr',   label: 'Crédit Renouvelable',  shortLabel: 'CR', excelSheet: 'CR',
-        acteurs: ['Sofinco','Cetelem','Cofidis','FLOA','Oney'],
-        sections: [], updatedAt: null },
-      { id: 'nxcb', label: 'Paiement Fractionné',  shortLabel: 'Nx', excelSheet: 'NxCB',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','Klarna','Alma'],
-        sections: [], updatedAt: null },
-      { id: 'rac',   label: 'Rachat de Crédit',    shortLabel: 'RAC', excelSheet: 'RAC',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','La Banque Postale','Carrefour Banque'],
-        sections: [], updatedAt: null },
-      { id: 'carte', label: 'Carte',               shortLabel: 'Carte', excelSheet: 'CARTE',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Younited','Alma','Klarna','Revolut','Boursobank'],
-        sections: [], updatedAt: null }
-    ],
+    produits: [],
     promos: {},
     differenciateurs: {},
     tendances: {},
@@ -1122,960 +1107,44 @@
     actualites: []
   };
 
-  /* ──────────────────────────────────────────
-     DONNÉES INITIALES (SEED)
-  ────────────────────────────────────────── */
-  var SEED = {
-    produits: [
-      /* ── PRÊT PERSONNEL ─────────────────── */
-      {
-        id: 'pb',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Franfinance','FLOA','Younited','Boursobank'],
-        updatedAt: '2026-05-07',
-        sections: [
-          {
-            title: 'Offre & positionnement',
-            rows: [
-              { critere: "Nom de l'offre", values: {
-                  Sofinco: "Prêt Personnel Sofinco", Cetelem: "Prêt Personnel Cetelem",
-                  Cofidis: "Prêt Personnel Cofidis", Oney: "Prêt Personnel Oney",
-                  Franfinance: "Prêt personnel Franfinance", FLOA: "Prêt Personnel Classique FLOA",
-                  Younited: "Prêt Personnel Younited", Boursobank: "Prêt Personnel Boursobank" }},
-              { critere: "Nombre d'offres", values: {
-                  Sofinco: "1 générique + déclinaisons projet", Cetelem: "1 générique + déclinaisons projet",
-                  Cofidis: "1 générique + déclinaisons projet", Oney: "1 générique multi-projets",
-                  Franfinance: "1 générique + déclinaisons projet", FLOA: "1 générique multi-projets",
-                  Younited: "1 générique multi-projets", Boursobank: "1 générique projet personnel" }},
-              { critere: "Approche / Cible", values: {
-                  Sofinco: "Tous projets usage libre", Cetelem: "Tous projets voyage véhicule imprévus",
-                  Cofidis: "Tous projets auto travaux déco voyage trésorerie",
-                  Oney: "Majeur résidant en France revenus réguliers",
-                  Franfinance: "Tous projets amélioration habitat mobilier",
-                  FLOA: "Usage libre auto voyage",
-                  Younited: "Tous projets trésorerie travaux auto loisirs",
-                  Boursobank: "Projets personnels hors immobilier — client BoursoBank 3 mois min" }}
-            ]
-          },
-          {
-            title: 'Produit',
-            rows: [
-              { critere: "Montant min", values: {
-                  Sofinco: "3 001€", Cetelem: "500€", Cofidis: "500€",
-                  Oney: "3 000€ (6 000€ Auto/Travaux)", Franfinance: "1 500€",
-                  FLOA: "3 001€", Younited: "1 000€", Boursobank: "3 000€" }},
-              { critere: "Montant max", values: {
-                  Sofinco: "75 000€", Cetelem: "75 000€", Cofidis: "35 000€",
-                  Oney: "75 000€ (50 000€ en pratique)", Franfinance: "21 500€",
-                  FLOA: "6 000€", Younited: "60 000€", Boursobank: "30 000€" }},
-              { critere: "Durée min", values: {
-                  Sofinco: "12 mois", Cetelem: "7 mois", Cofidis: "6 mois",
-                  Oney: "4 mois", Franfinance: "12 mois",
-                  FLOA: "6 mois", Younited: "6 mois", Boursobank: "12 mois" }},
-              { critere: "Durée max", values: {
-                  Sofinco: "120 mois", Cetelem: "84 mois", Cofidis: "84 mois",
-                  Oney: "60 mois (84 mois Auto/Travaux)", Franfinance: "60 mois",
-                  FLOA: "84 mois", Younited: "84 mois", Boursobank: "60 mois" }},
-              { critere: "Grille de taux", values: {
-                  Sofinco: "À faire", Cetelem: "À faire", Cofidis: "À faire",
-                  Oney: "À faire", Franfinance: "À faire",
-                  FLOA: "À faire", Younited: "À faire", Boursobank: "À faire" }},
-              { critere: "Assurance", values: {
-                  Sofinco: "Emprunteur facultative", Cetelem: "Emprunteur facultative",
-                  Cofidis: "Emprunteur facultative", Oney: "Emprunteur facultative",
-                  Franfinance: "Emprunteur facultative", FLOA: "Emprunteur facultative",
-                  Younited: "Emprunteur facultative", Boursobank: "Emprunteur facultative" }}
-            ]
-          },
-          {
-            title: 'Parcours & accès',
-            rows: [
-              { critere: "Justificatifs", values: {
-                  Sofinco: "CNI + justif. domicile + avis imposition + RIB",
-                  Cetelem: "CNI + justif. revenus + RIB + justif. domicile <6 mois",
-                  Cofidis: "≤3 000€ : CNI + justif. domicile / >3 000€ : + justif. revenus",
-                  Oney: "CNI + justif. domicile + avis imposition + RIB",
-                  Franfinance: "CNI + justif. domicile + RIB + justif. revenus + tableaux amortissement",
-                  FLOA: "CNI + RIB + justif. domicile + bulletin salaire + avis imposition",
-                  Younited: "CNI + justif. domicile + 3 bulletins salaire + avis imposition",
-                  Boursobank: "Parcours Flash : analyse auto si revenus BoursoBank 3 mois+ sinon avis imposition" }},
-              { critere: "Simulation en ligne", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Franfinance: "Oui", FLOA: "Oui", Younited: "Oui", Boursobank: "Oui" }},
-              { critere: "Temps souscription", values: {
-                  Sofinco: "N.I.", Cetelem: "8 min", Cofidis: "N.I.", Oney: "N.I.",
-                  Franfinance: "N.I.", FLOA: "Quelques minutes", Younited: "Quelques minutes",
-                  Boursobank: "Flash : quelques secondes" }},
-              { critere: "Réponse de principe", values: {
-                  Sofinco: "Immédiate", Cetelem: "Immédiate", Cofidis: "Immédiate",
-                  Oney: "Quasi immédiate", Franfinance: "Immédiate",
-                  FLOA: "Quasi immédiate", Younited: "Immédiate", Boursobank: "Immédiate Flash" }}
-            ]
-          },
-          {
-            title: 'Conditions commerciales',
-            rows: [
-              { critere: "Taux promo", values: {
-                  Sofinco: "4,50% TAEG", Cetelem: "4,50% TAEG", Cofidis: "4,70% TAEG",
-                  Oney: "4,70% TAEG", Franfinance: "4,89% TAEG",
-                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
-              { critere: "Durée promo", values: {
-                  Sofinco: "13-48 mois / 15-20k€", Cetelem: "48 mois / 14k€",
-                  Cofidis: "60 mois / 10-15k€", Oney: "54-60 mois / 15-21 599€",
-                  Franfinance: "48 mois / 15k€",
-                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
-              { critere: "Fin de promo", values: {
-                  Sofinco: "20/05/2026", Cetelem: "01/06/2026", Cofidis: "17/05/2026",
-                  Oney: "11/05/2026", Franfinance: "14/05/2026",
-                  FLOA: "N.I.", Younited: "N.I.", Boursobank: "N.I." }},
-              { critere: "Frais de dossier", values: {
-                  Sofinco: "0€", Cetelem: "0€", Cofidis: "0€", Oney: "0€",
-                  Franfinance: "0€", FLOA: "0€", Younited: "0€", Boursobank: "0€" }}
-            ]
-          },
-          {
-            title: 'Mise à disposition des fonds',
-            rows: [
-              { critere: "Délai", values: {
-                  Sofinco: "J+7 hors WE/JF", Cetelem: "J+8 option puis 48h",
-                  Cofidis: "J+8 min", Oney: "J+8 min",
-                  Franfinance: "J+8 option / J+15 défaut", FLOA: "J+15 défaut / J+8 express",
-                  Younited: "48h ouvrées post délai légal", Boursobank: "7j possible" }},
-              { critere: "Type déblocage", values: {
-                  Sofinco: "Une fois par virement", Cetelem: "Une fois par virement",
-                  Cofidis: "Une fois par virement", Oney: "Une fois par virement",
-                  Franfinance: "Une fois par virement", FLOA: "Une fois par virement",
-                  Younited: "Une fois par virement", Boursobank: "Une fois par virement" }},
-              { critere: "Déblocage conditionné", values: {
-                  Sofinco: "Non", Cetelem: "Non", Cofidis: "Non", Oney: "Non",
-                  Franfinance: "Non", FLOA: "Non", Younited: "Non", Boursobank: "Non" }}
-            ]
-          },
-          {
-            title: 'Flexibilité',
-            rows: [
-              { critere: "Pause paiement", values: {
-                  Sofinco: "2x/an dès 6 mois gratuit", Cetelem: "2x/an frais 4%",
-                  Cofidis: "2x/an frais 4%", Oney: "2x/an gratuit",
-                  Franfinance: "2x/an via conseiller", FLOA: "2x/an frais 4%",
-                  Younited: "N.I.", Boursobank: "1-3 éch/12 mois dès 7e mois gratuit" }},
-              { critere: "Modulation échéances", values: {
-                  Sofinco: "H+B min 60% mensualité",
-                  Cetelem: "H max 3x / B max -30% min 50€ sans frais dès 6 mois",
-                  Cofidis: "H+B via espace client", Oney: "N.I.",
-                  Franfinance: "H max 3x / B max -30% min 50€ via conseiller dès 6 mois",
-                  FLOA: "H max 3x / B max -30% min 50€ dès 6 mois",
-                  Younited: "N.I.", Boursobank: "H+B payant 30€" }},
-              { critere: "Remboursement anticipé", values: {
-                  Sofinco: "IRA si >10 000€ rachat concurrence",
-                  Cetelem: "IRA légale si rachat >10 000€ gratuit fonds propres",
-                  Cofidis: "Gratuit fonds propres IRA légale si rachat >10 000€",
-                  Oney: "IRA légale si rachat >10 000€ gratuit fonds propres",
-                  Franfinance: "IRA légale si rachat >10 000€ gratuit fonds propres",
-                  FLOA: "IRA légale si rachat >10 000€ gratuit fonds propres",
-                  Younited: "Attestation possible frais possibles",
-                  Boursobank: "IRA si rachat >10 000€ gratuit fonds propres" }}
-            ]
-          }
-        ]
-      },
+  function applyLoadedData (result) {
+    Object.keys(GROUPS).forEach(function (k) { delete GROUPS[k]; });
+    Object.keys(DOMAINS).forEach(function (k) { delete DOMAINS[k]; });
+    Object.assign(GROUPS, result.groups);
+    Object.assign(DOMAINS, result.domains);
+    actorIdByNom = result.idByNom;
+    DATA.produits = result.data.produits;
+    DATA.promos = result.data.promos;
+    DATA.differenciateurs = result.data.differenciateurs;
+    DATA.tendances = result.data.tendances;
+    DATA.taux = result.data.taux;
+    DATA.actualites = result.data.actualites;
+    dataReady = true;
+  }
 
-      /* ── CRÉDIT RENOUVELABLE ─────────────── */
-      {
-        id: 'cr',
-        acteurs: ['Sofinco','Cofidis','Cetelem','FLOA','Oney'],
-        updatedAt: '2026-05-07',
-        sections: [
-          {
-            title: 'Offre & positionnement',
-            rows: [
-              { critere: "Nom de l'offre", values: {
-                  Cofidis: "Accessio", Cetelem: "Cpay", FLOA: "Prêt dispo",
-                  Oney: "N.I.", Sofinco: "Virement+" }},
-              { critere: "Approche", values: {
-                  Cofidis: "Grand public petits projets",
-                  Cetelem: "Grand public achats ponctuels imprévus",
-                  FLOA: "Grand public digital-first",
-                  Oney: "Grand public trésorerie sans justificatif",
-                  Sofinco: "Grand public" }},
-              { critere: "Usage", values: {
-                  Cofidis: "Usage libre trésorerie flexible",
-                  Cetelem: "Usage libre une ou plusieurs dépenses",
-                  FLOA: "Trésorerie flexible utilisation totale ou partielle",
-                  Oney: "Virement sur compte usage libre",
-                  Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Paramètres produit',
-            rows: [
-              { critere: "Montant min réserve", values: {
-                  Cofidis: "500€", Cetelem: "500€", FLOA: "500€",
-                  Oney: "50€", Sofinco: "1 501€" }},
-              { critere: "Montant max réserve", values: {
-                  Cofidis: "6 000€", Cetelem: "4 500-6 000€", FLOA: "6 000€",
-                  Oney: "3 000€", Sofinco: "10 000€" }},
-              { critere: "Durées", values: {
-                  Cofidis: "36/60 mois", Cetelem: "36/60 mois", FLOA: "36/60 mois",
-                  Oney: "36/60 mois", Sofinco: "N.I." }},
-              { critere: "Montant min utilisation", values: {
-                  Cofidis: "15€", Cetelem: "15,24€", FLOA: "N.I.",
-                  Oney: "15€", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Taux et coûts',
-            rows: [
-              { critere: "Grille de taux", values: {
-                  Cofidis: "15,86%-23,25%", Cetelem: "15,87%-23,56%", FLOA: "N.I.",
-                  Oney: "≤6 000€:23,30% / 3 000-6 000€:15,87% / >6 000€:8,67%",
-                  Sofinco: "150-6 000€ TAEG 7,90% / 1 500-6 000€ TAEG 9,80%" }},
-              { critere: "Frais de dossier", values: {
-                  Cofidis: "Aucun", Cetelem: "N.I.", FLOA: "Aucun",
-                  Oney: "N.I.", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Assurance',
-            rows: [
-              { critere: "Assurance proposée", values: {
-                  Cofidis: "Oui facultative", Cetelem: "Oui facultative", FLOA: "Oui facultative",
-                  Oney: "Oui facultative", Sofinco: "Oui facultative" }},
-              { critere: "Type assurance", values: {
-                  Cofidis: "Décès PTIA IIT perte emploi + maladies redoutées hospitalisation divorce",
-                  Cetelem: "N.I.", FLOA: "N.I.", Oney: "N.I.", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Remboursement',
-            rows: [
-              { critere: "Nombre de barèmes", values: {
-                  Cofidis: "4-5 selon Sémaphore", Cetelem: "N.I.", FLOA: "N.I.",
-                  Oney: "N.I.", Sofinco: "N.I." }},
-              { critere: "Changement de barème", values: {
-                  Cofidis: "5 barèmes standard + 4 barèmes durée choisie",
-                  Cetelem: "N.I.",
-                  FLOA: "Oui si changement offre ou évolution encours",
-                  Oney: "N.I.", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Flexibilité',
-            rows: [
-              { critere: "Report mensualité", values: {
-                  Cofidis: "Oui", Cetelem: "Non", FLOA: "Oui",
-                  Oney: "Non", Sofinco: "Oui" }},
-              { critere: "Nombre reports/an", values: {
-                  Cofidis: "N.I.", Cetelem: "Max 2x/an", FLOA: "Max 2x/an",
-                  Oney: "N.I.", Sofinco: "Max 2x/an" }},
-              { critere: "Remboursement anticipé", values: {
-                  Cofidis: "Oui", Cetelem: "Non", FLOA: "Oui",
-                  Oney: "Non", Sofinco: "Non" }},
-              { critere: "Indemnités défaut", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "8% (4% si report)",
-                  Oney: "N.I.", Sofinco: "N.I." }},
-              { critere: "Augmentation capital", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Oui page dédiée site",
-                  Oney: "N.I.", Sofinco: "N.I." }},
-              { critere: "Modulation mensualité", values: {
-                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
-                  Oney: "Oui", Sofinco: "Non" }}
-            ]
-          },
-          {
-            title: 'Parcours & souscription',
-            rows: [
-              { critere: "Parcours", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Web + app 100% digital",
-                  Oney: "N.I.", Sofinco: "Web + app + agence + téléphone" }},
-              { critere: "Simulation en ligne", values: {
-                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
-                  Oney: "Non", Sofinco: "Oui" }},
-              { critere: "Signature électronique", values: {
-                  Cofidis: "Non", Cetelem: "Non", FLOA: "Oui",
-                  Oney: "Non", Sofinco: "Oui" }},
-              { critere: "Temps souscription", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "15 min",
-                  Oney: "N.I.", Sofinco: "N.I." }},
-              { critere: "Réponse immédiate", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Oui première réponse immédiate",
-                  Oney: "N.I.", Sofinco: "N.I." }},
-              { critere: "Co-emprunteur", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "N.I.",
-                  Oney: "Non", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Mise à disposition',
-            rows: [
-              { critere: "Délai", values: {
-                  Cofidis: "1-3 jours ouvrés SEPA / J+8 pour augmentation",
-                  Cetelem: "Après rétractation selon utilisation",
-                  FLOA: "À partir du J+8 / financement ~48h",
-                  Oney: "Sous 48h", Sofinco: "N.I." }},
-              { critere: "Mode activation", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Via espace client",
-                  Oney: "N.I.", Sofinco: "N.I." }}
-            ]
-          },
-          {
-            title: 'Carte & Usage',
-            rows: [
-              { critere: "Carte associée", values: {
-                  Cofidis: "Oui", Cetelem: "Oui", FLOA: "Oui",
-                  Oney: "Non", Sofinco: "Oui" }},
-              { critere: "Nom carte", values: {
-                  Cofidis: "Carte 4 étoiles + Cofidis Pay", Cetelem: "Cpay",
-                  FLOA: "Carte Cdiscount + carte Gold", Oney: "N.I.",
-                  Sofinco: "Carte Visa Sofinco + Visa Premier + Partenaires" }},
-              { critere: "Cotisation carte", values: {
-                  Cofidis: "Gratuite", Cetelem: "14,90€/an",
-                  FLOA: "Cdiscount 1,25€/mois / Gold 4,50€/mois",
-                  Oney: "N.I.", Sofinco: "Variable selon partenaires" }}
-            ]
-          },
-          {
-            title: 'Services & fidélisation',
-            rows: [
-              { critere: "Programme fidélité", values: {
-                  Cofidis: "N.I.", Cetelem: "N.I.", FLOA: "Cashback mis en avant",
-                  Oney: "N.I.", Sofinco: "Programme Sofinco Avantages" }},
-              { critere: "Arbitrage post-achat", values: {
-                  Cofidis: "Oui via carte/Cofidis Pay", Cetelem: "Oui post-paiement Cpay",
-                  FLOA: "Oui changer d'avis après l'achat",
-                  Oney: "Oui Transfert comptant/crédit", Sofinco: "N.I." }}
-            ]
-          }
-        ]
-      },
+  function showDataError (msg) {
+    var loading = $('data-loading');
+    var err = $('data-error');
+    if (loading) loading.style.display = 'none';
+    if (err) {
+      err.style.display = 'flex';
+      var el = $('data-error-msg');
+      if (el) el.textContent = msg;
+    }
+  }
 
-      /* ── PAIEMENT FRACTIONNÉ ─────────────── */
-      {
-        id: 'nxcb',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','Klarna','Alma'],
-        updatedAt: '2026-05-07',
-        sections: [
-          {
-            title: 'Offre & positionnement',
-            rows: [
-              { critere: "Nom de l'offre", values: {
-                  Sofinco: "3xCB 4xCB", Cetelem: "4xCB Pledg N fois CB",
-                  Cofidis: "3xCB 4xCB Pay 3x 4x", Oney: "Oney 3x 4x",
-                  FLOA: "FLOA 3x 4x", Klarna: "Paiement en 3 fois",
-                  Alma: "Paiement en 2/3/4 fois" }},
-              { critere: "Cible", values: {
-                  Sofinco: "Particuliers marchands partenaires web et magasin",
-                  Cetelem: "Particuliers enseignes partenaires Cpay/Cetelem",
-                  Cofidis: "Particuliers marchands partenaires web et magasin",
-                  Oney: "Particuliers marchands partenaires web et magasin",
-                  FLOA: "Particuliers marchands partenaires web et magasin",
-                  Klarna: "Consommateurs marchands éligibles Klarna",
-                  Alma: "Consommateurs marchands Alma" }},
-              { critere: "Usage", values: {
-                  Sofinco: "Étaler achat ponctuel booster conversion",
-                  Cetelem: "Paiement fractionné + logique carte/CR/fidélité",
-                  Cofidis: "3 ou 4 échéances parcours simple rapide",
-                  Oney: "Paiement fractionné",
-                  FLOA: "Fractionner achat partenaire réponse immédiate",
-                  Klarna: "3 mensualités sans frais",
-                  Alma: "Paiement fractionné rapide moins d'une minute" }}
-            ]
-          },
-          {
-            title: 'Structure de paiement',
-            rows: [
-              { critere: "Fractionnements", values: {
-                  Sofinco: "2, 3, 4", Cetelem: "Variable", Cofidis: "3, 4",
-                  Oney: "3, 4", FLOA: "3, 4", Klarna: "3", Alma: "2, 3, 4" }},
-              { critere: "Échéances fixes", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
-                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
-              { critere: "Apport initial", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.",
-                  Oney: "1er paiement à l'achat", FLOA: "1ère échéance à l'achat",
-                  Klarna: "1er paiement à l'achat", Alma: "N.I." }},
-              { critere: "Carte éligible", values: {
-                  Sofinco: "Visa/Mastercard/CB",
-                  Cetelem: "CB/Visa/Mastercard selon enseigne",
-                  Cofidis: "CB/Visa/Mastercard",
-                  Oney: "Visa/Mastercard/CB exclusions selon offre",
-                  FLOA: "Visa/Mastercard/CB valides jusqu'à dernière échéance",
-                  Klarna: "Compte Klarna + carte liée",
-                  Alma: "Carte bancaire éligible" }}
-            ]
-          },
-          {
-            title: 'Montants',
-            rows: [
-              { critere: "Montant min achat", values: {
-                  Sofinco: "100€", Cetelem: "60€", Cofidis: "100€",
-                  Oney: "100€", FLOA: "50€", Klarna: "N.I.", Alma: "N.I." }},
-              { critere: "Montant max achat", values: {
-                  Sofinco: "3 000€", Cetelem: "16 000€", Cofidis: "2 300€",
-                  Oney: "6 000€", FLOA: "6 000€", Klarna: "N.I.", Alma: "N.I." }}
-            ]
-          },
-          {
-            title: 'Distribution',
-            rows: [
-              { critere: "Disponible web", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
-                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
-              { critere: "Disponible magasin", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
-                  Oney: "Oui", FLOA: "Oui", Klarna: "Plutôt web/app", Alma: "Oui" }},
-              { critere: "Enseignes partenaires", values: {
-                  Sofinco: "Fnac Darty Castorama Ikea La Redoute Printemps",
-                  Cetelem: "But Conforama E.Leclerc Ford Airbnb",
-                  Cofidis: "Feu Vert Cuisinella Afflelou Huawei Rue du Commerce IKKS",
-                  Oney: "Boulanger Cdiscount Electro Dépôt Leroy Merlin Back Market",
-                  FLOA: "Casino Cdiscount Easycash Veepee Bricomarché Galerie Lafayette Samsung",
-                  Klarna: "Amazon Sephora Temu JD Sport Carrefour SHEIN Fnac Vinted",
-                  Alma: "La Redoute Maison du Monde SNCF Zadig&Voltaire Showroom Privé Jardiland" }}
-            ]
-          },
-          {
-            title: 'Tarification client',
-            rows: [
-              { critere: "Sans frais client", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui",
-                  Oney: "Oui", FLOA: "Oui", Klarna: "Oui", Alma: "Oui" }},
-              { critere: "Mode calcul frais", values: {
-                  Sofinco: "Variable commerçant ou client", Cetelem: "N.I.",
-                  Cofidis: "Variable commerçant ou client",
-                  Oney: "1,67% en 3x plafond 30€ / 2,50% en 4x plafond 60€",
-                  FLOA: "Variable selon partenaire",
-                  Klarna: "Pas d'intérêt sur 3 fois frais retard si impayé",
-                  Alma: "N.I." }},
-              { critere: "TAEG", values: {
-                  Sofinco: "TAEG fixe si frais refacturés client", Cetelem: "N.I.",
-                  Cofidis: "N.I.",
-                  Oney: "22,59% en 3x / 22,63% en 4x",
-                  FLOA: "TAEG max 23,45% sur 3X",
-                  Klarna: "Pas de TAEG sur 3 fois sans frais",
-                  Alma: "N.I." }},
-              { critere: "Frais retard", values: {
-                  Sofinco: "Oui selon CG", Cetelem: "N.I.", Cofidis: "Oui selon CG",
-                  Oney: "Oui selon CG",
-                  FLOA: "8% capital dû ou échéances impayées",
-                  Klarna: "Frais retard possibles",
-                  Alma: "Oui selon CG" }}
-            ]
-          },
-          {
-            title: 'Parcours client',
-            rows: [
-              { critere: "Parcours adhésion", values: {
-                  Sofinco: "Choix 2x/3x/4x saisie infos réponse immédiate",
-                  Cetelem: "Variable selon enseigne/carte",
-                  Cofidis: "Formulaire en ligne validation échéancier",
-                  Oney: "Choix checkout CB réponse immédiate",
-                  FLOA: "Choix 3X/4X paiement validation immédiate",
-                  Klarna: "Compte/app Klarna + carte liée",
-                  Alma: "Parcours digital court checkout" }},
-              { critere: "PJ demandées", values: {
-                  Sofinco: "N.I.",
-                  Cetelem: "Variable selon enseigne / 3x4x web souvent sans PJ",
-                  Cofidis: "Formulaire + carte bancaire",
-                  Oney: "Aucune PJ standard",
-                  FLOA: "Aucune en général / pièce identité possible contrôle fraude",
-                  Klarna: "N.I.", Alma: "N.I." }},
-              { critere: "Signature", values: {
-                  Sofinco: "Acceptation digitale", Cetelem: "Variable selon parcours",
-                  Cofidis: "Signature électronique", Oney: "Acceptation digitale",
-                  FLOA: "Acceptation digitale",
-                  Klarna: "Acceptation digitale/app", Alma: "Acceptation digitale" }},
-              { critere: "Application", values: {
-                  Sofinco: "Pas nécessaire",
-                  Cetelem: "Oui univers cartes/Cpay",
-                  Cofidis: "Oui espace client mais 3x/4x surtout checkout",
-                  Oney: "Oui environnement Compte Oney",
-                  FLOA: "Pas d'app requise pour 3X/4X marchand",
-                  Klarna: "Oui app centrale",
-                  Alma: "Oui espace client Alma" }}
-            ]
-          },
-          {
-            title: 'Assurance & services',
-            rows: [
-              { critere: "Assurance", values: {
-                  Sofinco: "Non mise en avant NxCB court",
-                  Cetelem: "Possible via univers crédit/cartes",
-                  Cofidis: "Non spécifique au 3xCB/4xCB",
-                  Oney: "Sans assurance sur 3x4x standard",
-                  FLOA: "N.I.", Klarna: "N.I.", Alma: "N.I." }},
-              { critere: "Programme fidélité", values: {
-                  Sofinco: "Pas natif NxCB court",
-                  Cetelem: "Avantages Cpay/cashback via carte",
-                  Cofidis: "Avantages possibles via carte",
-                  Oney: "Pas natif 3x4x court",
-                  FLOA: "Mon Cashback by FLOA",
-                  Klarna: "App shopping services paiement flexibles",
-                  Alma: "Suivi paiement anticipé options gestion" }}
-            ]
-          }
-        ]
-      },
-
-      /* ── RACHAT DE CRÉDIT ─────────────────── */
-      {
-        id: 'rac',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','FLOA','La Banque Postale','Carrefour Banque'],
-        updatedAt: '2026-06-01',
-        sections: [
-          {
-            title: 'Offre',
-            rows: [
-              { critere: "Nom de l'offre", values: {
-                  Sofinco: "Rachat de Crédits Sofinco", Cetelem: "Rachat de Crédits Cetelem",
-                  Cofidis: "Rachat de Crédit", Oney: "Rachat de Crédits Oney",
-                  FLOA: "Regroupement de Crédits", 'La Banque Postale': "Regroupement de Crédits",
-                  'Carrefour Banque': "Rachat de Crédits" }},
-              { critere: "Type de RAC", values: {
-                  Sofinco: "Conso", Cetelem: "Conso", Cofidis: "Conso",
-                  Oney: "Conso / mix", FLOA: "Conso",
-                  'La Banque Postale': "Conso", 'Carrefour Banque': "Conso / mix" }}
-            ]
-          },
-          {
-            title: 'Distribution',
-            rows: [
-              { critere: "Canaux de distribution", values: {
-                  Sofinco: "Centre d'appels, internet", Cetelem: "Centre d'appels, internet",
-                  Cofidis: "Centre d'appels, internet", Oney: "Centre d'appels",
-                  FLOA: "Internet", 'La Banque Postale': "Agence, centre d'appels, internet",
-                  'Carrefour Banque': "Internet" }},
-              { critere: "Simulation en ligne", values: {
-                  Sofinco: "Oui", Cetelem: "N.I.", Cofidis: "Oui", Oney: "Non",
-                  FLOA: "Oui", 'La Banque Postale': "Non", 'Carrefour Banque': "Non" }},
-              { critere: "Parcours 100% digital", values: {
-                  Sofinco: "Non", Cetelem: "Non", Cofidis: "Non", Oney: "Non",
-                  FLOA: "N.I.", 'La Banque Postale': "Non", 'Carrefour Banque': "Non" }}
-            ]
-          },
-          {
-            title: 'Souscription',
-            rows: [
-              { critere: "Pièces justificatives demandées", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.",
-                  Cofidis: "Liste détaillée selon montant (identité, RIB, domicile, revenus, tableaux d'amortissement)",
-                  Oney: "N.I.", FLOA: "N.I.",
-                  'La Banque Postale': "Identité, RIB, justificatif domicile, tableaux d'amortissement, relevés de crédits renouvelables",
-                  'Carrefour Banque': "Identité, RIB, facture téléphone/énergie, 3 derniers bulletins salaire, avis imposition, relevés de comptes, tableaux d'amortissement" }},
-              { critere: "Signature électronique", values: {
-                  Sofinco: "N.I.", Cetelem: "Oui", Cofidis: "Non", Oney: "Non",
-                  FLOA: "Non", 'La Banque Postale': "Non", 'Carrefour Banque': "Non" }},
-              { critere: "Temps de traitement estimé", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "Étude définitive sous 8 jours ouvrés",
-                  Oney: "N.I.", FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Délai de rétractation", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "14 jours", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "14 jours", 'Carrefour Banque': "N.I." }}
-            ]
-          },
-          {
-            title: 'Conditions préalables',
-            rows: [
-              { critere: "Obligation ouverture compte", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Obligation domiciliation revenus", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }}
-            ]
-          },
-          {
-            title: 'Montant & durée',
-            rows: [
-              { critere: "Montant min financé", values: {
-                  Sofinco: "20 000€", Cetelem: "1 500€", Cofidis: "3 000€", Oney: "10 000€",
-                  FLOA: "N.I.", 'La Banque Postale': "1 500€", 'Carrefour Banque': "1 500€" }},
-              { critere: "Montant max financé", values: {
-                  Sofinco: "100 000€", Cetelem: "250 000€", Cofidis: "80 000€", Oney: "75 000€",
-                  FLOA: "N.I.", 'La Banque Postale': "75 000€", 'Carrefour Banque': "150 000€" }},
-              { critere: "Durée min", values: {
-                  Sofinco: "36 mois", Cetelem: "12 mois", Cofidis: "12 mois", Oney: "12 mois",
-                  FLOA: "N.I.", 'La Banque Postale': "12 mois", 'Carrefour Banque': "60 mois" }},
-              { critere: "Durée max", values: {
-                  Sofinco: "120 mois", Cetelem: "180 mois", Cofidis: "144 mois", Oney: "120 mois",
-                  FLOA: "N.I.", 'La Banque Postale': "144 mois", 'Carrefour Banque': "120 mois" }}
-            ]
-          },
-          {
-            title: 'Tarification',
-            rows: [
-              { critere: "TAEG", values: {
-                  Sofinco: "8,65% TAEG fixe (exemple public)", Cetelem: "N.I.",
-                  Cofidis: "8,65% à 23,54% TAEG fixe", Oney: "8,67% TAEG fixe (exemple public)",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Frais de dossier", values: {
-                  Sofinco: "Oui", Cetelem: "N.I.", Cofidis: "Non", Oney: "N.I.",
-                  FLOA: "Oui", 'La Banque Postale': "Oui", 'Carrefour Banque': "Non" }},
-              { critere: "Type de frais de dossier", values: {
-                  Sofinco: "1% plafonné", Cetelem: "N.I.", Cofidis: "0", Oney: "N.I.",
-                  FLOA: "1% plafonné", 'La Banque Postale': "1% plafonné", 'Carrefour Banque': "0" }},
-              { critere: "Montant min frais", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "0€", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "70€", 'Carrefour Banque': "0€" }},
-              { critere: "Montant max frais", values: {
-                  Sofinco: "150€", Cetelem: "N.I.", Cofidis: "0€", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "250€", 'Carrefour Banque': "0€" }},
-              { critere: "Tarification préférentielle (web/client existant)", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "0€ annoncé sur le web", 'La Banque Postale': "N.I.", 'Carrefour Banque': "0€" }}
-            ]
-          },
-          {
-            title: 'Mise à disposition des fonds',
-            rows: [
-              { critere: "Délai de mise à dispo", values: {
-                  Sofinco: "À l'issue du délai légal de rétractation", Cetelem: "À l'issue du délai légal de rétractation",
-                  Cofidis: "À l'issue du délai légal de rétractation", Oney: "À l'issue du délai légal de rétractation",
-                  FLOA: "N.I.", 'La Banque Postale': "À l'issue du délai légal de rétractation",
-                  'Carrefour Banque': "À l'issue du délai légal de rétractation" }},
-              { critere: "Déblocage en une fois ou fractionné", values: {
-                  Sofinco: "En une fois", Cetelem: "En une fois", Cofidis: "En une fois", Oney: "En une fois",
-                  FLOA: "En une fois", 'La Banque Postale': "En une fois", 'Carrefour Banque': "En une fois" }},
-              { critere: "Conditions de déblocage", values: {
-                  Sofinco: "Après acceptation et fin du délai de rétractation", Cetelem: "Après acceptation et fin du délai de rétractation",
-                  Cofidis: "Après acceptation et fin du délai de rétractation", Oney: "Après acceptation et fin du délai de rétractation",
-                  FLOA: "Après acceptation et fin du délai de rétractation", 'La Banque Postale': "Après acceptation et fin du délai de rétractation",
-                  'Carrefour Banque': "Après acceptation et fin du délai de rétractation" }}
-            ]
-          },
-          {
-            title: 'Fonctionnement produit',
-            rows: [
-              { critere: "Type de dettes regroupées", values: {
-                  Sofinco: "Conso", Cetelem: "Conso", Cofidis: "Conso", Oney: "Conso / immo / mix",
-                  FLOA: "Conso", 'La Banque Postale': "Conso", 'Carrefour Banque': "Conso / immo / mix" }},
-              { critere: "Trésorerie complémentaire possible", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "Oui",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Part de trésorerie autorisée", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }}
-            ]
-          },
-          {
-            title: 'Flexibilité',
-            rows: [
-              { critere: "Choix date d'échéance", values: {
-                  Sofinco: "N.I.", Cetelem: "Oui", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "Non" }},
-              { critere: "Report de mensualité", values: {
-                  Sofinco: "N.I.", Cetelem: "Oui", Cofidis: "N.I.", Oney: "Oui",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "Oui" }},
-              { critere: "Nombre de reports possibles", values: {
-                  Sofinco: "N.I.", Cetelem: "Jusqu'à 2/an", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "2/an sans garantie ; 5 sur la durée avec garantie" }},
-              { critere: "Conditions de reports", values: {
-                  Sofinco: "N.I.", Cetelem: "À jour des remboursements ; 4% de frais", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "À jour des remboursements ; accord prêteur ; 4% de frais selon cas" }},
-              { critere: "Modulation des échéances", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "N.I.", Oney: "Oui mais caractéristiques non identifiées",
-                  FLOA: "Oui mais caractéristiques non identifiées", 'La Banque Postale': "Oui mais caractéristiques non identifiées",
-                  'Carrefour Banque': "N.I." }}
-            ]
-          },
-          {
-            title: 'Risque & incidents',
-            rows: [
-              { critere: "Indemnités en cas de défaut", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Conditions en cas d'impayé", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }}
-            ]
-          },
-          {
-            title: 'Fidélisation',
-            rows: [
-              { critere: "Offre dédiée clients existants", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }},
-              { critere: "Avantage fidélité", values: {
-                  Sofinco: "N.I.", Cetelem: "N.I.", Cofidis: "N.I.", Oney: "N.I.",
-                  FLOA: "N.I.", 'La Banque Postale': "N.I.", 'Carrefour Banque': "N.I." }}
-            ]
-          }
-        ]
-      },
-
-      /* ── CARTE ────────────────────────────── */
-      {
-        id: 'carte',
-        acteurs: ['Sofinco','Cetelem','Cofidis','Oney','Younited','Alma','Klarna','Revolut','Boursobank'],
-        updatedAt: '2026-06-01',
-        sections: [
-          {
-            title: '',
-            rows: [
-              { critere: "Nom carte", values: {
-                  Sofinco: "PURE", Cetelem: "Cetelem Pay", Cofidis: "4 étoiles", Oney: "Carte bancaire",
-                  Younited: "Helios", Alma: "Pas de carte", Klarna: "Core", Revolut: "Plus", Boursobank: "Ultim" }},
-              { critere: "Carte Bancaire / Crédit", values: {
-                  Sofinco: "Crédit", Cetelem: "Crédit", Cofidis: "Crédit", Oney: "Crédit",
-                  Younited: "Crédit", Alma: "-", Klarna: "Crédit", Revolut: "Débit", Boursobank: "Débit" }},
-              { critere: "Visa / Mastercard", values: {
-                  Sofinco: "MASTERCARD", Cetelem: "Mastercard", Cofidis: "Visa", Oney: "Visa",
-                  Younited: "Visa", Alma: "-", Klarna: "Visa", Revolut: "N.I.", Boursobank: "Visa" }},
-              { critere: "Débit différé / immédiat", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Oui", Alma: "-", Klarna: "N.I.", Revolut: "Oui", Boursobank: "Oui" }},
-              { critere: "Plafond paiement en €", values: {
-                  Sofinco: "15 000€ (sous réserve du capital attribué)", Cetelem: "Plafond personnalisé",
-                  Cofidis: "4 500€", Oney: "Plafond personnalisé",
-                  Younited: "Jusqu'à 2 000€ par jour, 10 000€ par mois", Alma: "-",
-                  Klarna: "Plafond personnalisé", Revolut: "N.I.", Boursobank: "20 000€ sur 30j glissants" }},
-              { critere: "Plafond retrait en €", values: {
-                  Sofinco: "500€ / 7J glissants", Cetelem: "300€ par jour et 600€ / 7j glissants",
-                  Cofidis: "500€ sur 7 jours glissants ou 1 500€ par mois", Oney: "Plafond personnalisé",
-                  Younited: "Jusqu'à 500€ par jour, 1 500€ par mois", Alma: "-",
-                  Klarna: "Non", Revolut: "200€ par mois glissant sans frais",
-                  Boursobank: "2 000€ / 7j glissants" }},
-              { critere: "Plafond paiement devises", values: {
-                  Sofinco: "N.I.", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Oui", Alma: "-", Klarna: "Oui", Revolut: "N.I.", Boursobank: "Oui" }},
-              { critere: "Plafond retrait devises", values: {
-                  Sofinco: "500€ / 7J glissants", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Oui", Alma: "-", Klarna: "Oui", Revolut: "N.I.",
-                  Boursobank: "3 retraits gratuits/mois hors zone euro, puis 1,69% de frais par retrait" }},
-              { critere: "Programme de fidélité", values: {
-                  Sofinco: "Non", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Oui", Alma: "-", Klarna: "Oui", Revolut: "Oui", Boursobank: "Oui" }},
-              { critere: "Assurance DC / invalidité", values: {
-                  Sofinco: "Oui, optionnelle (payante)", Cetelem: "Oui", Cofidis: "Oui mais optionnelle",
-                  Oney: "Oui", Younited: "Non", Alma: "-", Klarna: "Non", Revolut: "Oui", Boursobank: "Oui" }},
-              { critere: "Extension de garantie", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui (selon les cartes)", Oney: "Oui",
-                  Younited: "Non", Alma: "-", Klarna: "Oui (2 ans supplémentaire)",
-                  Revolut: "Oui (premium)", Boursobank: "Oui" }},
-              { critere: "Vol / Casse", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Non", Alma: "-", Klarna: "Oui, jusqu'à 500€",
-                  Revolut: "Oui (premium)", Boursobank: "Oui" }},
-              { critere: "Livraison internet", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui",
-                  Younited: "Non", Alma: "-", Klarna: "Oui", Revolut: "Oui", Boursobank: "Oui" }},
-              { critere: "Reprise Garantie", values: {
-                  Sofinco: "Oui", Cetelem: "N.I.", Cofidis: "Non", Oney: "Non",
-                  Younited: "Non", Alma: "-", Klarna: "Non", Revolut: "Non", Boursobank: "Non" }},
-              { critere: "Assistance médicale", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "Oui sur carte Visa Auchan",
-                  Younited: "Non", Alma: "-", Klarna: "Oui", Revolut: "N.I.", Boursobank: "N.I." }},
-              { critere: "VH de location", values: {
-                  Sofinco: "Non", Cetelem: "Oui", Cofidis: "Oui", Oney: "Non",
-                  Younited: "Oui (avec la carte premium)", Alma: "N.I.", Klarna: "Oui",
-                  Revolut: "Oui (premium)", Boursobank: "Oui" }},
-              { critere: "Assist poursuite judiciaire", values: {
-                  Sofinco: "Non", Cetelem: "N.I.", Cofidis: "Oui", Oney: "N.I.",
-                  Younited: "Non", Alma: "-", Klarna: "Non", Revolut: "N.I.", Boursobank: "Oui" }},
-              { critere: "Application mobile", values: {
-                  Sofinco: "Oui", Cetelem: "Oui", Cofidis: "Oui", Oney: "N.I.",
-                  Younited: "Oui", Alma: "-", Klarna: "N.I.", Revolut: "Oui", Boursobank: "Oui" }},
-              { critere: "Service client", values: {
-                  Sofinco: "Lundi à vendredi 9h-18h, samedi 9h-13h", Cetelem: "Accessibles en ligne 7J/7, 24h/24",
-                  Cofidis: "Lundi au vendredi de 8h à 19h00 et le samedi de 8h à 14h",
-                  Oney: "Lundi au vendredi de 8h à 19h30 et le samedi de 8h à 19h",
-                  Younited: "Accessibles de 9h à 18h, 5J/7", Alma: "Disponible que par mail 7J/7",
-                  Klarna: "Oui", Revolut: "Accessibles en ligne 7J/7, 24h/24",
-                  Boursobank: "Accessibles en ligne 7J/7, 24h/24" }}
-            ]
-          }
-        ]
-      }
-    ],
-
-    promos: {
-      pb: [
-        { actor: 'Sofinco',     taux: '4,50% TAEG', duree: '13-48 mois', montant: '15-20k€',      dateFin: '20/05/2026', canal: 'Digital site web', lien: 'https://www.sofinco.fr/pret-personnel' },
-        { actor: 'Cetelem',     taux: '4,50% TAEG', duree: '48 mois',    montant: '14k€',          dateFin: '01/06/2026', canal: 'Digital site web', lien: 'https://www.cetelem.fr/pret-personnel' },
-        { actor: 'Cofidis',     taux: '4,70% TAEG', duree: '60 mois',    montant: '10-15k€',       dateFin: '17/05/2026', canal: 'Digital site web', lien: 'https://www.cofidis.fr/pret-personnel' },
-        { actor: 'Oney',        taux: '4,70% TAEG', duree: '54-60 mois', montant: '15-21 599€',    dateFin: '11/05/2026', canal: 'Digital site web', lien: 'https://www.oney.fr/credit/pret-personnel' },
-        { actor: 'Franfinance', taux: '4,89% TAEG', duree: '48 mois',    montant: '15k€',          dateFin: '14/05/2026', canal: 'Digital site web', lien: 'https://www.franfinance.fr/pret-personnel' }
-      ]
-    },
-
-    differenciateurs: {
-      pb: {
-        Sofinco: {
-          tags: ['Durée max : 120 mois (unique)', 'Pause paiement gratuite', 'Délai déblocage J+7'],
-          positionnement: 'Nous proposons la durée de remboursement la plus longue du marché et une pause paiement gratuite — deux leviers concrets pour accompagner nos clients sur la durée.',
-          status: 'valide'
-        },
-        Cetelem: {
-          difference: 'Souscription en 8 min · Durée min : 7 mois',
-          pourquoi: 'Le délai de souscription le plus court du benchmark et une durée minimum parmi les plus basses, pour un accès quasi immédiat au crédit.',
-          conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais pour capter les besoins impulsifs.',
-          tags: ['Durée min : 7 mois', 'Souscription en 8 min', 'Modulation sans frais dès 6 mois'],
-          status: 'valide'
-        },
-        Cofidis: {
-          difference: 'Montant min : 500€ · Parcours 100% digital',
-          pourquoi: 'Le seuil d\'entrée le plus bas du panel et un parcours entièrement dématérialisé, sans contrainte de réseau physique.',
-          conclusion: 'Cofidis se positionne sur l\'accessibilité et la simplicité digitale pour élargir sa base clients.',
-          tags: ['Montant min : 500€', 'Déblocage possible par chèque', 'Modulation via espace client'],
-          status: 'valide'
-        },
-        Oney: {
-          difference: 'Durée min : 4 mois · Montant max : 75 000€',
-          pourquoi: 'La durée minimale la plus courte du marché combinée à l\'un des plafonds les plus élevés — une amplitude rare.',
-          conclusion: 'Oney vise les profils recherchant flexibilité courte durée et capacité d\'emprunt élevée.',
-          tags: ['Durée min : 4 mois (unique)', 'Montant max : 75 000€', 'Pause paiement gratuite'],
-          status: 'valide'
-        },
-        Franfinance: {
-          difference: 'Taux promo : 4,89% TAEG · Filiale Société Générale',
-          pourquoi: 'Un ancrage bancaire SG crédible et un taux promotionnel compétitif dans le haut du panel.',
-          conclusion: 'Franfinance combine légitimité bancaire et accompagnement conseiller pour les dossiers complexes.',
-          tags: ['Filiale Société Générale', 'Taux promo compétitif 4,89%', 'Conseiller dédié modulation'],
-          status: 'valide'
-        },
-        FLOA: {
-          difference: 'Montant max : 6 000€ · Déblocage J+8 express',
-          pourquoi: 'Un positionnement volontairement limité en montant avec l\'un des délais de déblocage les plus courts.',
-          conclusion: 'FLOA cible les petits besoins de trésorerie avec un parcours express et peu de friction.',
-          tags: ['Montant max : 6 000€ seulement', 'Déblocage J+8 express', 'Modulation dès 6 mois'],
-          status: 'valide'
-        },
-        Younited: {
-          difference: '100% digital · Réponse définitive rapide',
-          pourquoi: 'Une fintech pure sans héritage réseau agence, avec un parcours entièrement automatisé de bout en bout.',
-          conclusion: 'Younited se différencie par la vitesse et l\'absence totale de friction physique dans le parcours.',
-          tags: ['Fintech indépendante', '100% digital', 'Réponse définitive rapide'],
-          status: 'valide'
-        },
-        Boursobank: {
-          difference: 'Parcours Flash automatisé · Client BoursoBank requis',
-          pourquoi: 'Un modèle closed-loop réservé à la clientèle existante, avec analyse automatique des revenus.',
-          conclusion: 'Boursobank transforme sa base clients en avantage compétitif avec un parcours ultra-rapide pour les éligibles.',
-          tags: ['Client BoursoBank requis', 'Parcours Flash automatisé', 'Analyse revenus automatique'],
-          status: 'valide'
-        }
-      }
-    },
-
-    tendances: {
-      pb: [
-        {
-          titre: 'Mouvement sur les taux promo',
-          description: '3 concurrents ont ajusté leurs taux promotionnels sur le prêt personnel ce mois-ci, avec une baisse moyenne de 0,2 point de TAEG.',
-          acteurs: ['Cetelem', 'Cofidis', 'Oney'],
-          status: 'genere'
-        },
-        {
-          titre: 'Accélération du 100 % digital',
-          description: 'Deux acteurs renforcent leur parcours entièrement en ligne, sans passage en agence obligatoire.',
-          acteurs: ['Younited', 'Cofidis'],
-          status: 'genere'
-        },
-        {
-          titre: 'Guerre des durées maximales',
-          description: 'Plusieurs acteurs mettent en avant leur durée de remboursement maximale dans leurs campagnes marketing print et digital.',
-          acteurs: ['Oney', 'Franfinance', 'Cetelem'],
-          status: 'genere'
-        }
-      ]
-    },
-
-    actualites: [
-      { date: '2026-06-15', acteur: 'Cetelem', type: 'Produit', produit: 'pb',
-        titre: "Cetelem relance sa campagne avec un TAEG promotionnel à 3,9% sur le prêt personnel travaux.",
-        source: 'https://www.cetelem.fr', impact: 'menace directe' },
-      { date: '2026-06-10', acteur: 'Klarna', type: 'Digital', produit: 'nxcb',
-        titre: "Klarna lance une nouvelle app intégrant un comparateur de cashback pour ses marchands partenaires.",
-        source: 'https://www.klarna.com', impact: 'à surveiller' },
-      { date: '2026-06-02', acteur: 'Cofidis', type: 'Corporate', produit: null,
-        titre: "Cofidis annonce un partenariat stratégique avec Crédit Mutuel Alliance Fédérale pour 2026-2028.",
-        source: 'https://www.cofidis.fr', impact: 'neutre' },
-      { date: '2026-05-22', acteur: 'Oney', type: 'Marketing', produit: 'rac',
-        titre: "Oney lance une campagne TV sur le rachat de crédits ciblant les jeunes actifs.",
-        source: 'https://www.oney.fr', impact: 'à surveiller' }
-    ]
-  };
-
-  /* ──────────────────────────────────────────
-     DONNÉES TAUX CRÉDIT RENOUVELABLE
-  ────────────────────────────────────────── */
-  var TAUX_CR_DATA = {
-    updatedAt: '2026-05-01',
-    prevDate:  '2026-04-01',
-    usure: [
-      { id: 'b1', label: '0 € – 3 000 €',    taux: 0.2352 },
-      { id: 'b2', label: '3 000 – 6 000 €',  taux: 0.1573 },
-      { id: 'b3', label: 'Plus de 6 000 €',  taux: 0.0861 }
-    ],
-    actors: [
-      /* ─ Établissements bancaires ─ */
-      { nom: 'AXA Banque', produit: "Larg'O", cat: 'bancaire', rows: [
-          { tranche: 'De 1 € à 1 500 €',      b1: 0.1695, b1v: 0,    b2: null,   b2v: null, b3: null,  b3v: null  },
-          { tranche: 'De 1 500 € à 3 000 €',  b1: null,   b1v: null, b2: 0.169,  b2v: 0,    b3: null,  b3v: null  },
-          { tranche: 'De 3 000 € à 6 000 €',  b1: 0.234,  b1v: 0,    b2: 0.0968, b2v: 0,    b3: null,  b3v: null  },
-          { tranche: 'Plus de 6 000 €',        b1: null,   b1v: null, b2: null,   b2v: null, b3: null,  b3v: null  }
-        ], comment: '' },
-      { nom: 'Banque Populaire', produit: 'Facelia', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.234, b1v: 0, b2: 0.1565, b2v: 0, b3: 0.0856, b3v: 0 }
-        ], comment: '' },
-      { nom: 'BNP Paribas', produit: 'Provisio', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.139, b1v: 0, b2: 0.099, b2v: 0, b3: 0.065, b3v: 0 }
-        ], comment: '' },
-      { nom: "Caisse d'Épargne", produit: 'Izicarte', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.234, b1v: 0, b2: 0.1565, b2v: 0, b3: 0.0856, b3v: 0 }
-        ], comment: '' },
-      { nom: 'CIC', produit: 'Etalis+', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.1434, b1v: 0, b2: null, b2v: null, b3: null, b3v: null }
-        ], comment: '' },
-      { nom: 'CIC', produit: 'Crédit Liberté', cat: 'bancaire', rows: [
-          { tranche: '12 – 36 mois', b1: 0.0696, b1v: 0, b2: 0.0627, b2v: 0, b3: 0.0627, b3v: 0 },
-          { tranche: '37 – 60 mois', b1: 0.0808, b1v: 0, b2: 0.0638, b2v: 0, b3: 0.0638, b3v: 0 }
-        ], comment: 'Anciennement "Crédit en Réserve". Montants de 3 000 € à 50 000 €' },
-      { nom: 'Crédit Mutuel', produit: 'Etalis+', cat: 'bancaire', rows: [
-          { tranche: 'Max', b1: 0.1434, b1v: 0, b2: null, b2v: null, b3: null, b3v: null }
-        ], comment: '' },
-      { nom: 'La Banque Postale', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.145, b1v: 0, b2: 0.1386, b2v: 0, b3: 0.0784, b3v: 0 }
-        ], comment: '' },
-      { nom: 'LCL', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.169, b1v: 0, b2: 0.115, b2v: 0, b3: 0.067, b3v: 0 }
-        ], comment: '' },
-      { nom: 'Monabanq', produit: 'Crédit renouvelable', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.2085, b1v: 0, b2: 0.1572, b2v: 0, b3: 0.0857, b3v: 0.0002 }
-        ], comment: '' },
-      { nom: 'SG', produit: 'Alterna', cat: 'bancaire', rows: [
-          { tranche: '', b1: 0.2085, b1v: 0, b2: 0.1249, b2v: 0, b3: 0.0745, b3v: 0 }
-        ], comment: '' },
-      /* ─ Sociétés financières ─ */
-      { nom: 'Carrefour Banque', produit: 'Crédit PASS', cat: 'financiere', rows: [
-          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1572, b2v: 0, b3: 0.086, b3v: 0 }
-        ], comment: '' },
-      { nom: 'Cetelem / Cofinoga', produit: 'Crédit renouvelable', cat: 'financiere', rows: [
-          { tranche: "Jusqu'à 3 mois",   b1: 0.1799, b1v: 0,      b2: 0.1573, b2v: 0,      b3: null, b3v: null },
-          { tranche: 'Sur 4 à 5 mois',   b1: 0.1799, b1v: 0,      b2: 0.1573, b2v: 0.0003, b3: null, b3v: null },
-          { tranche: 'Sur 6 à 10 mois',  b1: 0.2351, b1v: 0.0009, b2: 0.1573, b2v: 0.0007, b3: null, b3v: null },
-          { tranche: 'Sur 11 à 60 mois', b1: 0.2351, b1v: 0.0008, b2: null,   b2v: null,   b3: null, b3v: null },
-          { tranche: 'Sur 11 à 20 mois', b1: null,   b1v: null,   b2: 0.1573, b2v: 0.0004, b3: null, b3v: null },
-          { tranche: 'Sur 21 à 60 mois', b1: null,   b1v: null,   b2: 0.1573, b2v: 0,      b3: null, b3v: null }
-        ], comment: 'Depuis janvier 2023, Cofinoga applique la même tarification que Cetelem' },
-      { nom: 'Cofidis', produit: 'Accessio', cat: 'financiere', rows: [
-          { tranche: 'Vitesse confort',  b1: 0.232,  b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null },
-          { tranche: 'Vitesse rapide',   b1: 0.1991, b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null },
-          { tranche: 'Vitesse express',  b1: 0.159,  b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null }
-        ], comment: '' },
-      { nom: 'FLOA Bank', produit: 'Prêt dispo', cat: 'financiere', rows: [
-          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1572, b2v: 0, b3: null, b3v: null }
-        ], comment: '' },
-      { nom: 'Franfinance', produit: 'Budget Plus', cat: 'financiere', rows: [
-          { tranche: '', b1: 0.2351, b1v: 0, b2: 0.1573, b2v: 0, b3: null, b3v: null }
-        ], comment: '' },
-      { nom: 'Oney', produit: 'Virement +', cat: 'financiere', rows: [
-          { tranche: '', b1: 0.233, b1v: 0, b2: 0.1573, b2v: 0, b3: 0.0861, b3v: 0 }
-        ], comment: '' },
-      { nom: 'Sofinco', produit: 'Crédit renouvelable Agile', cat: 'financiere', isUs: true, rows: [
-          { tranche: '', b1: 0.235, b1v: 0, b2: 0.157, b2v: 0, b3: 0.086, b3v: 0 }
-        ], comment: "Offre permanente : 150-6 000 € sur 10 mois (7,90 %) · 1 500-6 000 € sur 18-24 mois (9,80 %)" }
-    ]
-  };
+  async function bootstrapData () {
+    try {
+      sbClient = SofincoSupabase.createClient();
+      var result = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(result);
+      var loading = $('data-loading');
+      if (loading) loading.style.display = 'none';
+      render();
+    } catch (e) {
+      showDataError(e.message || String(e));
+    }
+  }
 
   /* ──────────────────────────────────────────
      STATE
@@ -2354,7 +1423,11 @@
     return out;
   }
 
-  function handleWorkbook (wb) {
+  async function handleWorkbook (wb) {
+    if (!dataReady || !sbClient) {
+      alert('Données non chargées — import impossible.');
+      return;
+    }
     var oldSnap = makeSnapshot();
     var importDate = today();
 
@@ -2370,6 +1443,13 @@
     if (wb.SheetNames.indexOf('DIFFERENCIATEURS') >= 0) {
       var d = parseDiffSheet(wb.Sheets['DIFFERENCIATEURS']);
       if (d) DATA.differenciateurs = d;
+    }
+
+    try {
+      var map = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS);
+      Object.assign(actorIdByNom, map);
+    } catch (e) {
+      alert('Données importées localement mais erreur d\'enregistrement Supabase : ' + (e.message || e));
     }
 
     var newSnap = makeSnapshot();
@@ -2869,7 +1949,7 @@
     }
 
     if (hasDiffs) {
-      html += renderDiffSummaryTable(p, diffs, getDiffActors(p, diffs));
+      html += renderDiffSummaryTable(p, diffs, actors);
     }
 
     return html;
@@ -3896,22 +2976,7 @@
     $('detail-close').addEventListener('click', function () { $('modal-detail').classList.remove('show'); });
     $('modal-detail').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
 
-    /* Fusion données initiales (SEED) si produit vide */
-    SEED.produits.forEach(function (sp) {
-      var p = productById(sp.id);
-      if (p && !p.sections.length) {
-        p.acteurs   = sp.acteurs.slice();
-        p.sections  = sp.sections;
-        p.updatedAt = sp.updatedAt;
-      }
-    });
-    if (!Object.keys(DATA.promos).length)          DATA.promos = SEED.promos;
-    if (!Object.keys(DATA.differenciateurs).length) DATA.differenciateurs = SEED.differenciateurs;
-    if (!Object.keys(DATA.tendances || {}).length)       DATA.tendances = SEED.tendances || {};
-    if (!DATA.actualites.length)                    DATA.actualites = SEED.actualites;
-    DATA.taux = { cr: TAUX_CR_DATA };
-
-    render();
+    bootstrapData();
   }
 
   /* Exposer pour les handlers inline */

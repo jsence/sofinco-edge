@@ -1,0 +1,6665 @@
+{
+  "meta": {
+    "generated_at": "2026-06-30T14:51:09.469Z",
+    "source": "index.html SEED + TAUX_CR_DATA",
+    "counts": {
+      "acteurs": 24,
+      "produits": 5,
+      "acteurs_produits": 36,
+      "criteres": 132,
+      "valeurs": 921,
+      "promos": 5,
+      "differenciateurs": 8,
+      "tendances": 3,
+      "actualites": 4,
+      "taux_cr": 18
+    }
+  },
+  "acteurs": [
+    {
+      "id": "sofinco",
+      "nom": "Sofinco",
+      "groupe": "CA Consumer Finance",
+      "domaine": "sofinco.fr",
+      "est_nous": true
+    },
+    {
+      "id": "cetelem",
+      "nom": "Cetelem",
+      "groupe": "BNP Paribas Personal Finance",
+      "domaine": "cetelem.fr",
+      "est_nous": false
+    },
+    {
+      "id": "cofidis",
+      "nom": "Cofidis",
+      "groupe": "Crédit Mutuel",
+      "domaine": "cofidis.fr",
+      "est_nous": false
+    },
+    {
+      "id": "oney",
+      "nom": "Oney",
+      "groupe": "Groupe BPCE",
+      "domaine": "oney.fr",
+      "est_nous": false
+    },
+    {
+      "id": "franfinance",
+      "nom": "Franfinance",
+      "groupe": "Société Générale",
+      "domaine": "franfinance.fr",
+      "est_nous": false
+    },
+    {
+      "id": "floa",
+      "nom": "FLOA",
+      "groupe": "BNP Paribas",
+      "domaine": "floa.fr",
+      "est_nous": false
+    },
+    {
+      "id": "younited",
+      "nom": "Younited",
+      "groupe": "Fintech indépendante",
+      "domaine": "younited-credit.com",
+      "est_nous": false
+    },
+    {
+      "id": "boursobank",
+      "nom": "Boursobank",
+      "groupe": "Société Générale",
+      "domaine": "boursobank.com",
+      "est_nous": false
+    },
+    {
+      "id": "klarna",
+      "nom": "Klarna",
+      "groupe": "Fintech suédoise",
+      "domaine": "klarna.com",
+      "est_nous": false
+    },
+    {
+      "id": "alma",
+      "nom": "Alma",
+      "groupe": "Fintech française",
+      "domaine": "getalma.eu",
+      "est_nous": false
+    },
+    {
+      "id": "la_banque_postale",
+      "nom": "La Banque Postale",
+      "groupe": "Groupe La Banque Postale",
+      "domaine": "labanquepostale.fr",
+      "est_nous": false
+    },
+    {
+      "id": "carrefour_banque",
+      "nom": "Carrefour Banque",
+      "groupe": "Groupe Carrefour",
+      "domaine": "carrefour-banque.fr",
+      "est_nous": false
+    },
+    {
+      "id": "revolut",
+      "nom": "Revolut",
+      "groupe": "Fintech britannique",
+      "domaine": "revolut.com",
+      "est_nous": false
+    },
+    {
+      "id": "axa_banque",
+      "nom": "AXA Banque",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "banque_populaire",
+      "nom": "Banque Populaire",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "bnp_paribas",
+      "nom": "BNP Paribas",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "caisse_d_epargne",
+      "nom": "Caisse d'Épargne",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "cic",
+      "nom": "CIC",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "credit_mutuel",
+      "nom": "Crédit Mutuel",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "lcl",
+      "nom": "LCL",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "monabanq",
+      "nom": "Monabanq",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "sg",
+      "nom": "SG",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "cetelem_cofinoga",
+      "nom": "Cetelem / Cofinoga",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    },
+    {
+      "id": "floa_bank",
+      "nom": "FLOA Bank",
+      "groupe": null,
+      "domaine": null,
+      "est_nous": false
+    }
+  ],
+  "produits": [
+    {
+      "id": "pb",
+      "label": "Prêt Personnel",
+      "short_label": "PP",
+      "a_onglet_taux": true,
+      "updated_at": "2026-05-07",
+      "excel_sheet": "PB"
+    },
+    {
+      "id": "cr",
+      "label": "Crédit Renouvelable",
+      "short_label": "CR",
+      "a_onglet_taux": true,
+      "updated_at": "2026-05-07",
+      "excel_sheet": "CR"
+    },
+    {
+      "id": "nxcb",
+      "label": "Paiement Fractionné",
+      "short_label": "Nx",
+      "a_onglet_taux": false,
+      "updated_at": "2026-05-07",
+      "excel_sheet": "NxCB"
+    },
+    {
+      "id": "rac",
+      "label": "Rachat de Crédit",
+      "short_label": "RAC",
+      "a_onglet_taux": true,
+      "updated_at": "2026-06-01",
+      "excel_sheet": "RAC"
+    },
+    {
+      "id": "carte",
+      "label": "Carte",
+      "short_label": "Carte",
+      "a_onglet_taux": false,
+      "updated_at": "2026-06-01",
+      "excel_sheet": "CARTE"
+    }
+  ],
+  "acteurs_produits": [
+    {
+      "acteur_id": "sofinco",
+      "produit_id": "pb",
+      "ordre": 0
+    },
+    {
+      "acteur_id": "cetelem",
+      "produit_id": "pb",
+      "ordre": 1
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_id": "pb",
+      "ordre": 2
+    },
+    {
+      "acteur_id": "oney",
+      "produit_id": "pb",
+      "ordre": 3
+    },
+    {
+      "acteur_id": "franfinance",
+      "produit_id": "pb",
+      "ordre": 4
+    },
+    {
+      "acteur_id": "floa",
+      "produit_id": "pb",
+      "ordre": 5
+    },
+    {
+      "acteur_id": "younited",
+      "produit_id": "pb",
+      "ordre": 6
+    },
+    {
+      "acteur_id": "boursobank",
+      "produit_id": "pb",
+      "ordre": 7
+    },
+    {
+      "acteur_id": "sofinco",
+      "produit_id": "cr",
+      "ordre": 0
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_id": "cr",
+      "ordre": 1
+    },
+    {
+      "acteur_id": "cetelem",
+      "produit_id": "cr",
+      "ordre": 2
+    },
+    {
+      "acteur_id": "floa",
+      "produit_id": "cr",
+      "ordre": 3
+    },
+    {
+      "acteur_id": "oney",
+      "produit_id": "cr",
+      "ordre": 4
+    },
+    {
+      "acteur_id": "sofinco",
+      "produit_id": "nxcb",
+      "ordre": 0
+    },
+    {
+      "acteur_id": "cetelem",
+      "produit_id": "nxcb",
+      "ordre": 1
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_id": "nxcb",
+      "ordre": 2
+    },
+    {
+      "acteur_id": "oney",
+      "produit_id": "nxcb",
+      "ordre": 3
+    },
+    {
+      "acteur_id": "floa",
+      "produit_id": "nxcb",
+      "ordre": 4
+    },
+    {
+      "acteur_id": "klarna",
+      "produit_id": "nxcb",
+      "ordre": 5
+    },
+    {
+      "acteur_id": "alma",
+      "produit_id": "nxcb",
+      "ordre": 6
+    },
+    {
+      "acteur_id": "sofinco",
+      "produit_id": "rac",
+      "ordre": 0
+    },
+    {
+      "acteur_id": "cetelem",
+      "produit_id": "rac",
+      "ordre": 1
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_id": "rac",
+      "ordre": 2
+    },
+    {
+      "acteur_id": "oney",
+      "produit_id": "rac",
+      "ordre": 3
+    },
+    {
+      "acteur_id": "floa",
+      "produit_id": "rac",
+      "ordre": 4
+    },
+    {
+      "acteur_id": "la_banque_postale",
+      "produit_id": "rac",
+      "ordre": 5
+    },
+    {
+      "acteur_id": "carrefour_banque",
+      "produit_id": "rac",
+      "ordre": 6
+    },
+    {
+      "acteur_id": "sofinco",
+      "produit_id": "carte",
+      "ordre": 0
+    },
+    {
+      "acteur_id": "cetelem",
+      "produit_id": "carte",
+      "ordre": 1
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_id": "carte",
+      "ordre": 2
+    },
+    {
+      "acteur_id": "oney",
+      "produit_id": "carte",
+      "ordre": 3
+    },
+    {
+      "acteur_id": "younited",
+      "produit_id": "carte",
+      "ordre": 4
+    },
+    {
+      "acteur_id": "alma",
+      "produit_id": "carte",
+      "ordre": 5
+    },
+    {
+      "acteur_id": "klarna",
+      "produit_id": "carte",
+      "ordre": 6
+    },
+    {
+      "acteur_id": "revolut",
+      "produit_id": "carte",
+      "ordre": 7
+    },
+    {
+      "acteur_id": "boursobank",
+      "produit_id": "carte",
+      "ordre": 8
+    }
+  ],
+  "criteres": [
+    {
+      "_id": "pb__0",
+      "produit_id": "pb",
+      "section": "Offre & positionnement",
+      "critere": "Nom de l'offre",
+      "ordre": 0
+    },
+    {
+      "_id": "pb__1",
+      "produit_id": "pb",
+      "section": "Offre & positionnement",
+      "critere": "Nombre d'offres",
+      "ordre": 1
+    },
+    {
+      "_id": "pb__2",
+      "produit_id": "pb",
+      "section": "Offre & positionnement",
+      "critere": "Approche / Cible",
+      "ordre": 2
+    },
+    {
+      "_id": "pb__3",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Montant min",
+      "ordre": 3
+    },
+    {
+      "_id": "pb__4",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Montant max",
+      "ordre": 4
+    },
+    {
+      "_id": "pb__5",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Durée min",
+      "ordre": 5
+    },
+    {
+      "_id": "pb__6",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Durée max",
+      "ordre": 6
+    },
+    {
+      "_id": "pb__7",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Grille de taux",
+      "ordre": 7
+    },
+    {
+      "_id": "pb__8",
+      "produit_id": "pb",
+      "section": "Produit",
+      "critere": "Assurance",
+      "ordre": 8
+    },
+    {
+      "_id": "pb__9",
+      "produit_id": "pb",
+      "section": "Parcours & accès",
+      "critere": "Justificatifs",
+      "ordre": 9
+    },
+    {
+      "_id": "pb__10",
+      "produit_id": "pb",
+      "section": "Parcours & accès",
+      "critere": "Simulation en ligne",
+      "ordre": 10
+    },
+    {
+      "_id": "pb__11",
+      "produit_id": "pb",
+      "section": "Parcours & accès",
+      "critere": "Temps souscription",
+      "ordre": 11
+    },
+    {
+      "_id": "pb__12",
+      "produit_id": "pb",
+      "section": "Parcours & accès",
+      "critere": "Réponse de principe",
+      "ordre": 12
+    },
+    {
+      "_id": "pb__13",
+      "produit_id": "pb",
+      "section": "Conditions commerciales",
+      "critere": "Taux promo",
+      "ordre": 13
+    },
+    {
+      "_id": "pb__14",
+      "produit_id": "pb",
+      "section": "Conditions commerciales",
+      "critere": "Durée promo",
+      "ordre": 14
+    },
+    {
+      "_id": "pb__15",
+      "produit_id": "pb",
+      "section": "Conditions commerciales",
+      "critere": "Fin de promo",
+      "ordre": 15
+    },
+    {
+      "_id": "pb__16",
+      "produit_id": "pb",
+      "section": "Conditions commerciales",
+      "critere": "Frais de dossier",
+      "ordre": 16
+    },
+    {
+      "_id": "pb__17",
+      "produit_id": "pb",
+      "section": "Mise à disposition des fonds",
+      "critere": "Délai",
+      "ordre": 17
+    },
+    {
+      "_id": "pb__18",
+      "produit_id": "pb",
+      "section": "Mise à disposition des fonds",
+      "critere": "Type déblocage",
+      "ordre": 18
+    },
+    {
+      "_id": "pb__19",
+      "produit_id": "pb",
+      "section": "Mise à disposition des fonds",
+      "critere": "Déblocage conditionné",
+      "ordre": 19
+    },
+    {
+      "_id": "pb__20",
+      "produit_id": "pb",
+      "section": "Flexibilité",
+      "critere": "Pause paiement",
+      "ordre": 20
+    },
+    {
+      "_id": "pb__21",
+      "produit_id": "pb",
+      "section": "Flexibilité",
+      "critere": "Modulation échéances",
+      "ordre": 21
+    },
+    {
+      "_id": "pb__22",
+      "produit_id": "pb",
+      "section": "Flexibilité",
+      "critere": "Remboursement anticipé",
+      "ordre": 22
+    },
+    {
+      "_id": "cr__0",
+      "produit_id": "cr",
+      "section": "Offre & positionnement",
+      "critere": "Nom de l'offre",
+      "ordre": 0
+    },
+    {
+      "_id": "cr__1",
+      "produit_id": "cr",
+      "section": "Offre & positionnement",
+      "critere": "Approche",
+      "ordre": 1
+    },
+    {
+      "_id": "cr__2",
+      "produit_id": "cr",
+      "section": "Offre & positionnement",
+      "critere": "Usage",
+      "ordre": 2
+    },
+    {
+      "_id": "cr__3",
+      "produit_id": "cr",
+      "section": "Paramètres produit",
+      "critere": "Montant min réserve",
+      "ordre": 3
+    },
+    {
+      "_id": "cr__4",
+      "produit_id": "cr",
+      "section": "Paramètres produit",
+      "critere": "Montant max réserve",
+      "ordre": 4
+    },
+    {
+      "_id": "cr__5",
+      "produit_id": "cr",
+      "section": "Paramètres produit",
+      "critere": "Durées",
+      "ordre": 5
+    },
+    {
+      "_id": "cr__6",
+      "produit_id": "cr",
+      "section": "Paramètres produit",
+      "critere": "Montant min utilisation",
+      "ordre": 6
+    },
+    {
+      "_id": "cr__7",
+      "produit_id": "cr",
+      "section": "Taux et coûts",
+      "critere": "Grille de taux",
+      "ordre": 7
+    },
+    {
+      "_id": "cr__8",
+      "produit_id": "cr",
+      "section": "Taux et coûts",
+      "critere": "Frais de dossier",
+      "ordre": 8
+    },
+    {
+      "_id": "cr__9",
+      "produit_id": "cr",
+      "section": "Assurance",
+      "critere": "Assurance proposée",
+      "ordre": 9
+    },
+    {
+      "_id": "cr__10",
+      "produit_id": "cr",
+      "section": "Assurance",
+      "critere": "Type assurance",
+      "ordre": 10
+    },
+    {
+      "_id": "cr__11",
+      "produit_id": "cr",
+      "section": "Remboursement",
+      "critere": "Nombre de barèmes",
+      "ordre": 11
+    },
+    {
+      "_id": "cr__12",
+      "produit_id": "cr",
+      "section": "Remboursement",
+      "critere": "Changement de barème",
+      "ordre": 12
+    },
+    {
+      "_id": "cr__13",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Report mensualité",
+      "ordre": 13
+    },
+    {
+      "_id": "cr__14",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Nombre reports/an",
+      "ordre": 14
+    },
+    {
+      "_id": "cr__15",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Remboursement anticipé",
+      "ordre": 15
+    },
+    {
+      "_id": "cr__16",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Indemnités défaut",
+      "ordre": 16
+    },
+    {
+      "_id": "cr__17",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Augmentation capital",
+      "ordre": 17
+    },
+    {
+      "_id": "cr__18",
+      "produit_id": "cr",
+      "section": "Flexibilité",
+      "critere": "Modulation mensualité",
+      "ordre": 18
+    },
+    {
+      "_id": "cr__19",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Parcours",
+      "ordre": 19
+    },
+    {
+      "_id": "cr__20",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Simulation en ligne",
+      "ordre": 20
+    },
+    {
+      "_id": "cr__21",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Signature électronique",
+      "ordre": 21
+    },
+    {
+      "_id": "cr__22",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Temps souscription",
+      "ordre": 22
+    },
+    {
+      "_id": "cr__23",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Réponse immédiate",
+      "ordre": 23
+    },
+    {
+      "_id": "cr__24",
+      "produit_id": "cr",
+      "section": "Parcours & souscription",
+      "critere": "Co-emprunteur",
+      "ordre": 24
+    },
+    {
+      "_id": "cr__25",
+      "produit_id": "cr",
+      "section": "Mise à disposition",
+      "critere": "Délai",
+      "ordre": 25
+    },
+    {
+      "_id": "cr__26",
+      "produit_id": "cr",
+      "section": "Mise à disposition",
+      "critere": "Mode activation",
+      "ordre": 26
+    },
+    {
+      "_id": "cr__27",
+      "produit_id": "cr",
+      "section": "Carte & Usage",
+      "critere": "Carte associée",
+      "ordre": 27
+    },
+    {
+      "_id": "cr__28",
+      "produit_id": "cr",
+      "section": "Carte & Usage",
+      "critere": "Nom carte",
+      "ordre": 28
+    },
+    {
+      "_id": "cr__29",
+      "produit_id": "cr",
+      "section": "Carte & Usage",
+      "critere": "Cotisation carte",
+      "ordre": 29
+    },
+    {
+      "_id": "cr__30",
+      "produit_id": "cr",
+      "section": "Services & fidélisation",
+      "critere": "Programme fidélité",
+      "ordre": 30
+    },
+    {
+      "_id": "cr__31",
+      "produit_id": "cr",
+      "section": "Services & fidélisation",
+      "critere": "Arbitrage post-achat",
+      "ordre": 31
+    },
+    {
+      "_id": "nxcb__0",
+      "produit_id": "nxcb",
+      "section": "Offre & positionnement",
+      "critere": "Nom de l'offre",
+      "ordre": 0
+    },
+    {
+      "_id": "nxcb__1",
+      "produit_id": "nxcb",
+      "section": "Offre & positionnement",
+      "critere": "Cible",
+      "ordre": 1
+    },
+    {
+      "_id": "nxcb__2",
+      "produit_id": "nxcb",
+      "section": "Offre & positionnement",
+      "critere": "Usage",
+      "ordre": 2
+    },
+    {
+      "_id": "nxcb__3",
+      "produit_id": "nxcb",
+      "section": "Structure de paiement",
+      "critere": "Fractionnements",
+      "ordre": 3
+    },
+    {
+      "_id": "nxcb__4",
+      "produit_id": "nxcb",
+      "section": "Structure de paiement",
+      "critere": "Échéances fixes",
+      "ordre": 4
+    },
+    {
+      "_id": "nxcb__5",
+      "produit_id": "nxcb",
+      "section": "Structure de paiement",
+      "critere": "Apport initial",
+      "ordre": 5
+    },
+    {
+      "_id": "nxcb__6",
+      "produit_id": "nxcb",
+      "section": "Structure de paiement",
+      "critere": "Carte éligible",
+      "ordre": 6
+    },
+    {
+      "_id": "nxcb__7",
+      "produit_id": "nxcb",
+      "section": "Montants",
+      "critere": "Montant min achat",
+      "ordre": 7
+    },
+    {
+      "_id": "nxcb__8",
+      "produit_id": "nxcb",
+      "section": "Montants",
+      "critere": "Montant max achat",
+      "ordre": 8
+    },
+    {
+      "_id": "nxcb__9",
+      "produit_id": "nxcb",
+      "section": "Distribution",
+      "critere": "Disponible web",
+      "ordre": 9
+    },
+    {
+      "_id": "nxcb__10",
+      "produit_id": "nxcb",
+      "section": "Distribution",
+      "critere": "Disponible magasin",
+      "ordre": 10
+    },
+    {
+      "_id": "nxcb__11",
+      "produit_id": "nxcb",
+      "section": "Distribution",
+      "critere": "Enseignes partenaires",
+      "ordre": 11
+    },
+    {
+      "_id": "nxcb__12",
+      "produit_id": "nxcb",
+      "section": "Tarification client",
+      "critere": "Sans frais client",
+      "ordre": 12
+    },
+    {
+      "_id": "nxcb__13",
+      "produit_id": "nxcb",
+      "section": "Tarification client",
+      "critere": "Mode calcul frais",
+      "ordre": 13
+    },
+    {
+      "_id": "nxcb__14",
+      "produit_id": "nxcb",
+      "section": "Tarification client",
+      "critere": "TAEG",
+      "ordre": 14
+    },
+    {
+      "_id": "nxcb__15",
+      "produit_id": "nxcb",
+      "section": "Tarification client",
+      "critere": "Frais retard",
+      "ordre": 15
+    },
+    {
+      "_id": "nxcb__16",
+      "produit_id": "nxcb",
+      "section": "Parcours client",
+      "critere": "Parcours adhésion",
+      "ordre": 16
+    },
+    {
+      "_id": "nxcb__17",
+      "produit_id": "nxcb",
+      "section": "Parcours client",
+      "critere": "PJ demandées",
+      "ordre": 17
+    },
+    {
+      "_id": "nxcb__18",
+      "produit_id": "nxcb",
+      "section": "Parcours client",
+      "critere": "Signature",
+      "ordre": 18
+    },
+    {
+      "_id": "nxcb__19",
+      "produit_id": "nxcb",
+      "section": "Parcours client",
+      "critere": "Application",
+      "ordre": 19
+    },
+    {
+      "_id": "nxcb__20",
+      "produit_id": "nxcb",
+      "section": "Assurance & services",
+      "critere": "Assurance",
+      "ordre": 20
+    },
+    {
+      "_id": "nxcb__21",
+      "produit_id": "nxcb",
+      "section": "Assurance & services",
+      "critere": "Programme fidélité",
+      "ordre": 21
+    },
+    {
+      "_id": "rac__0",
+      "produit_id": "rac",
+      "section": "Offre",
+      "critere": "Nom de l'offre",
+      "ordre": 0
+    },
+    {
+      "_id": "rac__1",
+      "produit_id": "rac",
+      "section": "Offre",
+      "critere": "Type de RAC",
+      "ordre": 1
+    },
+    {
+      "_id": "rac__2",
+      "produit_id": "rac",
+      "section": "Distribution",
+      "critere": "Canaux de distribution",
+      "ordre": 2
+    },
+    {
+      "_id": "rac__3",
+      "produit_id": "rac",
+      "section": "Distribution",
+      "critere": "Simulation en ligne",
+      "ordre": 3
+    },
+    {
+      "_id": "rac__4",
+      "produit_id": "rac",
+      "section": "Distribution",
+      "critere": "Parcours 100% digital",
+      "ordre": 4
+    },
+    {
+      "_id": "rac__5",
+      "produit_id": "rac",
+      "section": "Souscription",
+      "critere": "Pièces justificatives demandées",
+      "ordre": 5
+    },
+    {
+      "_id": "rac__6",
+      "produit_id": "rac",
+      "section": "Souscription",
+      "critere": "Signature électronique",
+      "ordre": 6
+    },
+    {
+      "_id": "rac__7",
+      "produit_id": "rac",
+      "section": "Souscription",
+      "critere": "Temps de traitement estimé",
+      "ordre": 7
+    },
+    {
+      "_id": "rac__8",
+      "produit_id": "rac",
+      "section": "Souscription",
+      "critere": "Délai de rétractation",
+      "ordre": 8
+    },
+    {
+      "_id": "rac__9",
+      "produit_id": "rac",
+      "section": "Conditions préalables",
+      "critere": "Obligation ouverture compte",
+      "ordre": 9
+    },
+    {
+      "_id": "rac__10",
+      "produit_id": "rac",
+      "section": "Conditions préalables",
+      "critere": "Obligation domiciliation revenus",
+      "ordre": 10
+    },
+    {
+      "_id": "rac__11",
+      "produit_id": "rac",
+      "section": "Montant & durée",
+      "critere": "Montant min financé",
+      "ordre": 11
+    },
+    {
+      "_id": "rac__12",
+      "produit_id": "rac",
+      "section": "Montant & durée",
+      "critere": "Montant max financé",
+      "ordre": 12
+    },
+    {
+      "_id": "rac__13",
+      "produit_id": "rac",
+      "section": "Montant & durée",
+      "critere": "Durée min",
+      "ordre": 13
+    },
+    {
+      "_id": "rac__14",
+      "produit_id": "rac",
+      "section": "Montant & durée",
+      "critere": "Durée max",
+      "ordre": 14
+    },
+    {
+      "_id": "rac__15",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "TAEG",
+      "ordre": 15
+    },
+    {
+      "_id": "rac__16",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "Frais de dossier",
+      "ordre": 16
+    },
+    {
+      "_id": "rac__17",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "Type de frais de dossier",
+      "ordre": 17
+    },
+    {
+      "_id": "rac__18",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "Montant min frais",
+      "ordre": 18
+    },
+    {
+      "_id": "rac__19",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "Montant max frais",
+      "ordre": 19
+    },
+    {
+      "_id": "rac__20",
+      "produit_id": "rac",
+      "section": "Tarification",
+      "critere": "Tarification préférentielle (web/client existant)",
+      "ordre": 20
+    },
+    {
+      "_id": "rac__21",
+      "produit_id": "rac",
+      "section": "Mise à disposition des fonds",
+      "critere": "Délai de mise à dispo",
+      "ordre": 21
+    },
+    {
+      "_id": "rac__22",
+      "produit_id": "rac",
+      "section": "Mise à disposition des fonds",
+      "critere": "Déblocage en une fois ou fractionné",
+      "ordre": 22
+    },
+    {
+      "_id": "rac__23",
+      "produit_id": "rac",
+      "section": "Mise à disposition des fonds",
+      "critere": "Conditions de déblocage",
+      "ordre": 23
+    },
+    {
+      "_id": "rac__24",
+      "produit_id": "rac",
+      "section": "Fonctionnement produit",
+      "critere": "Type de dettes regroupées",
+      "ordre": 24
+    },
+    {
+      "_id": "rac__25",
+      "produit_id": "rac",
+      "section": "Fonctionnement produit",
+      "critere": "Trésorerie complémentaire possible",
+      "ordre": 25
+    },
+    {
+      "_id": "rac__26",
+      "produit_id": "rac",
+      "section": "Fonctionnement produit",
+      "critere": "Part de trésorerie autorisée",
+      "ordre": 26
+    },
+    {
+      "_id": "rac__27",
+      "produit_id": "rac",
+      "section": "Flexibilité",
+      "critere": "Choix date d'échéance",
+      "ordre": 27
+    },
+    {
+      "_id": "rac__28",
+      "produit_id": "rac",
+      "section": "Flexibilité",
+      "critere": "Report de mensualité",
+      "ordre": 28
+    },
+    {
+      "_id": "rac__29",
+      "produit_id": "rac",
+      "section": "Flexibilité",
+      "critere": "Nombre de reports possibles",
+      "ordre": 29
+    },
+    {
+      "_id": "rac__30",
+      "produit_id": "rac",
+      "section": "Flexibilité",
+      "critere": "Conditions de reports",
+      "ordre": 30
+    },
+    {
+      "_id": "rac__31",
+      "produit_id": "rac",
+      "section": "Flexibilité",
+      "critere": "Modulation des échéances",
+      "ordre": 31
+    },
+    {
+      "_id": "rac__32",
+      "produit_id": "rac",
+      "section": "Risque & incidents",
+      "critere": "Indemnités en cas de défaut",
+      "ordre": 32
+    },
+    {
+      "_id": "rac__33",
+      "produit_id": "rac",
+      "section": "Risque & incidents",
+      "critere": "Conditions en cas d'impayé",
+      "ordre": 33
+    },
+    {
+      "_id": "rac__34",
+      "produit_id": "rac",
+      "section": "Fidélisation",
+      "critere": "Offre dédiée clients existants",
+      "ordre": 34
+    },
+    {
+      "_id": "rac__35",
+      "produit_id": "rac",
+      "section": "Fidélisation",
+      "critere": "Avantage fidélité",
+      "ordre": 35
+    },
+    {
+      "_id": "carte__0",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Nom carte",
+      "ordre": 0
+    },
+    {
+      "_id": "carte__1",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Carte Bancaire / Crédit",
+      "ordre": 1
+    },
+    {
+      "_id": "carte__2",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Visa / Mastercard",
+      "ordre": 2
+    },
+    {
+      "_id": "carte__3",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Débit différé / immédiat",
+      "ordre": 3
+    },
+    {
+      "_id": "carte__4",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Plafond paiement en €",
+      "ordre": 4
+    },
+    {
+      "_id": "carte__5",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Plafond retrait en €",
+      "ordre": 5
+    },
+    {
+      "_id": "carte__6",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Plafond paiement devises",
+      "ordre": 6
+    },
+    {
+      "_id": "carte__7",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Plafond retrait devises",
+      "ordre": 7
+    },
+    {
+      "_id": "carte__8",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Programme de fidélité",
+      "ordre": 8
+    },
+    {
+      "_id": "carte__9",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Assurance DC / invalidité",
+      "ordre": 9
+    },
+    {
+      "_id": "carte__10",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Extension de garantie",
+      "ordre": 10
+    },
+    {
+      "_id": "carte__11",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Vol / Casse",
+      "ordre": 11
+    },
+    {
+      "_id": "carte__12",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Livraison internet",
+      "ordre": 12
+    },
+    {
+      "_id": "carte__13",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Reprise Garantie",
+      "ordre": 13
+    },
+    {
+      "_id": "carte__14",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Assistance médicale",
+      "ordre": 14
+    },
+    {
+      "_id": "carte__15",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "VH de location",
+      "ordre": 15
+    },
+    {
+      "_id": "carte__16",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Assist poursuite judiciaire",
+      "ordre": 16
+    },
+    {
+      "_id": "carte__17",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Application mobile",
+      "ordre": 17
+    },
+    {
+      "_id": "carte__18",
+      "produit_id": "carte",
+      "section": "",
+      "critere": "Service client",
+      "ordre": 18
+    }
+  ],
+  "valeurs": [
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "sofinco",
+      "valeur": "Prêt Personnel Sofinco"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "cetelem",
+      "valeur": "Prêt Personnel Cetelem"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "cofidis",
+      "valeur": "Prêt Personnel Cofidis"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "oney",
+      "valeur": "Prêt Personnel Oney"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "franfinance",
+      "valeur": "Prêt personnel Franfinance"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "floa",
+      "valeur": "Prêt Personnel Classique FLOA"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "younited",
+      "valeur": "Prêt Personnel Younited"
+    },
+    {
+      "critere_ref": "pb__0",
+      "acteur_id": "boursobank",
+      "valeur": "Prêt Personnel Boursobank"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "sofinco",
+      "valeur": "1 générique + déclinaisons projet"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "cetelem",
+      "valeur": "1 générique + déclinaisons projet"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "cofidis",
+      "valeur": "1 générique + déclinaisons projet"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "oney",
+      "valeur": "1 générique multi-projets"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "franfinance",
+      "valeur": "1 générique + déclinaisons projet"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "floa",
+      "valeur": "1 générique multi-projets"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "younited",
+      "valeur": "1 générique multi-projets"
+    },
+    {
+      "critere_ref": "pb__1",
+      "acteur_id": "boursobank",
+      "valeur": "1 générique projet personnel"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "sofinco",
+      "valeur": "Tous projets usage libre"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "cetelem",
+      "valeur": "Tous projets voyage véhicule imprévus"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "cofidis",
+      "valeur": "Tous projets auto travaux déco voyage trésorerie"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "oney",
+      "valeur": "Majeur résidant en France revenus réguliers"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "franfinance",
+      "valeur": "Tous projets amélioration habitat mobilier"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "floa",
+      "valeur": "Usage libre auto voyage"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "younited",
+      "valeur": "Tous projets trésorerie travaux auto loisirs"
+    },
+    {
+      "critere_ref": "pb__2",
+      "acteur_id": "boursobank",
+      "valeur": "Projets personnels hors immobilier — client BoursoBank 3 mois min"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "sofinco",
+      "valeur": "3 001€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "cetelem",
+      "valeur": "500€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "cofidis",
+      "valeur": "500€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "oney",
+      "valeur": "3 000€ (6 000€ Auto/Travaux)"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "franfinance",
+      "valeur": "1 500€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "floa",
+      "valeur": "3 001€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "younited",
+      "valeur": "1 000€"
+    },
+    {
+      "critere_ref": "pb__3",
+      "acteur_id": "boursobank",
+      "valeur": "3 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "sofinco",
+      "valeur": "75 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "cetelem",
+      "valeur": "75 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "cofidis",
+      "valeur": "35 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "oney",
+      "valeur": "75 000€ (50 000€ en pratique)"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "franfinance",
+      "valeur": "21 500€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "floa",
+      "valeur": "6 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "younited",
+      "valeur": "60 000€"
+    },
+    {
+      "critere_ref": "pb__4",
+      "acteur_id": "boursobank",
+      "valeur": "30 000€"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "sofinco",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "cetelem",
+      "valeur": "7 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "cofidis",
+      "valeur": "6 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "oney",
+      "valeur": "4 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "franfinance",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "floa",
+      "valeur": "6 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "younited",
+      "valeur": "6 mois"
+    },
+    {
+      "critere_ref": "pb__5",
+      "acteur_id": "boursobank",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "sofinco",
+      "valeur": "120 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "cetelem",
+      "valeur": "84 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "cofidis",
+      "valeur": "84 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "oney",
+      "valeur": "60 mois (84 mois Auto/Travaux)"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "franfinance",
+      "valeur": "60 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "floa",
+      "valeur": "84 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "younited",
+      "valeur": "84 mois"
+    },
+    {
+      "critere_ref": "pb__6",
+      "acteur_id": "boursobank",
+      "valeur": "60 mois"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "sofinco",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "cetelem",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "cofidis",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "oney",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "franfinance",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "floa",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "younited",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__7",
+      "acteur_id": "boursobank",
+      "valeur": "À faire"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "sofinco",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "cetelem",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "cofidis",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "oney",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "franfinance",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "floa",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "younited",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__8",
+      "acteur_id": "boursobank",
+      "valeur": "Emprunteur facultative"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "sofinco",
+      "valeur": "CNI + justif. domicile + avis imposition + RIB"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "cetelem",
+      "valeur": "CNI + justif. revenus + RIB + justif. domicile <6 mois"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "cofidis",
+      "valeur": "≤3 000€ : CNI + justif. domicile / >3 000€ : + justif. revenus"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "oney",
+      "valeur": "CNI + justif. domicile + avis imposition + RIB"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "franfinance",
+      "valeur": "CNI + justif. domicile + RIB + justif. revenus + tableaux amortissement"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "floa",
+      "valeur": "CNI + RIB + justif. domicile + bulletin salaire + avis imposition"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "younited",
+      "valeur": "CNI + justif. domicile + 3 bulletins salaire + avis imposition"
+    },
+    {
+      "critere_ref": "pb__9",
+      "acteur_id": "boursobank",
+      "valeur": "Parcours Flash : analyse auto si revenus BoursoBank 3 mois+ sinon avis imposition"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "franfinance",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__10",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "cetelem",
+      "valeur": "8 min"
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "franfinance",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "floa",
+      "valeur": "Quelques minutes"
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "younited",
+      "valeur": "Quelques minutes"
+    },
+    {
+      "critere_ref": "pb__11",
+      "acteur_id": "boursobank",
+      "valeur": "Flash : quelques secondes"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "sofinco",
+      "valeur": "Immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "cetelem",
+      "valeur": "Immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "cofidis",
+      "valeur": "Immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "oney",
+      "valeur": "Quasi immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "franfinance",
+      "valeur": "Immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "floa",
+      "valeur": "Quasi immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "younited",
+      "valeur": "Immédiate"
+    },
+    {
+      "critere_ref": "pb__12",
+      "acteur_id": "boursobank",
+      "valeur": "Immédiate Flash"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "sofinco",
+      "valeur": "4,50% TAEG"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "cetelem",
+      "valeur": "4,50% TAEG"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "cofidis",
+      "valeur": "4,70% TAEG"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "oney",
+      "valeur": "4,70% TAEG"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "franfinance",
+      "valeur": "4,89% TAEG"
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "younited",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__13",
+      "acteur_id": "boursobank",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "sofinco",
+      "valeur": "13-48 mois / 15-20k€"
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "cetelem",
+      "valeur": "48 mois / 14k€"
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "cofidis",
+      "valeur": "60 mois / 10-15k€"
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "oney",
+      "valeur": "54-60 mois / 15-21 599€"
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "franfinance",
+      "valeur": "48 mois / 15k€"
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "younited",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__14",
+      "acteur_id": "boursobank",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "sofinco",
+      "valeur": "20/05/2026"
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "cetelem",
+      "valeur": "01/06/2026"
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "cofidis",
+      "valeur": "17/05/2026"
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "oney",
+      "valeur": "11/05/2026"
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "franfinance",
+      "valeur": "14/05/2026"
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "younited",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__15",
+      "acteur_id": "boursobank",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "sofinco",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "cetelem",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "cofidis",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "oney",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "franfinance",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "floa",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "younited",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__16",
+      "acteur_id": "boursobank",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "sofinco",
+      "valeur": "J+7 hors WE/JF"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "cetelem",
+      "valeur": "J+8 option puis 48h"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "cofidis",
+      "valeur": "J+8 min"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "oney",
+      "valeur": "J+8 min"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "franfinance",
+      "valeur": "J+8 option / J+15 défaut"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "floa",
+      "valeur": "J+15 défaut / J+8 express"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "younited",
+      "valeur": "48h ouvrées post délai légal"
+    },
+    {
+      "critere_ref": "pb__17",
+      "acteur_id": "boursobank",
+      "valeur": "7j possible"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "sofinco",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "cetelem",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "cofidis",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "oney",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "franfinance",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "floa",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "younited",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__18",
+      "acteur_id": "boursobank",
+      "valeur": "Une fois par virement"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "cetelem",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "franfinance",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "floa",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__19",
+      "acteur_id": "boursobank",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "sofinco",
+      "valeur": "2x/an dès 6 mois gratuit"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "cetelem",
+      "valeur": "2x/an frais 4%"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "cofidis",
+      "valeur": "2x/an frais 4%"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "oney",
+      "valeur": "2x/an gratuit"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "franfinance",
+      "valeur": "2x/an via conseiller"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "floa",
+      "valeur": "2x/an frais 4%"
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "younited",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__20",
+      "acteur_id": "boursobank",
+      "valeur": "1-3 éch/12 mois dès 7e mois gratuit"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "sofinco",
+      "valeur": "H+B min 60% mensualité"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "cetelem",
+      "valeur": "H max 3x / B max -30% min 50€ sans frais dès 6 mois"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "cofidis",
+      "valeur": "H+B via espace client"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "franfinance",
+      "valeur": "H max 3x / B max -30% min 50€ via conseiller dès 6 mois"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "floa",
+      "valeur": "H max 3x / B max -30% min 50€ dès 6 mois"
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "younited",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "pb__21",
+      "acteur_id": "boursobank",
+      "valeur": "H+B payant 30€"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "sofinco",
+      "valeur": "IRA si >10 000€ rachat concurrence"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "cetelem",
+      "valeur": "IRA légale si rachat >10 000€ gratuit fonds propres"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "cofidis",
+      "valeur": "Gratuit fonds propres IRA légale si rachat >10 000€"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "oney",
+      "valeur": "IRA légale si rachat >10 000€ gratuit fonds propres"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "franfinance",
+      "valeur": "IRA légale si rachat >10 000€ gratuit fonds propres"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "floa",
+      "valeur": "IRA légale si rachat >10 000€ gratuit fonds propres"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "younited",
+      "valeur": "Attestation possible frais possibles"
+    },
+    {
+      "critere_ref": "pb__22",
+      "acteur_id": "boursobank",
+      "valeur": "IRA si rachat >10 000€ gratuit fonds propres"
+    },
+    {
+      "critere_ref": "cr__0",
+      "acteur_id": "cofidis",
+      "valeur": "Accessio"
+    },
+    {
+      "critere_ref": "cr__0",
+      "acteur_id": "cetelem",
+      "valeur": "Cpay"
+    },
+    {
+      "critere_ref": "cr__0",
+      "acteur_id": "floa",
+      "valeur": "Prêt dispo"
+    },
+    {
+      "critere_ref": "cr__0",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__0",
+      "acteur_id": "sofinco",
+      "valeur": "Virement+"
+    },
+    {
+      "critere_ref": "cr__1",
+      "acteur_id": "cofidis",
+      "valeur": "Grand public petits projets"
+    },
+    {
+      "critere_ref": "cr__1",
+      "acteur_id": "cetelem",
+      "valeur": "Grand public achats ponctuels imprévus"
+    },
+    {
+      "critere_ref": "cr__1",
+      "acteur_id": "floa",
+      "valeur": "Grand public digital-first"
+    },
+    {
+      "critere_ref": "cr__1",
+      "acteur_id": "oney",
+      "valeur": "Grand public trésorerie sans justificatif"
+    },
+    {
+      "critere_ref": "cr__1",
+      "acteur_id": "sofinco",
+      "valeur": "Grand public"
+    },
+    {
+      "critere_ref": "cr__2",
+      "acteur_id": "cofidis",
+      "valeur": "Usage libre trésorerie flexible"
+    },
+    {
+      "critere_ref": "cr__2",
+      "acteur_id": "cetelem",
+      "valeur": "Usage libre une ou plusieurs dépenses"
+    },
+    {
+      "critere_ref": "cr__2",
+      "acteur_id": "floa",
+      "valeur": "Trésorerie flexible utilisation totale ou partielle"
+    },
+    {
+      "critere_ref": "cr__2",
+      "acteur_id": "oney",
+      "valeur": "Virement sur compte usage libre"
+    },
+    {
+      "critere_ref": "cr__2",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__3",
+      "acteur_id": "cofidis",
+      "valeur": "500€"
+    },
+    {
+      "critere_ref": "cr__3",
+      "acteur_id": "cetelem",
+      "valeur": "500€"
+    },
+    {
+      "critere_ref": "cr__3",
+      "acteur_id": "floa",
+      "valeur": "500€"
+    },
+    {
+      "critere_ref": "cr__3",
+      "acteur_id": "oney",
+      "valeur": "50€"
+    },
+    {
+      "critere_ref": "cr__3",
+      "acteur_id": "sofinco",
+      "valeur": "1 501€"
+    },
+    {
+      "critere_ref": "cr__4",
+      "acteur_id": "cofidis",
+      "valeur": "6 000€"
+    },
+    {
+      "critere_ref": "cr__4",
+      "acteur_id": "cetelem",
+      "valeur": "4 500-6 000€"
+    },
+    {
+      "critere_ref": "cr__4",
+      "acteur_id": "floa",
+      "valeur": "6 000€"
+    },
+    {
+      "critere_ref": "cr__4",
+      "acteur_id": "oney",
+      "valeur": "3 000€"
+    },
+    {
+      "critere_ref": "cr__4",
+      "acteur_id": "sofinco",
+      "valeur": "10 000€"
+    },
+    {
+      "critere_ref": "cr__5",
+      "acteur_id": "cofidis",
+      "valeur": "36/60 mois"
+    },
+    {
+      "critere_ref": "cr__5",
+      "acteur_id": "cetelem",
+      "valeur": "36/60 mois"
+    },
+    {
+      "critere_ref": "cr__5",
+      "acteur_id": "floa",
+      "valeur": "36/60 mois"
+    },
+    {
+      "critere_ref": "cr__5",
+      "acteur_id": "oney",
+      "valeur": "36/60 mois"
+    },
+    {
+      "critere_ref": "cr__5",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__6",
+      "acteur_id": "cofidis",
+      "valeur": "15€"
+    },
+    {
+      "critere_ref": "cr__6",
+      "acteur_id": "cetelem",
+      "valeur": "15,24€"
+    },
+    {
+      "critere_ref": "cr__6",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__6",
+      "acteur_id": "oney",
+      "valeur": "15€"
+    },
+    {
+      "critere_ref": "cr__6",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__7",
+      "acteur_id": "cofidis",
+      "valeur": "15,86%-23,25%"
+    },
+    {
+      "critere_ref": "cr__7",
+      "acteur_id": "cetelem",
+      "valeur": "15,87%-23,56%"
+    },
+    {
+      "critere_ref": "cr__7",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__7",
+      "acteur_id": "oney",
+      "valeur": "≤6 000€:23,30% / 3 000-6 000€:15,87% / >6 000€:8,67%"
+    },
+    {
+      "critere_ref": "cr__7",
+      "acteur_id": "sofinco",
+      "valeur": "150-6 000€ TAEG 7,90% / 1 500-6 000€ TAEG 9,80%"
+    },
+    {
+      "critere_ref": "cr__8",
+      "acteur_id": "cofidis",
+      "valeur": "Aucun"
+    },
+    {
+      "critere_ref": "cr__8",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__8",
+      "acteur_id": "floa",
+      "valeur": "Aucun"
+    },
+    {
+      "critere_ref": "cr__8",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__8",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__9",
+      "acteur_id": "cofidis",
+      "valeur": "Oui facultative"
+    },
+    {
+      "critere_ref": "cr__9",
+      "acteur_id": "cetelem",
+      "valeur": "Oui facultative"
+    },
+    {
+      "critere_ref": "cr__9",
+      "acteur_id": "floa",
+      "valeur": "Oui facultative"
+    },
+    {
+      "critere_ref": "cr__9",
+      "acteur_id": "oney",
+      "valeur": "Oui facultative"
+    },
+    {
+      "critere_ref": "cr__9",
+      "acteur_id": "sofinco",
+      "valeur": "Oui facultative"
+    },
+    {
+      "critere_ref": "cr__10",
+      "acteur_id": "cofidis",
+      "valeur": "Décès PTIA IIT perte emploi + maladies redoutées hospitalisation divorce"
+    },
+    {
+      "critere_ref": "cr__10",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__10",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__10",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__10",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__11",
+      "acteur_id": "cofidis",
+      "valeur": "4-5 selon Sémaphore"
+    },
+    {
+      "critere_ref": "cr__11",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__11",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__11",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__11",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__12",
+      "acteur_id": "cofidis",
+      "valeur": "5 barèmes standard + 4 barèmes durée choisie"
+    },
+    {
+      "critere_ref": "cr__12",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__12",
+      "acteur_id": "floa",
+      "valeur": "Oui si changement offre ou évolution encours"
+    },
+    {
+      "critere_ref": "cr__12",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__12",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__13",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__13",
+      "acteur_id": "cetelem",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__13",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__13",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__13",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__14",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__14",
+      "acteur_id": "cetelem",
+      "valeur": "Max 2x/an"
+    },
+    {
+      "critere_ref": "cr__14",
+      "acteur_id": "floa",
+      "valeur": "Max 2x/an"
+    },
+    {
+      "critere_ref": "cr__14",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__14",
+      "acteur_id": "sofinco",
+      "valeur": "Max 2x/an"
+    },
+    {
+      "critere_ref": "cr__15",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__15",
+      "acteur_id": "cetelem",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__15",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__15",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__15",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__16",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__16",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__16",
+      "acteur_id": "floa",
+      "valeur": "8% (4% si report)"
+    },
+    {
+      "critere_ref": "cr__16",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__16",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__17",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__17",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__17",
+      "acteur_id": "floa",
+      "valeur": "Oui page dédiée site"
+    },
+    {
+      "critere_ref": "cr__17",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__17",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__18",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__18",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__18",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__18",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__18",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__19",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__19",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__19",
+      "acteur_id": "floa",
+      "valeur": "Web + app 100% digital"
+    },
+    {
+      "critere_ref": "cr__19",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__19",
+      "acteur_id": "sofinco",
+      "valeur": "Web + app + agence + téléphone"
+    },
+    {
+      "critere_ref": "cr__20",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__20",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__20",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__20",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__20",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__21",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__21",
+      "acteur_id": "cetelem",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__21",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__21",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__21",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__22",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__22",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__22",
+      "acteur_id": "floa",
+      "valeur": "15 min"
+    },
+    {
+      "critere_ref": "cr__22",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__22",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__23",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__23",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__23",
+      "acteur_id": "floa",
+      "valeur": "Oui première réponse immédiate"
+    },
+    {
+      "critere_ref": "cr__23",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__23",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__24",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__24",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__24",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__24",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__24",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__25",
+      "acteur_id": "cofidis",
+      "valeur": "1-3 jours ouvrés SEPA / J+8 pour augmentation"
+    },
+    {
+      "critere_ref": "cr__25",
+      "acteur_id": "cetelem",
+      "valeur": "Après rétractation selon utilisation"
+    },
+    {
+      "critere_ref": "cr__25",
+      "acteur_id": "floa",
+      "valeur": "À partir du J+8 / financement ~48h"
+    },
+    {
+      "critere_ref": "cr__25",
+      "acteur_id": "oney",
+      "valeur": "Sous 48h"
+    },
+    {
+      "critere_ref": "cr__25",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__26",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__26",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__26",
+      "acteur_id": "floa",
+      "valeur": "Via espace client"
+    },
+    {
+      "critere_ref": "cr__26",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__26",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__27",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__27",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__27",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__27",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "cr__27",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "cr__28",
+      "acteur_id": "cofidis",
+      "valeur": "Carte 4 étoiles + Cofidis Pay"
+    },
+    {
+      "critere_ref": "cr__28",
+      "acteur_id": "cetelem",
+      "valeur": "Cpay"
+    },
+    {
+      "critere_ref": "cr__28",
+      "acteur_id": "floa",
+      "valeur": "Carte Cdiscount + carte Gold"
+    },
+    {
+      "critere_ref": "cr__28",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__28",
+      "acteur_id": "sofinco",
+      "valeur": "Carte Visa Sofinco + Visa Premier + Partenaires"
+    },
+    {
+      "critere_ref": "cr__29",
+      "acteur_id": "cofidis",
+      "valeur": "Gratuite"
+    },
+    {
+      "critere_ref": "cr__29",
+      "acteur_id": "cetelem",
+      "valeur": "14,90€/an"
+    },
+    {
+      "critere_ref": "cr__29",
+      "acteur_id": "floa",
+      "valeur": "Cdiscount 1,25€/mois / Gold 4,50€/mois"
+    },
+    {
+      "critere_ref": "cr__29",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__29",
+      "acteur_id": "sofinco",
+      "valeur": "Variable selon partenaires"
+    },
+    {
+      "critere_ref": "cr__30",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__30",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__30",
+      "acteur_id": "floa",
+      "valeur": "Cashback mis en avant"
+    },
+    {
+      "critere_ref": "cr__30",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "cr__30",
+      "acteur_id": "sofinco",
+      "valeur": "Programme Sofinco Avantages"
+    },
+    {
+      "critere_ref": "cr__31",
+      "acteur_id": "cofidis",
+      "valeur": "Oui via carte/Cofidis Pay"
+    },
+    {
+      "critere_ref": "cr__31",
+      "acteur_id": "cetelem",
+      "valeur": "Oui post-paiement Cpay"
+    },
+    {
+      "critere_ref": "cr__31",
+      "acteur_id": "floa",
+      "valeur": "Oui changer d'avis après l'achat"
+    },
+    {
+      "critere_ref": "cr__31",
+      "acteur_id": "oney",
+      "valeur": "Oui Transfert comptant/crédit"
+    },
+    {
+      "critere_ref": "cr__31",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "sofinco",
+      "valeur": "3xCB 4xCB"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "cetelem",
+      "valeur": "4xCB Pledg N fois CB"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "cofidis",
+      "valeur": "3xCB 4xCB Pay 3x 4x"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "oney",
+      "valeur": "Oney 3x 4x"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "floa",
+      "valeur": "FLOA 3x 4x"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "klarna",
+      "valeur": "Paiement en 3 fois"
+    },
+    {
+      "critere_ref": "nxcb__0",
+      "acteur_id": "alma",
+      "valeur": "Paiement en 2/3/4 fois"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "sofinco",
+      "valeur": "Particuliers marchands partenaires web et magasin"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "cetelem",
+      "valeur": "Particuliers enseignes partenaires Cpay/Cetelem"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "cofidis",
+      "valeur": "Particuliers marchands partenaires web et magasin"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "oney",
+      "valeur": "Particuliers marchands partenaires web et magasin"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "floa",
+      "valeur": "Particuliers marchands partenaires web et magasin"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "klarna",
+      "valeur": "Consommateurs marchands éligibles Klarna"
+    },
+    {
+      "critere_ref": "nxcb__1",
+      "acteur_id": "alma",
+      "valeur": "Consommateurs marchands Alma"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "sofinco",
+      "valeur": "Étaler achat ponctuel booster conversion"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "cetelem",
+      "valeur": "Paiement fractionné + logique carte/CR/fidélité"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "cofidis",
+      "valeur": "3 ou 4 échéances parcours simple rapide"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "oney",
+      "valeur": "Paiement fractionné"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "floa",
+      "valeur": "Fractionner achat partenaire réponse immédiate"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "klarna",
+      "valeur": "3 mensualités sans frais"
+    },
+    {
+      "critere_ref": "nxcb__2",
+      "acteur_id": "alma",
+      "valeur": "Paiement fractionné rapide moins d'une minute"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "sofinco",
+      "valeur": "2, 3, 4"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "cetelem",
+      "valeur": "Variable"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "cofidis",
+      "valeur": "3, 4"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "oney",
+      "valeur": "3, 4"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "floa",
+      "valeur": "3, 4"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "klarna",
+      "valeur": "3"
+    },
+    {
+      "critere_ref": "nxcb__3",
+      "acteur_id": "alma",
+      "valeur": "2, 3, 4"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__4",
+      "acteur_id": "alma",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "oney",
+      "valeur": "1er paiement à l'achat"
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "floa",
+      "valeur": "1ère échéance à l'achat"
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "klarna",
+      "valeur": "1er paiement à l'achat"
+    },
+    {
+      "critere_ref": "nxcb__5",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "sofinco",
+      "valeur": "Visa/Mastercard/CB"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "cetelem",
+      "valeur": "CB/Visa/Mastercard selon enseigne"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "cofidis",
+      "valeur": "CB/Visa/Mastercard"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "oney",
+      "valeur": "Visa/Mastercard/CB exclusions selon offre"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "floa",
+      "valeur": "Visa/Mastercard/CB valides jusqu'à dernière échéance"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "klarna",
+      "valeur": "Compte Klarna + carte liée"
+    },
+    {
+      "critere_ref": "nxcb__6",
+      "acteur_id": "alma",
+      "valeur": "Carte bancaire éligible"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "sofinco",
+      "valeur": "100€"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "cetelem",
+      "valeur": "60€"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "cofidis",
+      "valeur": "100€"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "oney",
+      "valeur": "100€"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "floa",
+      "valeur": "50€"
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__7",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "sofinco",
+      "valeur": "3 000€"
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "cetelem",
+      "valeur": "16 000€"
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "cofidis",
+      "valeur": "2 300€"
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "oney",
+      "valeur": "6 000€"
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "floa",
+      "valeur": "6 000€"
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__8",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__9",
+      "acteur_id": "alma",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "klarna",
+      "valeur": "Plutôt web/app"
+    },
+    {
+      "critere_ref": "nxcb__10",
+      "acteur_id": "alma",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "sofinco",
+      "valeur": "Fnac Darty Castorama Ikea La Redoute Printemps"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "cetelem",
+      "valeur": "But Conforama E.Leclerc Ford Airbnb"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "cofidis",
+      "valeur": "Feu Vert Cuisinella Afflelou Huawei Rue du Commerce IKKS"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "oney",
+      "valeur": "Boulanger Cdiscount Electro Dépôt Leroy Merlin Back Market"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "floa",
+      "valeur": "Casino Cdiscount Easycash Veepee Bricomarché Galerie Lafayette Samsung"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "klarna",
+      "valeur": "Amazon Sephora Temu JD Sport Carrefour SHEIN Fnac Vinted"
+    },
+    {
+      "critere_ref": "nxcb__11",
+      "acteur_id": "alma",
+      "valeur": "La Redoute Maison du Monde SNCF Zadig&Voltaire Showroom Privé Jardiland"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__12",
+      "acteur_id": "alma",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "sofinco",
+      "valeur": "Variable commerçant ou client"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "cofidis",
+      "valeur": "Variable commerçant ou client"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "oney",
+      "valeur": "1,67% en 3x plafond 30€ / 2,50% en 4x plafond 60€"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "floa",
+      "valeur": "Variable selon partenaire"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "klarna",
+      "valeur": "Pas d'intérêt sur 3 fois frais retard si impayé"
+    },
+    {
+      "critere_ref": "nxcb__13",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "sofinco",
+      "valeur": "TAEG fixe si frais refacturés client"
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "oney",
+      "valeur": "22,59% en 3x / 22,63% en 4x"
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "floa",
+      "valeur": "TAEG max 23,45% sur 3X"
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "klarna",
+      "valeur": "Pas de TAEG sur 3 fois sans frais"
+    },
+    {
+      "critere_ref": "nxcb__14",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "sofinco",
+      "valeur": "Oui selon CG"
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "cofidis",
+      "valeur": "Oui selon CG"
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "oney",
+      "valeur": "Oui selon CG"
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "floa",
+      "valeur": "8% capital dû ou échéances impayées"
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "klarna",
+      "valeur": "Frais retard possibles"
+    },
+    {
+      "critere_ref": "nxcb__15",
+      "acteur_id": "alma",
+      "valeur": "Oui selon CG"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "sofinco",
+      "valeur": "Choix 2x/3x/4x saisie infos réponse immédiate"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "cetelem",
+      "valeur": "Variable selon enseigne/carte"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "cofidis",
+      "valeur": "Formulaire en ligne validation échéancier"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "oney",
+      "valeur": "Choix checkout CB réponse immédiate"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "floa",
+      "valeur": "Choix 3X/4X paiement validation immédiate"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "klarna",
+      "valeur": "Compte/app Klarna + carte liée"
+    },
+    {
+      "critere_ref": "nxcb__16",
+      "acteur_id": "alma",
+      "valeur": "Parcours digital court checkout"
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "cetelem",
+      "valeur": "Variable selon enseigne / 3x4x web souvent sans PJ"
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "cofidis",
+      "valeur": "Formulaire + carte bancaire"
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "oney",
+      "valeur": "Aucune PJ standard"
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "floa",
+      "valeur": "Aucune en général / pièce identité possible contrôle fraude"
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__17",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "sofinco",
+      "valeur": "Acceptation digitale"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "cetelem",
+      "valeur": "Variable selon parcours"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "cofidis",
+      "valeur": "Signature électronique"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "oney",
+      "valeur": "Acceptation digitale"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "floa",
+      "valeur": "Acceptation digitale"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "klarna",
+      "valeur": "Acceptation digitale/app"
+    },
+    {
+      "critere_ref": "nxcb__18",
+      "acteur_id": "alma",
+      "valeur": "Acceptation digitale"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "sofinco",
+      "valeur": "Pas nécessaire"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "cetelem",
+      "valeur": "Oui univers cartes/Cpay"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "cofidis",
+      "valeur": "Oui espace client mais 3x/4x surtout checkout"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "oney",
+      "valeur": "Oui environnement Compte Oney"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "floa",
+      "valeur": "Pas d'app requise pour 3X/4X marchand"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "klarna",
+      "valeur": "Oui app centrale"
+    },
+    {
+      "critere_ref": "nxcb__19",
+      "acteur_id": "alma",
+      "valeur": "Oui espace client Alma"
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "sofinco",
+      "valeur": "Non mise en avant NxCB court"
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "cetelem",
+      "valeur": "Possible via univers crédit/cartes"
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "cofidis",
+      "valeur": "Non spécifique au 3xCB/4xCB"
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "oney",
+      "valeur": "Sans assurance sur 3x4x standard"
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__20",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "sofinco",
+      "valeur": "Pas natif NxCB court"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "cetelem",
+      "valeur": "Avantages Cpay/cashback via carte"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "cofidis",
+      "valeur": "Avantages possibles via carte"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "oney",
+      "valeur": "Pas natif 3x4x court"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "floa",
+      "valeur": "Mon Cashback by FLOA"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "klarna",
+      "valeur": "App shopping services paiement flexibles"
+    },
+    {
+      "critere_ref": "nxcb__21",
+      "acteur_id": "alma",
+      "valeur": "Suivi paiement anticipé options gestion"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "sofinco",
+      "valeur": "Rachat de Crédits Sofinco"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "cetelem",
+      "valeur": "Rachat de Crédits Cetelem"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "cofidis",
+      "valeur": "Rachat de Crédit"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "oney",
+      "valeur": "Rachat de Crédits Oney"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "floa",
+      "valeur": "Regroupement de Crédits"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Regroupement de Crédits"
+    },
+    {
+      "critere_ref": "rac__0",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Rachat de Crédits"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "sofinco",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "cetelem",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "cofidis",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "oney",
+      "valeur": "Conso / mix"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "floa",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__1",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Conso / mix"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "sofinco",
+      "valeur": "Centre d'appels, internet"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "cetelem",
+      "valeur": "Centre d'appels, internet"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "cofidis",
+      "valeur": "Centre d'appels, internet"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "oney",
+      "valeur": "Centre d'appels"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "floa",
+      "valeur": "Internet"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Agence, centre d'appels, internet"
+    },
+    {
+      "critere_ref": "rac__2",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Internet"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__3",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "cetelem",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__4",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "cofidis",
+      "valeur": "Liste détaillée selon montant (identité, RIB, domicile, revenus, tableaux d'amortissement)"
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Identité, RIB, justificatif domicile, tableaux d'amortissement, relevés de crédits renouvelables"
+    },
+    {
+      "critere_ref": "rac__5",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Identité, RIB, facture téléphone/énergie, 3 derniers bulletins salaire, avis imposition, relevés de comptes, tableaux d'amortissement"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "floa",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__6",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "cofidis",
+      "valeur": "Étude définitive sous 8 jours ouvrés"
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__7",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "cofidis",
+      "valeur": "14 jours"
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "la_banque_postale",
+      "valeur": "14 jours"
+    },
+    {
+      "critere_ref": "rac__8",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__9",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__10",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "sofinco",
+      "valeur": "20 000€"
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "cetelem",
+      "valeur": "1 500€"
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "cofidis",
+      "valeur": "3 000€"
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "oney",
+      "valeur": "10 000€"
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "la_banque_postale",
+      "valeur": "1 500€"
+    },
+    {
+      "critere_ref": "rac__11",
+      "acteur_id": "carrefour_banque",
+      "valeur": "1 500€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "sofinco",
+      "valeur": "100 000€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "cetelem",
+      "valeur": "250 000€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "cofidis",
+      "valeur": "80 000€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "oney",
+      "valeur": "75 000€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "la_banque_postale",
+      "valeur": "75 000€"
+    },
+    {
+      "critere_ref": "rac__12",
+      "acteur_id": "carrefour_banque",
+      "valeur": "150 000€"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "sofinco",
+      "valeur": "36 mois"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "cetelem",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "cofidis",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "oney",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "la_banque_postale",
+      "valeur": "12 mois"
+    },
+    {
+      "critere_ref": "rac__13",
+      "acteur_id": "carrefour_banque",
+      "valeur": "60 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "sofinco",
+      "valeur": "120 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "cetelem",
+      "valeur": "180 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "cofidis",
+      "valeur": "144 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "oney",
+      "valeur": "120 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "la_banque_postale",
+      "valeur": "144 mois"
+    },
+    {
+      "critere_ref": "rac__14",
+      "acteur_id": "carrefour_banque",
+      "valeur": "120 mois"
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "sofinco",
+      "valeur": "8,65% TAEG fixe (exemple public)"
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "cofidis",
+      "valeur": "8,65% à 23,54% TAEG fixe"
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "oney",
+      "valeur": "8,67% TAEG fixe (exemple public)"
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__15",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "floa",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__16",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "sofinco",
+      "valeur": "1% plafonné"
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "cofidis",
+      "valeur": "0"
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "floa",
+      "valeur": "1% plafonné"
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "la_banque_postale",
+      "valeur": "1% plafonné"
+    },
+    {
+      "critere_ref": "rac__17",
+      "acteur_id": "carrefour_banque",
+      "valeur": "0"
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "cofidis",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "la_banque_postale",
+      "valeur": "70€"
+    },
+    {
+      "critere_ref": "rac__18",
+      "acteur_id": "carrefour_banque",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "sofinco",
+      "valeur": "150€"
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "cofidis",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "la_banque_postale",
+      "valeur": "250€"
+    },
+    {
+      "critere_ref": "rac__19",
+      "acteur_id": "carrefour_banque",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "floa",
+      "valeur": "0€ annoncé sur le web"
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__20",
+      "acteur_id": "carrefour_banque",
+      "valeur": "0€"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "sofinco",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "cetelem",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "cofidis",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "oney",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "la_banque_postale",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__21",
+      "acteur_id": "carrefour_banque",
+      "valeur": "À l'issue du délai légal de rétractation"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "sofinco",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "cetelem",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "cofidis",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "oney",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "floa",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "la_banque_postale",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__22",
+      "acteur_id": "carrefour_banque",
+      "valeur": "En une fois"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "sofinco",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "cetelem",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "cofidis",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "oney",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "floa",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__23",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Après acceptation et fin du délai de rétractation"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "sofinco",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "cetelem",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "cofidis",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "oney",
+      "valeur": "Conso / immo / mix"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "floa",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Conso"
+    },
+    {
+      "critere_ref": "rac__24",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Conso / immo / mix"
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__25",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__26",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__27",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__28",
+      "acteur_id": "carrefour_banque",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "cetelem",
+      "valeur": "Jusqu'à 2/an"
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__29",
+      "acteur_id": "carrefour_banque",
+      "valeur": "2/an sans garantie ; 5 sur la durée avec garantie"
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "cetelem",
+      "valeur": "À jour des remboursements ; 4% de frais"
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__30",
+      "acteur_id": "carrefour_banque",
+      "valeur": "À jour des remboursements ; accord prêteur ; 4% de frais selon cas"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "oney",
+      "valeur": "Oui mais caractéristiques non identifiées"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "floa",
+      "valeur": "Oui mais caractéristiques non identifiées"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "la_banque_postale",
+      "valeur": "Oui mais caractéristiques non identifiées"
+    },
+    {
+      "critere_ref": "rac__31",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__32",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__33",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__34",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "cofidis",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "floa",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "la_banque_postale",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "rac__35",
+      "acteur_id": "carrefour_banque",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "sofinco",
+      "valeur": "PURE"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "cetelem",
+      "valeur": "Cetelem Pay"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "cofidis",
+      "valeur": "4 étoiles"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "oney",
+      "valeur": "Carte bancaire"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "younited",
+      "valeur": "Helios"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "alma",
+      "valeur": "Pas de carte"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "klarna",
+      "valeur": "Core"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "revolut",
+      "valeur": "Plus"
+    },
+    {
+      "critere_ref": "carte__0",
+      "acteur_id": "boursobank",
+      "valeur": "Ultim"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "sofinco",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "cetelem",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "cofidis",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "oney",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "younited",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "klarna",
+      "valeur": "Crédit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "revolut",
+      "valeur": "Débit"
+    },
+    {
+      "critere_ref": "carte__1",
+      "acteur_id": "boursobank",
+      "valeur": "Débit"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "sofinco",
+      "valeur": "MASTERCARD"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "cetelem",
+      "valeur": "Mastercard"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "cofidis",
+      "valeur": "Visa"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "oney",
+      "valeur": "Visa"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "younited",
+      "valeur": "Visa"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "klarna",
+      "valeur": "Visa"
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__2",
+      "acteur_id": "boursobank",
+      "valeur": "Visa"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "revolut",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__3",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "sofinco",
+      "valeur": "15 000€ (sous réserve du capital attribué)"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "cetelem",
+      "valeur": "Plafond personnalisé"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "cofidis",
+      "valeur": "4 500€"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "oney",
+      "valeur": "Plafond personnalisé"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "younited",
+      "valeur": "Jusqu'à 2 000€ par jour, 10 000€ par mois"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "klarna",
+      "valeur": "Plafond personnalisé"
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__4",
+      "acteur_id": "boursobank",
+      "valeur": "20 000€ sur 30j glissants"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "sofinco",
+      "valeur": "500€ / 7J glissants"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "cetelem",
+      "valeur": "300€ par jour et 600€ / 7j glissants"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "cofidis",
+      "valeur": "500€ sur 7 jours glissants ou 1 500€ par mois"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "oney",
+      "valeur": "Plafond personnalisé"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "younited",
+      "valeur": "Jusqu'à 500€ par jour, 1 500€ par mois"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "klarna",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "revolut",
+      "valeur": "200€ par mois glissant sans frais"
+    },
+    {
+      "critere_ref": "carte__5",
+      "acteur_id": "boursobank",
+      "valeur": "2 000€ / 7j glissants"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "sofinco",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__6",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "sofinco",
+      "valeur": "500€ / 7J glissants"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__7",
+      "acteur_id": "boursobank",
+      "valeur": "3 retraits gratuits/mois hors zone euro, puis 1,69% de frais par retrait"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "revolut",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__8",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "sofinco",
+      "valeur": "Oui, optionnelle (payante)"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "cofidis",
+      "valeur": "Oui mais optionnelle"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "klarna",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "revolut",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__9",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "cofidis",
+      "valeur": "Oui (selon les cartes)"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "klarna",
+      "valeur": "Oui (2 ans supplémentaire)"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "revolut",
+      "valeur": "Oui (premium)"
+    },
+    {
+      "critere_ref": "carte__10",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "klarna",
+      "valeur": "Oui, jusqu'à 500€"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "revolut",
+      "valeur": "Oui (premium)"
+    },
+    {
+      "critere_ref": "carte__11",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "oney",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "revolut",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__12",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "cofidis",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "klarna",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "revolut",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__13",
+      "acteur_id": "boursobank",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "oney",
+      "valeur": "Oui sur carte Visa Auchan"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__14",
+      "acteur_id": "boursobank",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "oney",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "younited",
+      "valeur": "Oui (avec la carte premium)"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "alma",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "revolut",
+      "valeur": "Oui (premium)"
+    },
+    {
+      "critere_ref": "carte__15",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "sofinco",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "cetelem",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "younited",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "klarna",
+      "valeur": "Non"
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "revolut",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__16",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "sofinco",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "cetelem",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "cofidis",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "oney",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "younited",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "alma",
+      "valeur": "-"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "klarna",
+      "valeur": "N.I."
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "revolut",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__17",
+      "acteur_id": "boursobank",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "sofinco",
+      "valeur": "Lundi à vendredi 9h-18h, samedi 9h-13h"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "cetelem",
+      "valeur": "Accessibles en ligne 7J/7, 24h/24"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "cofidis",
+      "valeur": "Lundi au vendredi de 8h à 19h00 et le samedi de 8h à 14h"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "oney",
+      "valeur": "Lundi au vendredi de 8h à 19h30 et le samedi de 8h à 19h"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "younited",
+      "valeur": "Accessibles de 9h à 18h, 5J/7"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "alma",
+      "valeur": "Disponible que par mail 7J/7"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "klarna",
+      "valeur": "Oui"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "revolut",
+      "valeur": "Accessibles en ligne 7J/7, 24h/24"
+    },
+    {
+      "critere_ref": "carte__18",
+      "acteur_id": "boursobank",
+      "valeur": "Accessibles en ligne 7J/7, 24h/24"
+    }
+  ],
+  "promos": [
+    {
+      "produit_id": "pb",
+      "acteur_id": "sofinco",
+      "taux": "4,50% TAEG",
+      "duree": "13-48 mois",
+      "montant": "15-20k€",
+      "date_fin": "20/05/2026",
+      "canal": "Digital site web",
+      "lien": "https://www.sofinco.fr/pret-personnel"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "cetelem",
+      "taux": "4,50% TAEG",
+      "duree": "48 mois",
+      "montant": "14k€",
+      "date_fin": "01/06/2026",
+      "canal": "Digital site web",
+      "lien": "https://www.cetelem.fr/pret-personnel"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "cofidis",
+      "taux": "4,70% TAEG",
+      "duree": "60 mois",
+      "montant": "10-15k€",
+      "date_fin": "17/05/2026",
+      "canal": "Digital site web",
+      "lien": "https://www.cofidis.fr/pret-personnel"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "oney",
+      "taux": "4,70% TAEG",
+      "duree": "54-60 mois",
+      "montant": "15-21 599€",
+      "date_fin": "11/05/2026",
+      "canal": "Digital site web",
+      "lien": "https://www.oney.fr/credit/pret-personnel"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "franfinance",
+      "taux": "4,89% TAEG",
+      "duree": "48 mois",
+      "montant": "15k€",
+      "date_fin": "14/05/2026",
+      "canal": "Digital site web",
+      "lien": "https://www.franfinance.fr/pret-personnel"
+    }
+  ],
+  "differenciateurs": [
+    {
+      "produit_id": "pb",
+      "acteur_id": "sofinco",
+      "difference": null,
+      "pourquoi": null,
+      "conclusion": "Nous proposons la durée de remboursement la plus longue du marché et une pause paiement gratuite — deux leviers concrets pour accompagner nos clients sur la durée.",
+      "tags": [
+        "Durée max : 120 mois (unique)",
+        "Pause paiement gratuite",
+        "Délai déblocage J+7"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "cetelem",
+      "difference": "Souscription en 8 min · Durée min : 7 mois",
+      "pourquoi": "Le délai de souscription le plus court du benchmark et une durée minimum parmi les plus basses, pour un accès quasi immédiat au crédit.",
+      "conclusion": "Cetelem mise sur la rapidité de souscription et la flexibilité sans frais pour capter les besoins impulsifs.",
+      "tags": [
+        "Durée min : 7 mois",
+        "Souscription en 8 min",
+        "Modulation sans frais dès 6 mois"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "cofidis",
+      "difference": "Montant min : 500€ · Parcours 100% digital",
+      "pourquoi": "Le seuil d'entrée le plus bas du panel et un parcours entièrement dématérialisé, sans contrainte de réseau physique.",
+      "conclusion": "Cofidis se positionne sur l'accessibilité et la simplicité digitale pour élargir sa base clients.",
+      "tags": [
+        "Montant min : 500€",
+        "Déblocage possible par chèque",
+        "Modulation via espace client"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "oney",
+      "difference": "Durée min : 4 mois · Montant max : 75 000€",
+      "pourquoi": "La durée minimale la plus courte du marché combinée à l'un des plafonds les plus élevés — une amplitude rare.",
+      "conclusion": "Oney vise les profils recherchant flexibilité courte durée et capacité d'emprunt élevée.",
+      "tags": [
+        "Durée min : 4 mois (unique)",
+        "Montant max : 75 000€",
+        "Pause paiement gratuite"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "franfinance",
+      "difference": "Taux promo : 4,89% TAEG · Filiale Société Générale",
+      "pourquoi": "Un ancrage bancaire SG crédible et un taux promotionnel compétitif dans le haut du panel.",
+      "conclusion": "Franfinance combine légitimité bancaire et accompagnement conseiller pour les dossiers complexes.",
+      "tags": [
+        "Filiale Société Générale",
+        "Taux promo compétitif 4,89%",
+        "Conseiller dédié modulation"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "floa",
+      "difference": "Montant max : 6 000€ · Déblocage J+8 express",
+      "pourquoi": "Un positionnement volontairement limité en montant avec l'un des délais de déblocage les plus courts.",
+      "conclusion": "FLOA cible les petits besoins de trésorerie avec un parcours express et peu de friction.",
+      "tags": [
+        "Montant max : 6 000€ seulement",
+        "Déblocage J+8 express",
+        "Modulation dès 6 mois"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "younited",
+      "difference": "100% digital · Réponse définitive rapide",
+      "pourquoi": "Une fintech pure sans héritage réseau agence, avec un parcours entièrement automatisé de bout en bout.",
+      "conclusion": "Younited se différencie par la vitesse et l'absence totale de friction physique dans le parcours.",
+      "tags": [
+        "Fintech indépendante",
+        "100% digital",
+        "Réponse définitive rapide"
+      ],
+      "status": "valide"
+    },
+    {
+      "produit_id": "pb",
+      "acteur_id": "boursobank",
+      "difference": "Parcours Flash automatisé · Client BoursoBank requis",
+      "pourquoi": "Un modèle closed-loop réservé à la clientèle existante, avec analyse automatique des revenus.",
+      "conclusion": "Boursobank transforme sa base clients en avantage compétitif avec un parcours ultra-rapide pour les éligibles.",
+      "tags": [
+        "Client BoursoBank requis",
+        "Parcours Flash automatisé",
+        "Analyse revenus automatique"
+      ],
+      "status": "valide"
+    }
+  ],
+  "tendances": [
+    {
+      "produit_id": "pb",
+      "titre": "Mouvement sur les taux promo",
+      "description": "3 concurrents ont ajusté leurs taux promotionnels sur le prêt personnel ce mois-ci, avec une baisse moyenne de 0,2 point de TAEG.",
+      "acteurs_concernes": [
+        "cetelem",
+        "cofidis",
+        "oney"
+      ],
+      "status": "genere"
+    },
+    {
+      "produit_id": "pb",
+      "titre": "Accélération du 100 % digital",
+      "description": "Deux acteurs renforcent leur parcours entièrement en ligne, sans passage en agence obligatoire.",
+      "acteurs_concernes": [
+        "younited",
+        "cofidis"
+      ],
+      "status": "genere"
+    },
+    {
+      "produit_id": "pb",
+      "titre": "Guerre des durées maximales",
+      "description": "Plusieurs acteurs mettent en avant leur durée de remboursement maximale dans leurs campagnes marketing print et digital.",
+      "acteurs_concernes": [
+        "oney",
+        "franfinance",
+        "cetelem"
+      ],
+      "status": "genere"
+    }
+  ],
+  "actualites": [
+    {
+      "date": "2026-06-15",
+      "acteur_id": "cetelem",
+      "type": "Produit",
+      "produit_id": "pb",
+      "titre": "Cetelem relance sa campagne avec un TAEG promotionnel à 3,9% sur le prêt personnel travaux.",
+      "source": "https://www.cetelem.fr",
+      "impact": "menace_directe"
+    },
+    {
+      "date": "2026-06-10",
+      "acteur_id": "klarna",
+      "type": "Digital",
+      "produit_id": "nxcb",
+      "titre": "Klarna lance une nouvelle app intégrant un comparateur de cashback pour ses marchands partenaires.",
+      "source": "https://www.klarna.com",
+      "impact": "a_surveiller"
+    },
+    {
+      "date": "2026-06-02",
+      "acteur_id": "cofidis",
+      "type": "Corporate",
+      "produit_id": null,
+      "titre": "Cofidis annonce un partenariat stratégique avec Crédit Mutuel Alliance Fédérale pour 2026-2028.",
+      "source": "https://www.cofidis.fr",
+      "impact": "neutre"
+    },
+    {
+      "date": "2026-05-22",
+      "acteur_id": "oney",
+      "type": "Marketing",
+      "produit_id": "rac",
+      "titre": "Oney lance une campagne TV sur le rachat de crédits ciblant les jeunes actifs.",
+      "source": "https://www.oney.fr",
+      "impact": "a_surveiller"
+    }
+  ],
+  "taux_cr": [
+    {
+      "acteur_id": "axa_banque",
+      "produit_nom": "Larg'O",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "De 1 € à 1 500 €",
+          "b1": 0.1695,
+          "b1v": 0,
+          "b2": null,
+          "b2v": null,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "De 1 500 € à 3 000 €",
+          "b1": null,
+          "b1v": null,
+          "b2": 0.169,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "De 3 000 € à 6 000 €",
+          "b1": 0.234,
+          "b1v": 0,
+          "b2": 0.0968,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Plus de 6 000 €",
+          "b1": null,
+          "b1v": null,
+          "b2": null,
+          "b2v": null,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "banque_populaire",
+      "produit_nom": "Facelia",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.234,
+          "b1v": 0,
+          "b2": 0.1565,
+          "b2v": 0,
+          "b3": 0.0856,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "bnp_paribas",
+      "produit_nom": "Provisio",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.139,
+          "b1v": 0,
+          "b2": 0.099,
+          "b2v": 0,
+          "b3": 0.065,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "caisse_d_epargne",
+      "produit_nom": "Izicarte",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.234,
+          "b1v": 0,
+          "b2": 0.1565,
+          "b2v": 0,
+          "b3": 0.0856,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "cic",
+      "produit_nom": "Etalis+",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.1434,
+          "b1v": 0,
+          "b2": null,
+          "b2v": null,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "cic",
+      "produit_nom": "Crédit Liberté",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "12 – 36 mois",
+          "b1": 0.0696,
+          "b1v": 0,
+          "b2": 0.0627,
+          "b2v": 0,
+          "b3": 0.0627,
+          "b3v": 0
+        },
+        {
+          "tranche": "37 – 60 mois",
+          "b1": 0.0808,
+          "b1v": 0,
+          "b2": 0.0638,
+          "b2v": 0,
+          "b3": 0.0638,
+          "b3v": 0
+        }
+      ],
+      "commentaire": "Anciennement \"Crédit en Réserve\". Montants de 3 000 € à 50 000 €",
+      "is_us": false
+    },
+    {
+      "acteur_id": "credit_mutuel",
+      "produit_nom": "Etalis+",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "Max",
+          "b1": 0.1434,
+          "b1v": 0,
+          "b2": null,
+          "b2v": null,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "la_banque_postale",
+      "produit_nom": "Crédit renouvelable",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.145,
+          "b1v": 0,
+          "b2": 0.1386,
+          "b2v": 0,
+          "b3": 0.0784,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "lcl",
+      "produit_nom": "Crédit renouvelable",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.169,
+          "b1v": 0,
+          "b2": 0.115,
+          "b2v": 0,
+          "b3": 0.067,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "monabanq",
+      "produit_nom": "Crédit renouvelable",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.2085,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": 0.0857,
+          "b3v": 0.0002
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "sg",
+      "produit_nom": "Alterna",
+      "categorie": "bancaire",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.2085,
+          "b1v": 0,
+          "b2": 0.1249,
+          "b2v": 0,
+          "b3": 0.0745,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "carrefour_banque",
+      "produit_nom": "Crédit PASS",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.2351,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": 0.086,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "cetelem_cofinoga",
+      "produit_nom": "Crédit renouvelable",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "Jusqu'à 3 mois",
+          "b1": 0.1799,
+          "b1v": 0,
+          "b2": 0.1573,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Sur 4 à 5 mois",
+          "b1": 0.1799,
+          "b1v": 0,
+          "b2": 0.1573,
+          "b2v": 0.0003,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Sur 6 à 10 mois",
+          "b1": 0.2351,
+          "b1v": 0.0009,
+          "b2": 0.1573,
+          "b2v": 0.0007,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Sur 11 à 60 mois",
+          "b1": 0.2351,
+          "b1v": 0.0008,
+          "b2": null,
+          "b2v": null,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Sur 11 à 20 mois",
+          "b1": null,
+          "b1v": null,
+          "b2": 0.1573,
+          "b2v": 0.0004,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Sur 21 à 60 mois",
+          "b1": null,
+          "b1v": null,
+          "b2": 0.1573,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": "Depuis janvier 2023, Cofinoga applique la même tarification que Cetelem",
+      "is_us": false
+    },
+    {
+      "acteur_id": "cofidis",
+      "produit_nom": "Accessio",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "Vitesse confort",
+          "b1": 0.232,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Vitesse rapide",
+          "b1": 0.1991,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        },
+        {
+          "tranche": "Vitesse express",
+          "b1": 0.159,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "floa_bank",
+      "produit_nom": "Prêt dispo",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.2351,
+          "b1v": 0,
+          "b2": 0.1572,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "franfinance",
+      "produit_nom": "Budget Plus",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.2351,
+          "b1v": 0,
+          "b2": 0.1573,
+          "b2v": 0,
+          "b3": null,
+          "b3v": null
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "oney",
+      "produit_nom": "Virement +",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.233,
+          "b1v": 0,
+          "b2": 0.1573,
+          "b2v": 0,
+          "b3": 0.0861,
+          "b3v": 0
+        }
+      ],
+      "commentaire": null,
+      "is_us": false
+    },
+    {
+      "acteur_id": "sofinco",
+      "produit_nom": "Crédit renouvelable Agile",
+      "categorie": "financiere",
+      "rows": [
+        {
+          "tranche": "",
+          "b1": 0.235,
+          "b1v": 0,
+          "b2": 0.157,
+          "b2v": 0,
+          "b3": 0.086,
+          "b3v": 0
+        }
+      ],
+      "commentaire": "Offre permanente : 150-6 000 € sur 10 mois (7,90 %) · 1 500-6 000 € sur 18-24 mois (9,80 %)",
+      "is_us": true
+    }
+  ],
+  "taux_cr_meta": {
+    "id": "cr",
+    "updated_at": "2026-05-01",
+    "prev_date": "2026-04-01",
+    "usure": [
+      {
+        "id": "b1",
+        "label": "0 € – 3 000 €",
+        "taux": 0.2352
+      },
+      {
+        "id": "b2",
+        "label": "3 000 – 6 000 €",
+        "taux": 0.1573
+      },
+      {
+        "id": "b3",
+        "label": "Plus de 6 000 €",
+        "taux": 0.0861
+      }
+    ]
+  },
+  "prod_urls": {
+    "pb": {
+      "Sofinco": "https://www.sofinco.fr/pret-personnel",
+      "Cetelem": "https://www.cetelem.fr/pret-personnel",
+      "Cofidis": "https://www.cofidis.fr/pret-personnel",
+      "Oney": "https://www.oney.fr/credit/pret-personnel",
+      "Franfinance": "https://www.franfinance.fr/pret-personnel",
+      "FLOA": "https://www.floa.fr/pret-personnel",
+      "Younited": "https://www.younited-credit.com/pret-personnel",
+      "Boursobank": "https://www.boursobank.com/credit/pret-personnel"
+    },
+    "cr": {
+      "Sofinco": "https://www.sofinco.fr/credit-renouvelable",
+      "Cetelem": "https://www.cetelem.fr/credit-renouvelable",
+      "Cofidis": "https://www.cofidis.fr/credit-renouvelable",
+      "FLOA": "https://www.floa.fr/credit-renouvelable",
+      "Oney": "https://www.oney.fr/credit/credit-renouvelable"
+    },
+    "nxcb": {
+      "Sofinco": "https://www.sofinco.fr/paiement-fractionne",
+      "Cetelem": "https://www.cetelem.fr/paiement-fractionne",
+      "Cofidis": "https://www.cofidis.fr/paiement-3x-4x",
+      "Oney": "https://www.oney.fr/paiement-3x-4x",
+      "FLOA": "https://www.floa.fr/paiement-3x-4x",
+      "Klarna": "https://www.klarna.com/fr/paiement-en-3-fois",
+      "Alma": "https://getalma.eu/marchands"
+    },
+    "rac": {
+      "Sofinco": "https://www.sofinco.fr/rachat-de-credit",
+      "Cetelem": "https://www.cetelem.fr/rachat-de-credit",
+      "Cofidis": "https://www.cofidis.fr/rachat-de-credit",
+      "Oney": "https://www.oney.fr/credit/rachat-de-credit",
+      "FLOA": "https://www.floa.fr/regroupement-de-credits"
+    },
+    "carte": {
+      "Sofinco": "https://www.sofinco.fr/carte-pure",
+      "Cetelem": "https://www.cetelem.fr/cetelem-pay",
+      "Cofidis": "https://www.cofidis.fr/carte-4-etoiles",
+      "Younited": "https://www.younited-credit.com",
+      "Klarna": "https://www.klarna.com",
+      "Boursobank": "https://www.boursobank.com/cartes-bancaires"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+# SofincoEdge — Supabase local config
+# Remplacer project_id après liaison CLI : npx supabase link
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323

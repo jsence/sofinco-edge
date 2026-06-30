@@ -1,0 +1,13 @@
+{
+  "name": "sofinco-edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:seed": "node scripts/build-seed-data.mjs",
+    "seed:supabase": "node scripts/seed-supabase.mjs",
+    "verify:seed": "node scripts/verify-seed.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}
