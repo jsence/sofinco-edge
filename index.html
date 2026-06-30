@@ -16,6 +16,7 @@
     :root {
       --navy: #0B2B4A;
       --tq: #4FD8D8;
+      --tq-bright: #5CE1E6;
       --tq-ink: #0E8C97;
       --tq-light: rgba(79,216,216,0.14);
       --tq-pale: rgba(79,216,216,0.06);
@@ -85,10 +86,11 @@
     }
     .sb-logo-mark {
       width: 34px; height: 34px;
-      background: var(--navy);
+      background: var(--tq);
       border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 17px; flex-shrink: 0;
+      color: var(--navy); font-size: 12px; font-weight: 800;
+      letter-spacing: -0.5px; flex-shrink: 0;
     }
     .sb-logo-text { font-size: 12px; font-weight: 700; line-height: 1.3; }
     .sb-logo-sub { font-size: 10px; color: var(--muted); }
@@ -185,10 +187,12 @@
 
     /* ── HOME ─────────────────────────────────── */
     .home-hd { margin-bottom: 24px; }
-    .home-title { font-size: 44px; font-weight: 800; letter-spacing: -0.5px; color: var(--navy); }
+    .home-title { font-size: 52px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
+    .home-title-sof { color: var(--navy); }
+    .home-title-edge { color: var(--tq-bright); }
     .home-subtitle { font-size: 15px; color: var(--muted); margin-top: 6px; max-width: 520px; }
 
-    .shortcuts-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 1.15fr; gap: 16px; margin-bottom: 36px; }
+    .shortcuts-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 36px; }
     .shortcut-card {
       background: var(--glass-bg);
       backdrop-filter: blur(12px);
@@ -199,6 +203,12 @@
       padding: 24px 14px;
       text-align: center;
       cursor: pointer;
+      min-height: 148px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       transition: box-shadow 220ms ease, transform 220ms ease;
     }
     .shortcut-card:hover { box-shadow: 0 14px 38px rgba(11,43,74,0.16); transform: translateY(-3px); }
@@ -430,6 +440,19 @@
     }
     .fiche-promo-rate { font-size: 28px; font-weight: 700; color: var(--tq-ink); line-height: 1; }
     .fiche-promo-detail { font-size: 12px; color: var(--muted); }
+    .fiche-taux {
+      background: rgba(79,216,216,0.06); border: 1px solid rgba(79,216,216,0.25);
+      border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 18px;
+    }
+    .fiche-taux-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--tq-ink); margin-bottom: 10px;
+    }
+    .fiche-taux-range {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+    }
+    .fiche-taux-na { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 
     /* ── TABLEAU : texte peut revenir à la ligne ── */
     .tbl-wrap td { white-space: normal; min-width: 90px; }
@@ -508,8 +531,6 @@
 
     .cmp-us-col { background: rgba(79,216,216,0.08) !important; border-left: 3px solid var(--tq) !important; }
     th.cmp-us-hd { background: rgba(79,216,216,0.12) !important; color: var(--tq-ink) !important; }
-    .cell-hl { background: #FEF9C3 !important; }
-
     /* ── DIFF ─────────────────────────────────── */
     .diff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap: 16px; }
     .diff-card {
@@ -761,10 +782,10 @@
 ════════════════════════════════════════════ -->
 <aside id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-mark"><i class="ti ti-chart-bar"></i></div>
+    <div class="sb-logo-mark">SE</div>
     <div>
       <div class="sb-logo-text">Veille concurrentielle</div>
-      <div class="sb-logo-sub">Sofinco</div>
+      <div class="sb-logo-sub">SofincoEdge</div>
     </div>
   </div>
 
@@ -2253,7 +2274,7 @@
 
     /* Titre */
     html += '<div class="home-hd">';
-    html += '<div class="home-title">SofincoEdge</div>';
+    html += '<div class="home-title"><span class="home-title-sof">Sofinco</span><span class="home-title-edge">Edge</span></div>';
     html += '<div class="home-subtitle">Suivre en continu l\'offre et les mouvements de la concurrence</div>';
     html += '</div>';
 
@@ -2451,15 +2472,13 @@
         html += '<tr class="sec-row"><td colspan="' + (sel.length + 1) + '">' + esc(sec.title) + '</td></tr>';
       }
       sec.rows.forEach(function (row) {
-        var sofVal = (row.values['Sofinco'] || '').trim().toLowerCase();
         html += '<tr onclick="openDetail(\'' + esc(p.id) + '\',\'' + esc(row.critere).replace(/'/g, "\\'") + '\')">';
         html += '<td>' + esc(row.critere) + '</td>';
         sel.forEach(function (actor) {
           var isUs = actor === 'Sofinco';
           var v = row.values[actor] || '';
-          var diff = hasSofinco && !isUs && v.trim().toLowerCase() !== sofVal;
-          var cls = (isUs ? 'col-us' : '') + (diff ? ' cell-hl' : '');
-          html += '<td' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' + renderCell(v) + '</td>';
+          var cls = isUs ? 'col-us' : '';
+          html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + renderCell(v) + '</td>';
         });
         html += '</tr>';
       });
@@ -3274,6 +3293,77 @@
     ]
   };
 
+  function productHasTauxTab (productId) {
+    return productId === 'pb' || productId === 'cr' || productId === 'rac';
+  }
+
+  function findTauxActor (productId, actorName) {
+    var d = DATA.taux && DATA.taux[productId];
+    if (!d || !d.actors) return null;
+    for (var i = 0; i < d.actors.length; i++) {
+      var a = d.actors[i];
+      if (a.nom === actorName) return a;
+      var first = a.nom.split(/\s*[\/]\s*/)[0].trim();
+      if (first === actorName || a.nom.indexOf(actorName) === 0) return a;
+    }
+    return null;
+  }
+
+  function getActorRateRange (tauxActor) {
+    var rates = [];
+    tauxActor.rows.forEach(function (row) {
+      ['b1', 'b2', 'b3'].forEach(function (bk) {
+        var v = row[bk];
+        if (v !== null && v !== undefined) rates.push(v);
+      });
+    });
+    if (!rates.length) return null;
+    return { min: Math.min.apply(null, rates), max: Math.max.apply(null, rates) };
+  }
+
+  function fmtPctRate (rate) {
+    return (rate * 100).toFixed(2).replace('.', ',') + ' %';
+  }
+
+  function renderFicheTauxBlock (productId, actor) {
+    if (!productHasTauxTab(productId)) {
+      return '<div class="fiche-taux-na">Taux non applicable pour ce produit</div>';
+    }
+    var tauxActor = findTauxActor(productId, actor);
+    var range = tauxActor ? getActorRateRange(tauxActor) : null;
+    if (!range) {
+      return '<div class="fiche-taux-na">Taux non applicable pour ce produit</div>';
+    }
+    var html = '<div class="fiche-taux">';
+    html += '<div class="fiche-taux-title">Fourchette de taux</div>';
+    html += '<div class="fiche-taux-range">';
+    if (range.min === range.max) {
+      html += '<span class="rate-val r-green">' + fmtPctRate(range.min) + '</span>';
+    } else {
+      html += 'À partir de <span class="rate-val r-green">' + fmtPctRate(range.min) + '</span>';
+      html += ' jusqu\'à <span class="rate-val r-orange">' + fmtPctRate(range.max) + '</span>';
+    }
+    html += '</div>';
+    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="goToTauxFromFiche(\'' + esc(productId) + '\')">';
+    html += '<i class="ti ti-chart-bar"></i> Voir le détail des taux</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function goToTauxFromFiche (productId) {
+    $('modal-detail').classList.remove('show');
+    if (state.view === 'product' && state.productId === productId) {
+      switchTab('taux');
+      return;
+    }
+    fade(function () {
+      state.view = 'product';
+      state.productId = productId;
+      state.tab = 'taux';
+      render();
+    });
+  }
+
   function openActorFiche (productId, actor) {
     var p = productById(productId);
     if (!p) return;
@@ -3332,6 +3422,9 @@
       if (promo.dateFin) html += '<div><span class="badge b-date" style="font-size:10px"><i class="ti ti-calendar" style="font-size:10px"></i> Fin : ' + esc(promo.dateFin) + '</span></div>';
       html += '</div></div>';
     }
+
+    /* Fourchette de taux */
+    html += renderFicheTauxBlock(productId, actor);
 
     /* Sections de critères */
     var sections = FICHE_SECTIONS[productId] || [];
@@ -3489,6 +3582,7 @@
   window.toggleCompare     = toggleCompare;
   window.openDetail        = openDetail;
   window.openActorFiche    = openActorFiche;
+  window.goToTauxFromFiche = goToTauxFromFiche;
   window.switchTauxBracket = switchTauxBracket;
   window.switchTauxCat     = switchTauxCat;
   window.sortTaux          = sortTaux;
