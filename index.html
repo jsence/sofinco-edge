@@ -590,6 +590,59 @@
     .diff-status-valide { background: #DCFCE7; color: #16A34A; }
     .diff-card-highlight { box-shadow: 0 0 0 3px rgba(79,216,216,0.35) !important; }
 
+    .diff-blocks { display: flex; flex-direction: column; gap: 14px; }
+    .diff-block-lbl {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--tq-ink); margin-bottom: 6px;
+    }
+    .diff-block-fact {
+      font-size: 14px; font-weight: 600; color: var(--navy); line-height: 1.45;
+      background: var(--bg); border-radius: var(--r-sm); padding: 10px 12px;
+    }
+    .diff-fact-val { color: var(--tq-ink); font-weight: 700; }
+    .diff-block-why { font-size: 12px; color: var(--text); line-height: 1.6; }
+    .diff-block-mean {
+      background: #F0FAFA; border-left: 3px solid var(--orange);
+      border-radius: 0 6px 6px 0; padding: 10px 12px;
+      font-size: 12px; color: var(--muted); line-height: 1.6;
+    }
+    .diff-us-forces { margin-top: 4px; }
+    .diff-positionnement {
+      background: rgba(79,216,216,0.08); border-left: 3px solid var(--tq);
+      border-radius: 0 6px 6px 0; padding: 10px 12px;
+      font-size: 12px; color: var(--text); line-height: 1.6; margin-top: 12px;
+    }
+
+    .tendances-section {
+      margin-top: 36px; padding-top: 28px;
+      border-top: 2px solid var(--border);
+    }
+    .tendances-hd {
+      font-size: 19px; font-weight: 700; color: var(--navy);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .tendances-grid { display: flex; flex-direction: column; gap: 12px; }
+    .tendance-card {
+      background: linear-gradient(135deg, #F8FAFB 0%, #F0FAFA 100%);
+      border: 1px solid var(--border); border-radius: var(--r);
+      padding: 20px 22px; box-shadow: var(--sh);
+      position: relative;
+    }
+    .tendance-card.has-status { padding-top: 38px; }
+    .tendance-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; padding-right: 8px; }
+    .tendance-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+    .tendance-actors-lbl {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: var(--muted); margin-bottom: 8px;
+    }
+    .tendance-actors { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tendance-actor-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px 4px 6px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 99px;
+      font-size: 11px; font-weight: 500;
+    }
+
     /* ── PROMOS ───────────────────────────────── */
     .promos-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
     .promo-card {
@@ -1061,6 +1114,7 @@
     ],
     promos: {},
     differenciateurs: {},
+    tendances: {},
     taux: {},
     actualites: []
   };
@@ -1842,31 +1896,84 @@
 
     differenciateurs: {
       pb: {
-        Sofinco:     { tags: ['Durée max : 120 mois (unique)', 'Pause paiement gratuite', 'Délai déblocage J+7'],
-                       conclusion: 'Sofinco se distingue par la durée maximale la plus longue du marché (120 mois) et une pause paiement gratuite.',
-                       status: 'valide' },
-        Cetelem:     { tags: ['Durée min : 7 mois', 'Souscription en 8 min', 'Modulation sans frais dès 6 mois'],
-                       conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais.',
-                       status: 'valide' },
-        Cofidis:     { tags: ['Montant min : 500€', 'Déblocage possible par chèque', 'Modulation via espace client'],
-                       conclusion: 'Cofidis accessible dès 500€ avec un parcours 100% digital.',
-                       status: 'valide' },
-        Oney:        { tags: ['Durée min : 4 mois (unique)', 'Montant max : 75 000€', 'Pause paiement gratuite'],
-                       conclusion: 'Oney propose la durée minimale la plus courte du benchmark avec une grande amplitude de montants.',
-                       status: 'valide' },
-        Franfinance: { tags: ['Filiale Société Générale', 'Taux promo compétitif 4,89%', 'Conseiller dédié modulation'],
-                       conclusion: 'Franfinance se distingue par son ancrage bancaire Société Générale et son accompagnement conseiller.',
-                       status: 'valide' },
-        FLOA:        { tags: ['Montant max : 6 000€ seulement', 'Déblocage J+8 express', 'Modulation dès 6 mois'],
-                       conclusion: 'FLOA positionné sur les petits montants avec un parcours express.',
-                       status: 'valide' },
-        Younited:    { tags: ['Fintech indépendante', '100% digital', 'Réponse définitive rapide'],
-                       conclusion: 'Younited se différencie comme fintech pure avec un parcours entièrement digital.',
-                       status: 'valide' },
-        Boursobank:  { tags: ['Client BoursoBank requis', 'Parcours Flash automatisé', 'Analyse revenus automatique'],
-                       conclusion: 'Boursobank réservé à ses clients avec un parcours Flash ultra-rapide pour les dossiers éligibles.',
-                       status: 'valide' }
+        Sofinco: {
+          tags: ['Durée max : 120 mois (unique)', 'Pause paiement gratuite', 'Délai déblocage J+7'],
+          positionnement: 'Nous proposons la durée de remboursement la plus longue du marché et une pause paiement gratuite — deux leviers concrets pour accompagner nos clients sur la durée.',
+          status: 'valide'
+        },
+        Cetelem: {
+          difference: 'Souscription en 8 min · Durée min : 7 mois',
+          pourquoi: 'Le délai de souscription le plus court du benchmark et une durée minimum parmi les plus basses, pour un accès quasi immédiat au crédit.',
+          conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais pour capter les besoins impulsifs.',
+          tags: ['Durée min : 7 mois', 'Souscription en 8 min', 'Modulation sans frais dès 6 mois'],
+          status: 'valide'
+        },
+        Cofidis: {
+          difference: 'Montant min : 500€ · Parcours 100% digital',
+          pourquoi: 'Le seuil d\'entrée le plus bas du panel et un parcours entièrement dématérialisé, sans contrainte de réseau physique.',
+          conclusion: 'Cofidis se positionne sur l\'accessibilité et la simplicité digitale pour élargir sa base clients.',
+          tags: ['Montant min : 500€', 'Déblocage possible par chèque', 'Modulation via espace client'],
+          status: 'valide'
+        },
+        Oney: {
+          difference: 'Durée min : 4 mois · Montant max : 75 000€',
+          pourquoi: 'La durée minimale la plus courte du marché combinée à l\'un des plafonds les plus élevés — une amplitude rare.',
+          conclusion: 'Oney vise les profils recherchant flexibilité courte durée et capacité d\'emprunt élevée.',
+          tags: ['Durée min : 4 mois (unique)', 'Montant max : 75 000€', 'Pause paiement gratuite'],
+          status: 'valide'
+        },
+        Franfinance: {
+          difference: 'Taux promo : 4,89% TAEG · Filiale Société Générale',
+          pourquoi: 'Un ancrage bancaire SG crédible et un taux promotionnel compétitif dans le haut du panel.',
+          conclusion: 'Franfinance combine légitimité bancaire et accompagnement conseiller pour les dossiers complexes.',
+          tags: ['Filiale Société Générale', 'Taux promo compétitif 4,89%', 'Conseiller dédié modulation'],
+          status: 'valide'
+        },
+        FLOA: {
+          difference: 'Montant max : 6 000€ · Déblocage J+8 express',
+          pourquoi: 'Un positionnement volontairement limité en montant avec l\'un des délais de déblocage les plus courts.',
+          conclusion: 'FLOA cible les petits besoins de trésorerie avec un parcours express et peu de friction.',
+          tags: ['Montant max : 6 000€ seulement', 'Déblocage J+8 express', 'Modulation dès 6 mois'],
+          status: 'valide'
+        },
+        Younited: {
+          difference: '100% digital · Réponse définitive rapide',
+          pourquoi: 'Une fintech pure sans héritage réseau agence, avec un parcours entièrement automatisé de bout en bout.',
+          conclusion: 'Younited se différencie par la vitesse et l\'absence totale de friction physique dans le parcours.',
+          tags: ['Fintech indépendante', '100% digital', 'Réponse définitive rapide'],
+          status: 'valide'
+        },
+        Boursobank: {
+          difference: 'Parcours Flash automatisé · Client BoursoBank requis',
+          pourquoi: 'Un modèle closed-loop réservé à la clientèle existante, avec analyse automatique des revenus.',
+          conclusion: 'Boursobank transforme sa base clients en avantage compétitif avec un parcours ultra-rapide pour les éligibles.',
+          tags: ['Client BoursoBank requis', 'Parcours Flash automatisé', 'Analyse revenus automatique'],
+          status: 'valide'
+        }
       }
+    },
+
+    tendances: {
+      pb: [
+        {
+          titre: 'Mouvement sur les taux promo',
+          description: '3 concurrents ont ajusté leurs taux promotionnels sur le prêt personnel ce mois-ci, avec une baisse moyenne de 0,2 point de TAEG.',
+          acteurs: ['Cetelem', 'Cofidis', 'Oney'],
+          status: 'genere'
+        },
+        {
+          titre: 'Accélération du 100 % digital',
+          description: 'Deux acteurs renforcent leur parcours entièrement en ligne, sans passage en agence obligatoire.',
+          acteurs: ['Younited', 'Cofidis'],
+          status: 'genere'
+        },
+        {
+          titre: 'Guerre des durées maximales',
+          description: 'Plusieurs acteurs mettent en avant leur durée de remboursement maximale dans leurs campagnes marketing print et digital.',
+          acteurs: ['Oney', 'Franfinance', 'Cetelem'],
+          status: 'genere'
+        }
+      ]
     },
 
     actualites: [
@@ -2230,6 +2337,12 @@
       if (!out[pid]) out[pid] = {};
       var tags = [get('tag1'), get('tag2'), get('tag3')].filter(Boolean);
       var entry = { tags: tags, conclusion: get('conclusion') };
+      var diff = get('difference');
+      var pq = get('pourquoi') || get('pourquoi_ca_ressort');
+      var pos = get('positionnement');
+      if (diff) entry.difference = diff;
+      if (pq) entry.pourquoi = pq;
+      if (pos) entry.positionnement = pos;
       var st = (get('status') || get('statut')).toLowerCase();
       if (st === 'genere' || st === 'généré' || st === 'generated') entry.status = 'genere';
       else if (st === 'valide' || st === 'validé' || st === 'validated') entry.status = 'valide';
@@ -2570,6 +2683,94 @@
     return '';
   }
 
+  function formatDiffFact (text) {
+    if (!text) return '';
+    return esc(text).replace(/(\d[\d\s,.]*(?:\s*(?:mois|min|€|%|k€|j\+?\d+))?)/gi, '<span class="diff-fact-val">$1</span>');
+  }
+
+  function getDiffSummaryItems (d, isUs) {
+    if (isUs && d.tags && d.tags.length) return topDiffTags(d.tags, 3);
+    if (d.difference) return [d.difference];
+    if (d.tags && d.tags.length) return topDiffTags(d.tags, 3);
+    return [];
+  }
+
+  function renderSofincoDiffContent (d) {
+    var html = '';
+    html += '<div class="diff-us-forces">';
+    html += '<div class="diff-block-lbl">Nos forces</div>';
+    if (d.tags && d.tags.length) {
+      html += '<div class="diff-tags">';
+      d.tags.forEach(function (tag) {
+        html += '<span class="diff-tag"><i class="ti ti-check" style="font-size:10px"></i>' + esc(tag) + '</span>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="diff-none">Aucune force renseignée</div>';
+    }
+    html += '</div>';
+    var pos = d.positionnement || d.conclusion || '';
+    if (pos) {
+      html += '<div class="diff-positionnement">' + esc(pos) + '</div>';
+    }
+    return html;
+  }
+
+  function renderCompetitorDiffContent (d) {
+    var diff = d.difference || (d.tags && d.tags[0]) || '';
+    var pq = d.pourquoi || (d.tags && d.tags[1]) || '';
+    var mean = d.conclusion || (d.tags && d.tags[2]) || '';
+    var html = '<div class="diff-blocks">';
+    if (diff) {
+      html += '<div class="diff-block">';
+      html += '<div class="diff-block-lbl">La différence</div>';
+      html += '<div class="diff-block-fact">' + formatDiffFact(diff) + '</div>';
+      html += '</div>';
+    }
+    if (pq) {
+      html += '<div class="diff-block">';
+      html += '<div class="diff-block-lbl">Pourquoi ça ressort</div>';
+      html += '<div class="diff-block-why">' + esc(pq) + '</div>';
+      html += '</div>';
+    }
+    if (mean) {
+      html += '<div class="diff-block">';
+      html += '<div class="diff-block-lbl">Ce que ça signifie</div>';
+      html += '<div class="diff-block-mean">' + esc(mean) + '</div>';
+      html += '</div>';
+    }
+    if (!diff && !pq && !mean) {
+      html += '<div class="diff-none">Aucun différenciateur renseigné</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderTendancesSection (p, tendances) {
+    var html = '<div class="tendances-section">';
+    html += '<div class="tendances-hd"><i class="ti ti-trending-up"></i> Tendances &amp; mouvements</div>';
+    html += '<div class="tendances-grid">';
+    tendances.forEach(function (t, idx) {
+      html += '<div class="tendance-card' + (t.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (idx * 60) + 'ms">';
+      html += renderDiffStatusBadge(t.status);
+      html += '<div class="tendance-title">' + esc(t.titre || '') + '</div>';
+      html += '<div class="tendance-desc">' + esc(t.description || '') + '</div>';
+      if (t.acteurs && t.acteurs.length) {
+        html += '<div class="tendance-actors-lbl">Acteurs concernés</div>';
+        html += '<div class="tendance-actors">';
+        t.acteurs.forEach(function (actor) {
+          html += '<span class="tendance-actor-badge">';
+          html += faviconImg(actor, 18);
+          html += esc(actor) + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
   function scrollToDiffDetail (cardId) {
     var el = document.getElementById(cardId);
     if (!el) return;
@@ -2580,91 +2781,87 @@
 
   function renderDifferenciateurs (p) {
     var diffs = DATA.differenciateurs[p.id] || {};
+    var tendances = (DATA.tendances && DATA.tendances[p.id]) || [];
     var html = '';
+    var hasDiffs = Object.keys(diffs).length > 0;
 
-    if (!Object.keys(diffs).length) {
+    if (!hasDiffs && !tendances.length) {
       html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
       html += '<div>Aucun différenciateur disponible</div>';
       html += '<div class="text-sm mt-3">Importez un fichier Excel avec l\'onglet DIFFERENCIATEURS.</div></div>';
       return html;
     }
 
-    var actors = getDiffActors(p, diffs);
+    if (hasDiffs) {
+      var actors = getDiffActors(p, diffs);
 
-    /* Tableau de synthèse */
-    html += '<div class="diff-summary-wrap">';
-    html += '<div class="diff-summary-hd"><i class="ti ti-table"></i> Synthèse par acteur</div>';
-    html += '<div class="tbl-wrap"><table>';
-    html += '<thead><tr><th>Acteur</th><th>Différenciateurs clés</th><th style="width:130px;text-align:center">Voir le détail</th></tr></thead>';
-    html += '<tbody>';
-    actors.forEach(function (actor) {
-      var d = diffs[actor];
-      if (!d) return;
-      var isUs = actor === 'Sofinco';
-      var cardId = diffCardId(p.id, actor);
-      var tags = topDiffTags(d.tags, 3);
+      /* Tableau de synthèse */
+      html += '<div class="diff-summary-wrap">';
+      html += '<div class="diff-summary-hd"><i class="ti ti-table"></i> Synthèse par acteur</div>';
+      html += '<div class="tbl-wrap"><table>';
+      html += '<thead><tr><th>Acteur</th><th>Différenciateurs clés</th><th style="width:130px;text-align:center">Voir le détail</th></tr></thead>';
+      html += '<tbody>';
+      actors.forEach(function (actor) {
+        var d = diffs[actor];
+        if (!d) return;
+        var isUs = actor === 'Sofinco';
+        var cardId = diffCardId(p.id, actor);
+        var summaryItems = getDiffSummaryItems(d, isUs);
 
-      html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
-      html += '<td style="font-weight:600;white-space:nowrap">';
-      html += faviconImg(actor, 22);
-      html += ' ' + esc(actor);
-      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
-      html += '</td>';
-      html += '<td>';
-      if (tags.length) {
-        html += '<div class="diff-sum-tags">';
-        tags.forEach(function (tag) {
-          html += '<span class="diff-sum-tag">' + esc(tag) + '</span>';
-        });
+        html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
+        html += '<td style="font-weight:600;white-space:nowrap">';
+        html += faviconImg(actor, 22);
+        html += ' ' + esc(actor);
+        if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+        html += '</td>';
+        html += '<td>';
+        if (summaryItems.length) {
+          html += '<div class="diff-sum-tags">';
+          summaryItems.forEach(function (item) {
+            html += '<span class="diff-sum-tag">' + esc(item) + '</span>';
+          });
+          html += '</div>';
+        } else {
+          html += '<span class="diff-sum-none">Aucun tag</span>';
+        }
+        html += '</td>';
+        html += '<td style="text-align:center">';
+        html += '<button type="button" class="btn btn-ghost btn-sm" onclick="scrollToDiffDetail(\'' + esc(cardId) + '\')">';
+        html += '<i class="ti ti-arrow-down"></i> Détail</button>';
+        html += '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div></div>';
+
+      /* Cards différenciateurs */
+      html += '<div class="diff-cards-hd"><i class="ti ti-star"></i> Différenciateurs</div>';
+      html += '<div class="diff-grid">';
+      actors.forEach(function (actor, idx) {
+        var d = diffs[actor];
+        if (!d) return;
+        var isUs = actor === 'Sofinco';
+        var cardId = diffCardId(p.id, actor);
+
+        html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
+        html += renderDiffStatusBadge(d.status);
+        html += '<div class="diff-actor-hd">';
+        html += faviconImg(actor, 36);
+        html += '<div>';
+        html += '<div class="ac-name">' + esc(actor);
+        if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
         html += '</div>';
-      } else {
-        html += '<span class="diff-sum-none">Aucun tag</span>';
-      }
-      html += '</td>';
-      html += '<td style="text-align:center">';
-      html += '<button type="button" class="btn btn-ghost btn-sm" onclick="scrollToDiffDetail(\'' + esc(cardId) + '\')">';
-      html += '<i class="ti ti-arrow-down"></i> Détail</button>';
-      html += '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div></div>';
+        html += '<div class="ac-group">' + esc(GROUPS[actor] || '') + '</div>';
+        html += '</div></div>';
 
-    /* Cards détaillées */
-    html += '<div class="diff-cards-hd"><i class="ti ti-layout-cards"></i> Fiches détaillées</div>';
-    html += '<div class="diff-grid">';
-    actors.forEach(function (actor, idx) {
-      var d = diffs[actor];
-      if (!d) return;
-      var isUs = actor === 'Sofinco';
-      var cardId = diffCardId(p.id, actor);
-
-      html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
-      html += renderDiffStatusBadge(d.status);
-      html += '<div class="diff-actor-hd">';
-      html += faviconImg(actor, 36);
-      html += '<div>';
-      html += '<div class="ac-name">' + esc(actor);
-      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
-      html += '</div>';
-      html += '<div class="ac-group">' + esc(GROUPS[actor] || '') + '</div>';
-      html += '</div></div>';
-
-      if (d.tags && d.tags.length) {
-        html += '<div class="diff-tags">';
-        d.tags.forEach(function (tag) {
-          html += '<span class="diff-tag"><i class="ti ti-check" style="font-size:10px"></i>' + esc(tag) + '</span>';
-        });
+        html += isUs ? renderSofincoDiffContent(d) : renderCompetitorDiffContent(d);
         html += '</div>';
-      } else {
-        html += '<div class="diff-none">Aucun tag différenciateur</div>';
-      }
-
-      if (d.conclusion) {
-        html += '<div class="diff-conclusion">' + esc(d.conclusion) + '</div>';
-      }
+      });
       html += '</div>';
-    });
-    html += '</div>';
+    }
+
+    if (tendances.length) {
+      html += renderTendancesSection(p, tendances);
+    }
 
     return html;
   }
@@ -3701,6 +3898,7 @@
     });
     if (!Object.keys(DATA.promos).length)          DATA.promos = SEED.promos;
     if (!Object.keys(DATA.differenciateurs).length) DATA.differenciateurs = SEED.differenciateurs;
+    if (!Object.keys(DATA.tendances || {}).length)       DATA.tendances = SEED.tendances || {};
     if (!DATA.actualites.length)                    DATA.actualites = SEED.actualites;
     DATA.taux = { cr: TAUX_CR_DATA };
 
