@@ -1193,7 +1193,7 @@
       /* ── CRÉDIT RENOUVELABLE ─────────────── */
       {
         id: 'cr',
-        acteurs: ['Cofidis','Cetelem','FLOA','Oney','Sofinco'],
+        acteurs: ['Sofinco','Cofidis','Cetelem','FLOA','Oney'],
         updatedAt: '2026-05-07',
         sections: [
           {
@@ -2015,6 +2015,11 @@
     return null;
   }
 
+  function orderTableActors (sel) {
+    if (sel.indexOf('Sofinco') < 0) return sel.slice();
+    return ['Sofinco'].concat(sel.filter(function (a) { return a !== 'Sofinco'; }));
+  }
+
   function pLabel (id) { var p = productById(id); return p ? p.shortLabel : id.toUpperCase(); }
 
   function faviconImg (actor, size) {
@@ -2431,6 +2436,7 @@
     var sel = (state.compareActors[p.id] || actors).filter(function (a) { return actors.indexOf(a) >= 0; });
     if (!sel.length) sel = actors.slice();
     if (hasSofinco && sel.indexOf('Sofinco') < 0) sel.unshift('Sofinco');
+    sel = orderTableActors(sel);
     state.compareActors[p.id] = sel;
     var filtered = sel.length < actors.length;
 
@@ -3476,7 +3482,7 @@
     var sel = (state.compareActors[productId] || ['Sofinco']).slice();
     var idx = sel.indexOf(actor);
     if (idx >= 0) sel.splice(idx, 1); else sel.push(actor);
-    state.compareActors[productId] = sel;
+    state.compareActors[productId] = orderTableActors(sel);
     renderProduct();
   }
 
