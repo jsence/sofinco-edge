@@ -538,6 +538,7 @@
       border-radius: var(--r); border: 1px solid var(--border);
       padding: 24px; box-shadow: var(--sh);
       transition: box-shadow 220ms, transform 220ms;
+      position: relative; scroll-margin-top: 80px;
     }
     .diff-card:hover { box-shadow: var(--sh-md); transform: translateY(-3px); }
     .diff-card.is-us { border-color: var(--tq); }
@@ -557,6 +558,37 @@
       font-size: 12px; color: var(--muted); line-height: 1.6;
     }
     .diff-none { color: var(--muted); font-style: italic; font-size: 12px; }
+
+    .diff-summary-wrap { margin-bottom: 28px; }
+    .diff-summary-hd {
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    }
+    .diff-sum-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .diff-sum-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 9px; border-radius: 99px;
+      background: rgba(79,216,216,0.1); color: var(--tq-ink);
+      font-size: 11px; font-weight: 500; line-height: 1.35;
+    }
+    .diff-sum-none { font-size: 12px; color: var(--muted); font-style: italic; }
+    tr.diff-sum-us td { background: rgba(79,216,216,0.06) !important; }
+    tr.diff-sum-us td:first-child { border-left: 3px solid var(--tq); }
+    .diff-cards-hd {
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+    }
+    .diff-card.has-status .diff-actor-hd { padding-right: 118px; }
+    .diff-status-badge {
+      position: absolute; top: 12px; right: 12px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 99px;
+      font-size: 10px; font-weight: 600; white-space: nowrap;
+      max-width: calc(100% - 24px);
+    }
+    .diff-status-genere { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
+    .diff-status-valide { background: #DCFCE7; color: #16A34A; }
+    .diff-card-highlight { box-shadow: 0 0 0 3px rgba(79,216,216,0.35) !important; }
 
     /* ── PROMOS ───────────────────────────────── */
     .promos-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
@@ -1811,21 +1843,29 @@
     differenciateurs: {
       pb: {
         Sofinco:     { tags: ['Durée max : 120 mois (unique)', 'Pause paiement gratuite', 'Délai déblocage J+7'],
-                       conclusion: 'Sofinco se distingue par la durée maximale la plus longue du marché (120 mois) et une pause paiement gratuite.' },
+                       conclusion: 'Sofinco se distingue par la durée maximale la plus longue du marché (120 mois) et une pause paiement gratuite.',
+                       status: 'valide' },
         Cetelem:     { tags: ['Durée min : 7 mois', 'Souscription en 8 min', 'Modulation sans frais dès 6 mois'],
-                       conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais.' },
+                       conclusion: 'Cetelem mise sur la rapidité de souscription et la flexibilité sans frais.',
+                       status: 'valide' },
         Cofidis:     { tags: ['Montant min : 500€', 'Déblocage possible par chèque', 'Modulation via espace client'],
-                       conclusion: 'Cofidis accessible dès 500€ avec un parcours 100% digital.' },
+                       conclusion: 'Cofidis accessible dès 500€ avec un parcours 100% digital.',
+                       status: 'valide' },
         Oney:        { tags: ['Durée min : 4 mois (unique)', 'Montant max : 75 000€', 'Pause paiement gratuite'],
-                       conclusion: 'Oney propose la durée minimale la plus courte du benchmark avec une grande amplitude de montants.' },
+                       conclusion: 'Oney propose la durée minimale la plus courte du benchmark avec une grande amplitude de montants.',
+                       status: 'valide' },
         Franfinance: { tags: ['Filiale Société Générale', 'Taux promo compétitif 4,89%', 'Conseiller dédié modulation'],
-                       conclusion: 'Franfinance se distingue par son ancrage bancaire Société Générale et son accompagnement conseiller.' },
+                       conclusion: 'Franfinance se distingue par son ancrage bancaire Société Générale et son accompagnement conseiller.',
+                       status: 'valide' },
         FLOA:        { tags: ['Montant max : 6 000€ seulement', 'Déblocage J+8 express', 'Modulation dès 6 mois'],
-                       conclusion: 'FLOA positionné sur les petits montants avec un parcours express.' },
+                       conclusion: 'FLOA positionné sur les petits montants avec un parcours express.',
+                       status: 'valide' },
         Younited:    { tags: ['Fintech indépendante', '100% digital', 'Réponse définitive rapide'],
-                       conclusion: 'Younited se différencie comme fintech pure avec un parcours entièrement digital.' },
+                       conclusion: 'Younited se différencie comme fintech pure avec un parcours entièrement digital.',
+                       status: 'valide' },
         Boursobank:  { tags: ['Client BoursoBank requis', 'Parcours Flash automatisé', 'Analyse revenus automatique'],
-                       conclusion: 'Boursobank réservé à ses clients avec un parcours Flash ultra-rapide pour les dossiers éligibles.' }
+                       conclusion: 'Boursobank réservé à ses clients avec un parcours Flash ultra-rapide pour les dossiers éligibles.',
+                       status: 'valide' }
       }
     },
 
@@ -2189,7 +2229,11 @@
       var pid = normPid(get('produit') || 'pb');
       if (!out[pid]) out[pid] = {};
       var tags = [get('tag1'), get('tag2'), get('tag3')].filter(Boolean);
-      out[pid][actor] = { tags: tags, conclusion: get('conclusion') };
+      var entry = { tags: tags, conclusion: get('conclusion') };
+      var st = (get('status') || get('statut')).toLowerCase();
+      if (st === 'genere' || st === 'généré' || st === 'generated') entry.status = 'genere';
+      else if (st === 'valide' || st === 'validé' || st === 'validated') entry.status = 'valide';
+      out[pid][actor] = entry;
     }
     return out;
   }
@@ -2497,6 +2541,43 @@
   /* ──────────────────────────────────────────
      RENDER — DIFFÉRENCIATEURS
   ────────────────────────────────────────── */
+  function getDiffActors (p, diffs) {
+    var ordered = [];
+    p.acteurs.forEach(function (a) {
+      if (diffs[a] && ordered.indexOf(a) < 0) ordered.push(a);
+    });
+    Object.keys(diffs).forEach(function (a) {
+      if (ordered.indexOf(a) < 0) ordered.push(a);
+    });
+    return orderTableActors(ordered);
+  }
+
+  function diffCardId (productId, actor) {
+    return 'diff-card-' + productId + '-' + String(actor).replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+  }
+
+  function topDiffTags (tags, max) {
+    return (tags || []).slice(0, max || 3);
+  }
+
+  function renderDiffStatusBadge (status) {
+    if (status === 'genere') {
+      return '<span class="diff-status-badge diff-status-genere"><i class="ti ti-sparkles" style="font-size:11px"></i> Généré par SofincoEdge</span>';
+    }
+    if (status === 'valide') {
+      return '<span class="diff-status-badge diff-status-valide"><i class="ti ti-circle-check" style="font-size:11px"></i> Validé</span>';
+    }
+    return '';
+  }
+
+  function scrollToDiffDetail (cardId) {
+    var el = document.getElementById(cardId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.classList.add('diff-card-highlight');
+    setTimeout(function () { el.classList.remove('diff-card-highlight'); }, 2200);
+  }
+
   function renderDifferenciateurs (p) {
     var diffs = DATA.differenciateurs[p.id] || {};
     var html = '';
@@ -2508,13 +2589,57 @@
       return html;
     }
 
-    html += '<div class="diff-grid">';
-    p.acteurs.forEach(function (actor, idx) {
+    var actors = getDiffActors(p, diffs);
+
+    /* Tableau de synthèse */
+    html += '<div class="diff-summary-wrap">';
+    html += '<div class="diff-summary-hd"><i class="ti ti-table"></i> Synthèse par acteur</div>';
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr><th>Acteur</th><th>Différenciateurs clés</th><th style="width:130px;text-align:center">Voir le détail</th></tr></thead>';
+    html += '<tbody>';
+    actors.forEach(function (actor) {
       var d = diffs[actor];
       if (!d) return;
       var isUs = actor === 'Sofinco';
+      var cardId = diffCardId(p.id, actor);
+      var tags = topDiffTags(d.tags, 3);
 
-      html += '<div class="diff-card stagger-item' + (isUs ? ' is-us' : '') + '" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
+      html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
+      html += '<td style="font-weight:600;white-space:nowrap">';
+      html += faviconImg(actor, 22);
+      html += ' ' + esc(actor);
+      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</td>';
+      html += '<td>';
+      if (tags.length) {
+        html += '<div class="diff-sum-tags">';
+        tags.forEach(function (tag) {
+          html += '<span class="diff-sum-tag">' + esc(tag) + '</span>';
+        });
+        html += '</div>';
+      } else {
+        html += '<span class="diff-sum-none">Aucun tag</span>';
+      }
+      html += '</td>';
+      html += '<td style="text-align:center">';
+      html += '<button type="button" class="btn btn-ghost btn-sm" onclick="scrollToDiffDetail(\'' + esc(cardId) + '\')">';
+      html += '<i class="ti ti-arrow-down"></i> Détail</button>';
+      html += '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    /* Cards détaillées */
+    html += '<div class="diff-cards-hd"><i class="ti ti-layout-cards"></i> Fiches détaillées</div>';
+    html += '<div class="diff-grid">';
+    actors.forEach(function (actor, idx) {
+      var d = diffs[actor];
+      if (!d) return;
+      var isUs = actor === 'Sofinco';
+      var cardId = diffCardId(p.id, actor);
+
+      html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
+      html += renderDiffStatusBadge(d.status);
       html += '<div class="diff-actor-hd">';
       html += faviconImg(actor, 36);
       html += '<div>';
@@ -3597,6 +3722,7 @@
   window.exportTauxXlsx   = exportTauxXlsx;
   window.setActuFilter    = setActuFilter;
   window.openActuDetail   = openActuDetail;
+  window.scrollToDiffDetail = scrollToDiffDetail;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
