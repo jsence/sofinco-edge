@@ -559,7 +559,10 @@
     }
     .diff-none { color: var(--muted); font-style: italic; font-size: 12px; }
 
-    .diff-summary-wrap { margin-bottom: 28px; }
+    .diff-summary-wrap {
+      margin-top: 36px; padding-top: 28px;
+      border-top: 2px solid var(--border);
+    }
     .diff-summary-hd {
       font-size: 13px; font-weight: 600; color: var(--navy);
       margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
@@ -2771,6 +2774,46 @@
     return html;
   }
 
+  function renderDiffSummaryTable (p, diffs, actors) {
+    var html = '<div class="diff-summary-wrap">';
+    html += '<div class="diff-summary-hd"><i class="ti ti-table"></i> Synthèse par acteur</div>';
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr><th>Acteur</th><th>Différenciateurs clés</th><th style="width:130px;text-align:center">Voir le détail</th></tr></thead>';
+    html += '<tbody>';
+    actors.forEach(function (actor) {
+      var d = diffs[actor];
+      if (!d) return;
+      var isUs = actor === 'Sofinco';
+      var cardId = diffCardId(p.id, actor);
+      var summaryItems = getDiffSummaryItems(d, isUs);
+
+      html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
+      html += '<td style="font-weight:600;white-space:nowrap">';
+      html += faviconImg(actor, 22);
+      html += ' ' + esc(actor);
+      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</td>';
+      html += '<td>';
+      if (summaryItems.length) {
+        html += '<div class="diff-sum-tags">';
+        summaryItems.forEach(function (item) {
+          html += '<span class="diff-sum-tag">' + esc(item) + '</span>';
+        });
+        html += '</div>';
+      } else {
+        html += '<span class="diff-sum-none">Aucun tag</span>';
+      }
+      html += '</td>';
+      html += '<td style="text-align:center">';
+      html += '<button type="button" class="btn btn-ghost btn-sm" onclick="scrollToDiffDetail(\'' + esc(cardId) + '\')">';
+      html += '<i class="ti ti-arrow-up"></i> Détail</button>';
+      html += '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+    return html;
+  }
+
   function scrollToDiffDetail (cardId) {
     var el = document.getElementById(cardId);
     if (!el) return;
@@ -2792,47 +2835,9 @@
       return html;
     }
 
+    var actors = hasDiffs ? getDiffActors(p, diffs) : [];
+
     if (hasDiffs) {
-      var actors = getDiffActors(p, diffs);
-
-      /* Tableau de synthèse */
-      html += '<div class="diff-summary-wrap">';
-      html += '<div class="diff-summary-hd"><i class="ti ti-table"></i> Synthèse par acteur</div>';
-      html += '<div class="tbl-wrap"><table>';
-      html += '<thead><tr><th>Acteur</th><th>Différenciateurs clés</th><th style="width:130px;text-align:center">Voir le détail</th></tr></thead>';
-      html += '<tbody>';
-      actors.forEach(function (actor) {
-        var d = diffs[actor];
-        if (!d) return;
-        var isUs = actor === 'Sofinco';
-        var cardId = diffCardId(p.id, actor);
-        var summaryItems = getDiffSummaryItems(d, isUs);
-
-        html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
-        html += '<td style="font-weight:600;white-space:nowrap">';
-        html += faviconImg(actor, 22);
-        html += ' ' + esc(actor);
-        if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
-        html += '</td>';
-        html += '<td>';
-        if (summaryItems.length) {
-          html += '<div class="diff-sum-tags">';
-          summaryItems.forEach(function (item) {
-            html += '<span class="diff-sum-tag">' + esc(item) + '</span>';
-          });
-          html += '</div>';
-        } else {
-          html += '<span class="diff-sum-none">Aucun tag</span>';
-        }
-        html += '</td>';
-        html += '<td style="text-align:center">';
-        html += '<button type="button" class="btn btn-ghost btn-sm" onclick="scrollToDiffDetail(\'' + esc(cardId) + '\')">';
-        html += '<i class="ti ti-arrow-down"></i> Détail</button>';
-        html += '</td>';
-        html += '</tr>';
-      });
-      html += '</tbody></table></div></div>';
-
       /* Cards différenciateurs */
       html += '<div class="diff-cards-hd"><i class="ti ti-star"></i> Différenciateurs</div>';
       html += '<div class="diff-grid">';
@@ -2861,6 +2866,10 @@
 
     if (tendances.length) {
       html += renderTendancesSection(p, tendances);
+    }
+
+    if (hasDiffs) {
+      html += renderDiffSummaryTable(p, diffs, getDiffActors(p, diffs));
     }
 
     return html;
