@@ -27,12 +27,12 @@ checks.forEach(function ([label, actual, expected]) {
   console.log(`${pass ? '✓' : '✗'} ${label}: ${actual} (meta: ${expected})`);
 });
 
-// Référence historique SEED (avant migration Supabase)
+// Volumes de référence attendus dans seed-data.json
 const REF = {
   produits: 5, criteres: 132, valeurs: 921, promos: 5,
   differenciateurs: 8, tendances: 3, actualites: 4, taux_cr: 18, acteurs: 24
 };
-console.log('\nRéférence migration SEED → Supabase:');
+console.log('\nVolumes de référence (seed-data.json) :');
 Object.entries(REF).forEach(function ([k, v]) {
   const actual = k === 'produits' ? seed.produits.length : seed.meta.counts[k];
   console.log(`  ${k}: ${actual} (attendu ${v}) ${actual === v ? '✓' : '✗'}`);

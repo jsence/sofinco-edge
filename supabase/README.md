@@ -16,12 +16,13 @@ En local (avec CLI connectée) :
 npx supabase db push
 ```
 
-## Seed des données (migration SEED → tables)
+## Seed des données
+
+Les données de référence sont dans `seed-data.json` à la racine du repo. Pour (re)peupler une base Supabase :
 
 ```bash
 npm install
-npm run build:seed    # régénère seed-data.json si SEED présent dans index.html
-npm run verify:seed   # vérifie les volumes vs référence SEED
+npm run verify:seed
 SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJ... npm run seed:supabase
 ```
 

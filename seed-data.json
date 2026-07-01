@@ -1,7 +1,7 @@
 {
   "meta": {
     "generated_at": "2026-06-30T14:51:09.469Z",
-    "source": "index.html SEED + TAUX_CR_DATA",
+    "source": "seed-data.json (export de référence SofincoEdge)",
     "counts": {
       "acteurs": 24,
       "produits": 5,

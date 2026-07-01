@@ -4,7 +4,7 @@ Competitive intelligence & market monitoring dashboard for Sofinco — benchmark
 
 ## Données Supabase
 
-Les données métier (produits, acteurs, tableaux comparatifs, promos, différenciateurs, tendances, actualités, taux CR) sont stockées dans **Supabase**.
+Les données métier sont chargées **uniquement depuis Supabase** au runtime (`index.html` → `bootstrapData()`). Le fichier `seed-data.json` sert uniquement au déploiement / réinitialisation de la base.
 
 1. Configurer `supabase-config.js` avec l'URL et la clé anon du projet (Dashboard → API)
 2. Appliquer les migrations : `supabase/migrations/`
