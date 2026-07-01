@@ -990,6 +990,23 @@
   </div>
 </div>
 
+<!-- MODAL — RÉSULTAT IMPORT -->
+<div class="overlay" id="modal-import-result">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title"><i class="ti ti-check" style="color:var(--tq-ink)"></i> Import terminé</span>
+      <button class="modal-x" id="import-result-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <p id="import-result-msg" style="font-size:15px;line-height:1.6;margin-bottom:20px;color:var(--text)"></p>
+      <div class="flex gap-2 justify-end" style="justify-content:center;flex-wrap:wrap;gap:10px">
+        <button type="button" class="btn btn-primary" id="import-result-actus"><i class="ti ti-news"></i> Voir les actualités</button>
+        <button type="button" class="btn btn-secondary" id="import-result-ok">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════
      MODAL — COURRIEL
 ════════════════════════════════════════════ -->
@@ -1423,6 +1440,23 @@
     return out;
   }
 
+  function showImportSummary (stats) {
+    var updated = stats.updated || 0;
+    var changes = stats.changes || 0;
+    var actualites = stats.actualites || 0;
+    var msg = 'Import terminé';
+    if (changes === 0) {
+      msg += ' — aucun changement détecté par rapport aux données en base.';
+    } else {
+      msg += ' — ' + updated + ' valeur' + (updated > 1 ? 's' : '') + ' mise' + (updated > 1 ? 's' : '') + ' à jour';
+      msg += ', ' + changes + ' changement' + (changes > 1 ? 's' : '') + ' détecté' + (changes > 1 ? 's' : '');
+      msg += '. ' + actualites + ' nouvelle' + (actualites > 1 ? 's' : '') + ' actualité' + (actualites > 1 ? 's' : '') + ' créée' + (actualites > 1 ? 's' : '') + '.';
+    }
+    $('import-result-msg').textContent = msg;
+    $('import-result-actus').style.display = changes > 0 ? '' : 'none';
+    $('modal-import-result').classList.add('show');
+  }
+
   async function handleWorkbook (wb) {
     if (!dataReady || !sbClient) {
       alert('Données non chargées — import impossible.');
@@ -1430,10 +1464,12 @@
     }
     var oldSnap = makeSnapshot();
     var importDate = today();
+    var importedProductIds = [];
 
     DATA.produits.forEach(function (def) {
       if (wb.SheetNames.indexOf(def.excelSheet) >= 0) {
         parseProductSheet(wb.Sheets[def.excelSheet], def);
+        importedProductIds.push(def.id);
       }
     });
     if (wb.SheetNames.indexOf('PROMOS') >= 0) {
@@ -1445,11 +1481,16 @@
       if (d) DATA.differenciateurs = d;
     }
 
+    var importStats = { updated: 0, changes: 0, actualites: 0 };
     try {
-      var map = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS);
-      Object.assign(actorIdByNom, map);
+      var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
+      Object.assign(actorIdByNom, syncResult.map);
+      importStats = syncResult.stats || importStats;
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
     } catch (e) {
-      alert('Données importées localement mais erreur d\'enregistrement Supabase : ' + (e.message || e));
+      alert('Erreur lors de l\'enregistrement Supabase : ' + (e.message || e));
+      return;
     }
 
     var newSnap = makeSnapshot();
@@ -1459,6 +1500,7 @@
 
     $('modal-import').classList.remove('show');
     render();
+    showImportSummary(importStats);
   }
 
   function readXlsx (file) {
@@ -2957,6 +2999,15 @@
     });
     fin.addEventListener('change', function () {
       var f = fin.files[0]; if (f) readXlsx(f); fin.value = '';
+    });
+
+    /* Modal résultat import */
+    $('import-result-close').addEventListener('click', function () { $('modal-import-result').classList.remove('show'); });
+    $('import-result-ok').addEventListener('click', function () { $('modal-import-result').classList.remove('show'); });
+    $('modal-import-result').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+    $('import-result-actus').addEventListener('click', function () {
+      $('modal-import-result').classList.remove('show');
+      navigate('actus');
     });
 
     /* Modal courriel */

@@ -232,6 +232,7 @@
   }
 
   async function syncProductToSupabase(sb, product, idByNom, groups, domains) {
+    var stats = { updated: 0, changes: 0, actualites: 0 };
     var map = Object.assign({}, idByNom);
     var merged = await ensureActors(sb, product.acteurs, groups, domains);
     Object.assign(map, merged);
@@ -244,55 +245,147 @@
       updated_at: product.updatedAt || new Date().toISOString().split('T')[0]
     }, { onConflict: 'id' });
 
-    await sb.from('acteurs_produits').delete().eq('produit_id', product.id);
-    var links = product.acteurs.map(function (nom, idx) {
-      return { acteur_id: map[nom] || toActorId(nom), produit_id: product.id, ordre: idx };
-    });
-    var { error: linkErr } = await sb.from('acteurs_produits').insert(links);
-    if (linkErr) throw new Error('acteurs_produits: ' + linkErr.message);
-
-    await sb.from('criteres').delete().eq('produit_id', product.id);
-
-    var critRows = [];
-    var ordre = 0;
-    product.sections.forEach(function (sec) {
-      sec.rows.forEach(function (row) {
-        critRows.push({
-          produit_id: product.id,
-          section: sec.title || '',
-          critere: row.critere,
-          ordre: ordre++
-        });
-      });
-    });
-
-    if (!critRows.length) return map;
-
-    var { data: inserted, error: critErr } = await sb.from('criteres').insert(critRows).select('id, ordre');
-    if (critErr) throw new Error('criteres: ' + critErr.message);
-
-    var valRows = [];
-    var o = 0;
-    product.sections.forEach(function (sec) {
-      sec.rows.forEach(function (row) {
-        var critId = inserted.find(function (c) { return c.ordre === o; }).id;
-        o++;
-        Object.keys(row.values || {}).forEach(function (nom) {
-          valRows.push({
-            critere_id: critId,
-            acteur_id: map[nom] || toActorId(nom),
-            valeur: row.values[nom] || ''
-          });
-        });
-      });
-    });
-
-    if (valRows.length) {
-      var { error: valErr } = await sb.from('valeurs').insert(valRows);
-      if (valErr) throw new Error('valeurs: ' + valErr.message);
+    /* Acteurs produit : ajouter / mettre à jour sans supprimer les absents de l'Excel */
+    for (var ai = 0; ai < product.acteurs.length; ai++) {
+      var nom = product.acteurs[ai];
+      var aid = map[nom] || toActorId(nom);
+      var { error: apErr } = await sb.from('acteurs_produits').upsert({
+        acteur_id: aid,
+        produit_id: product.id,
+        ordre: ai
+      }, { onConflict: 'acteur_id,produit_id' });
+      if (apErr) throw new Error('acteurs_produits: ' + apErr.message);
     }
 
-    return map;
+    var { data: existingCrit, error: critFetchErr } = await sb
+      .from('criteres')
+      .select('id, section, critere, ordre')
+      .eq('produit_id', product.id);
+    if (critFetchErr) throw new Error('criteres: ' + critFetchErr.message);
+
+    var critList = existingCrit || [];
+    var critIds = critList.map(function (c) { return c.id; });
+    var existingVals = [];
+    if (critIds.length) {
+      var { data: ev, error: valFetchErr } = await sb
+        .from('valeurs')
+        .select('id, critere_id, acteur_id, valeur')
+        .in('critere_id', critIds);
+      if (valFetchErr) throw new Error('valeurs: ' + valFetchErr.message);
+      existingVals = ev || [];
+    }
+
+    function findCritere(section, critere) {
+      var sec = section || '';
+      for (var i = 0; i < critList.length; i++) {
+        if (critList[i].section === sec && critList[i].critere === critere) return critList[i];
+      }
+      return null;
+    }
+
+    function findValeur(critereId, acteurId) {
+      for (var i = 0; i < existingVals.length; i++) {
+        var v = existingVals[i];
+        if (v.critere_id === critereId && v.acteur_id === acteurId) return v;
+      }
+      return null;
+    }
+
+    var maxOrdre = -1;
+    critList.forEach(function (c) { if (c.ordre > maxOrdre) maxOrdre = c.ordre; });
+
+    var importDate = new Date().toISOString().split('T')[0];
+    var historiqueRows = [];
+    var actualiteRows = [];
+
+    for (var si = 0; si < product.sections.length; si++) {
+      var sec = product.sections[si];
+      for (var ri = 0; ri < sec.rows.length; ri++) {
+        var row = sec.rows[ri];
+        var sectionTitle = sec.title || '';
+        var crit = findCritere(sectionTitle, row.critere);
+
+        if (!crit) {
+          maxOrdre++;
+          var { data: newCrit, error: newCritErr } = await sb
+            .from('criteres')
+            .insert({
+              produit_id: product.id,
+              section: sectionTitle,
+              critere: row.critere,
+              ordre: maxOrdre
+            })
+            .select('id, section, critere, ordre')
+            .single();
+          if (newCritErr) throw new Error('criteres insert: ' + newCritErr.message);
+          crit = newCrit;
+          critList.push(crit);
+        }
+
+        var actorNames = Object.keys(row.values || {});
+        for (var vi = 0; vi < actorNames.length; vi++) {
+          var actorNom = actorNames[vi];
+          var newVal = String(row.values[actorNom] == null ? '' : row.values[actorNom]).trim();
+          var acteurId = map[actorNom] || toActorId(actorNom);
+          var existing = findValeur(crit.id, acteurId);
+          var oldVal = existing ? String(existing.valeur || '').trim() : null;
+
+          if (oldVal !== null && oldVal === newVal) continue;
+
+          if (existing) {
+            var { error: upErr } = await sb.from('valeurs')
+              .update({ valeur: newVal })
+              .eq('id', existing.id);
+            if (upErr) throw new Error('valeurs update: ' + upErr.message);
+            existing.valeur = newVal;
+          } else {
+            var { data: insVal, error: insErr } = await sb.from('valeurs')
+              .insert({ critere_id: crit.id, acteur_id: acteurId, valeur: newVal })
+              .select('id, critere_id, acteur_id, valeur')
+              .single();
+            if (insErr) throw new Error('valeurs insert: ' + insErr.message);
+            existingVals.push(insVal);
+          }
+
+          stats.updated++;
+          stats.changes++;
+
+          historiqueRows.push({
+            critere_id: crit.id,
+            acteur_id: acteurId,
+            produit_id: product.id,
+            ancienne_valeur: oldVal != null ? oldVal : '',
+            nouvelle_valeur: newVal,
+            source: 'import'
+          });
+
+          var oldDisp = oldVal != null && oldVal !== '' ? oldVal : '(vide)';
+          var newDisp = newVal !== '' ? newVal : '(vide)';
+          actualiteRows.push({
+            date: importDate,
+            acteur_id: acteurId,
+            type: 'Produit',
+            produit_id: product.id,
+            titre: 'Changement détecté : ' + row.critere + ' — ' + oldDisp + ' → ' + newDisp,
+            source: 'Détecté via import',
+            impact: null
+          });
+        }
+      }
+    }
+
+    if (historiqueRows.length) {
+      var { error: histErr } = await sb.from('historique').insert(historiqueRows);
+      if (histErr) throw new Error('historique: ' + histErr.message);
+    }
+
+    if (actualiteRows.length) {
+      var { error: actErr } = await sb.from('actualites').insert(actualiteRows);
+      if (actErr) throw new Error('actualites: ' + actErr.message);
+      stats.actualites = actualiteRows.length;
+    }
+
+    return { map: map, stats: stats };
   }
 
   async function syncPromosToSupabase(sb, promosObj, idByNom, groups, domains) {
@@ -370,17 +463,31 @@
     return map;
   }
 
-  async function syncAllFromImport(sb, data, idByNom, groups, domains) {
+  async function syncAllFromImport(sb, data, idByNom, groups, domains, importedProductIds) {
     var map = Object.assign({}, idByNom);
-    for (var i = 0; i < data.produits.length; i++) {
-      var m = await syncProductToSupabase(sb, data.produits[i], map, groups, domains);
-      Object.assign(map, m);
+    var totals = { updated: 0, changes: 0, actualites: 0 };
+    var idSet = {};
+    if (importedProductIds && importedProductIds.length) {
+      importedProductIds.forEach(function (id) { idSet[id] = true; });
     }
+
+    for (var i = 0; i < data.produits.length; i++) {
+      var p = data.produits[i];
+      if (importedProductIds && importedProductIds.length && !idSet[p.id]) continue;
+      if (!p.sections || !p.sections.length) continue;
+      var res = await syncProductToSupabase(sb, p, map, groups, domains);
+      Object.assign(map, res.map);
+      totals.updated += res.stats.updated;
+      totals.changes += res.stats.changes;
+      totals.actualites += res.stats.actualites;
+    }
+
     var m2 = await syncPromosToSupabase(sb, data.promos, map, groups, domains);
     Object.assign(map, m2);
     var m3 = await syncDifferenciateursToSupabase(sb, data.differenciateurs, map, groups, domains);
     Object.assign(map, m3);
-    return map;
+
+    return { map: map, stats: totals };
   }
 
   global.SofincoSupabase = {
