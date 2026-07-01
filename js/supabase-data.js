@@ -3,6 +3,17 @@
   'use strict';
 
   var EXCEL_SHEETS = { pb: 'PB', cr: 'CR', nxcb: 'NxCB', rac: 'RAC', carte: 'CARTE' };
+  var PRODUCT_ORDER = ['pb', 'cr', 'nxcb', 'rac', 'carte'];
+
+  function sortProducts (produits) {
+    return produits.slice().sort(function (a, b) {
+      var ia = PRODUCT_ORDER.indexOf(a.id);
+      var ib = PRODUCT_ORDER.indexOf(b.id);
+      if (ia < 0) ia = 999;
+      if (ib < 0) ib = 999;
+      return ia - ib;
+    });
+  }
 
   function toActorId(nom) {
     return String(nom)
@@ -25,6 +36,7 @@
   }
 
   function buildInMemoryData(produits, acteurs, acteursProduits, criteres, valeurs, promos, diffs, tendances, actualites, tauxCr, tauxMeta) {
+    produits = sortProducts(produits);
     var nomById = {};
     var idByNom = {};
     acteurs.forEach(function (a) {
@@ -172,7 +184,7 @@
 
   async function loadAllData(sb) {
     var results = await Promise.all([
-      sb.from('produits').select('*').order('id'),
+      sb.from('produits').select('*'),
       sb.from('acteurs').select('*').order('nom'),
       sb.from('acteurs_produits').select('*'),
       sb.from('criteres').select('*').order('ordre'),
