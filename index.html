@@ -13,7 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -346,6 +347,8 @@
 
     /* ── PRODUCT PAGE ─────────────────────────── */
     .prod-hd { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .prod-hd-main { flex: 1; min-width: 0; }
+    .prod-hd-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
     .prod-icon-lg {
       width: 48px; height: 48px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center; font-size: 24px;
@@ -724,6 +727,16 @@
     .modal-x:hover { background: var(--bg); color: var(--text); }
     .modal-body { padding: 30px; }
 
+    .export-check-list { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 22px; }
+    .export-check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--r-sm);
+      background: var(--bg); cursor: pointer; transition: border-color 150ms, background 150ms;
+    }
+    .export-check-item:hover { border-color: var(--tq-mid); background: var(--tq-pale); }
+    .export-check-item input { width: 16px; height: 16px; accent-color: var(--tq-ink); cursor: pointer; flex-shrink: 0; }
+    .export-check-item span { font-size: 14px; font-weight: 500; color: var(--text); }
+
     .drop-zone {
       border: 2px dashed var(--border); border-radius: 10px;
       padding: 40px; text-align: center; cursor: pointer;
@@ -762,6 +775,8 @@
       .shortcuts-grid { grid-template-columns: repeat(2,1fr); }
       .actors-grid { grid-template-columns: repeat(2,1fr); }
       .home-grid { grid-template-columns: 1fr; }
+      .prod-hd { flex-wrap: wrap; }
+      .prod-hd-actions { width: 100%; justify-content: flex-start; }
     }
     @media (max-width: 640px) {
       .actors-grid { grid-template-columns: 1fr; }
@@ -1002,6 +1017,25 @@
       <div class="flex gap-2 justify-end" style="justify-content:center;flex-wrap:wrap;gap:10px">
         <button type="button" class="btn btn-primary" id="import-result-actus"><i class="ti ti-news"></i> Voir les actualités</button>
         <button type="button" class="btn btn-secondary" id="import-result-ok">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — EXPORT PRODUIT -->
+<div class="overlay" id="modal-export">
+  <div class="modal" style="width:480px">
+    <div class="modal-hd">
+      <span class="modal-title"><i class="ti ti-download" style="color:var(--tq-ink)"></i> Exporter</span>
+      <button class="modal-x" id="export-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text);margin-bottom:4px">Que souhaitez-vous exporter ?</p>
+      <p id="export-product-label" class="text-sm text-muted" style="margin-bottom:0"></p>
+      <div class="export-check-list" id="export-check-list"></div>
+      <div class="flex gap-2 justify-end" style="gap:10px">
+        <button type="button" class="btn btn-secondary" id="export-cancel">Annuler</button>
+        <button type="button" class="btn btn-primary" id="export-confirm" disabled><i class="ti ti-download"></i> Exporter</button>
       </div>
     </div>
   </div>
@@ -1629,10 +1663,14 @@
     /* En-tête produit */
     html += '<div class="prod-hd">';
     html += '<div class="prod-icon-lg ' + P_IC_CLS[p.id] + '"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
-    html += '<div>';
+    html += '<div class="prod-hd-main">';
     html += '<div class="prod-title">' + esc(p.label) + '</div>';
     html += '<div class="prod-sub">' + p.acteurs.length + ' acteurs &nbsp;·&nbsp; ';
     html += (p.updatedAt ? 'Mis à jour le ' + fmtDate(p.updatedAt) : 'Aucune donnée importée') + '</div>';
+    html += '</div>';
+    html += '<div class="prod-hd-actions">';
+    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openExportModal(\'xlsx\')"><i class="ti ti-file-spreadsheet"></i> Exporter Excel</button>';
+    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openExportModal(\'word\')"><i class="ti ti-file-word"></i> Exporter Word</button>';
     html += '</div></div>';
 
     /* Onglets */
@@ -2630,57 +2668,429 @@
   }
 
   /* ──────────────────────────────────────────
-     EXPORT EXCEL TAUX
+     EXPORT PRODUIT (Excel / Word)
   ────────────────────────────────────────── */
-  function exportTauxXlsx () {
-    var d = DATA.taux && DATA.taux.cr;
-    if (!d) return;
+  var EXPORT_SLUG = { pb: 'PretPersonnel', cr: 'CreditRenouvelable', nxcb: 'NxCB', rac: 'RAC', carte: 'Carte' };
+  var exportPending = { format: null, productId: null };
+
+  var XS = {
+    header: { fill: { patternType: 'solid', fgColor: { rgb: 'F7F9FA' } }, font: { bold: true } },
+    section: { fill: { patternType: 'solid', fgColor: { rgb: '0B2B4A' } }, font: { bold: true, color: { rgb: 'FFFFFF' } } },
+    sofinco: { fill: { patternType: 'solid', fgColor: { rgb: 'E0F7F7' } } },
+    sofincoHd: { fill: { patternType: 'solid', fgColor: { rgb: 'B8F0F0' } }, font: { bold: true } }
+  };
+
+  function exportProductSlug (p) {
+    return EXPORT_SLUG[p.id] || String(p.label || p.id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '');
+  }
+
+  function exportFileBase (p) {
+    return 'SofincoEdge_' + exportProductSlug(p) + '_' + today();
+  }
+
+  function exportPlainVal (v) {
+    if (v == null) return '';
+    return String(v).trim();
+  }
+
+  function getExportTabsForProduct (p) {
+    var tabs = [
+      { id: 'tableau', label: 'Tableau' },
+      { id: 'differenciateurs', label: 'Différenciateurs' }
+    ];
+    if (productHasTauxTab(p.id)) tabs.push({ id: 'taux', label: 'Taux' });
+    tabs.push({ id: 'promos', label: 'Promos' });
+    tabs.push({ id: 'actualites', label: 'Actualités' });
+    return tabs;
+  }
+
+  function getExportActors (p) {
+    return orderTableActors((p.acteurs || []).slice());
+  }
+
+  function getProductActusExport (p) {
+    return filterActus(actuList(), { produit: p.id, acteur: 'all', type: 'all', periode: 'all' });
+  }
+
+  function fmtRateExport (rate) {
+    if (rate === null || rate === undefined) return '—';
+    return (rate * 100).toFixed(2).replace('.', ',') + ' %';
+  }
+
+  function fmtUpctExport (rate, usure) {
+    if (rate === null || rate === undefined || !usure) return '—';
+    return Math.min(100, Math.round(rate / usure * 100)) + ' %';
+  }
+
+  function wsMaxRow (ws) {
+    if (!ws || !ws['!ref']) return 0;
+    return XLSX.utils.decode_range(ws['!ref']).e.r;
+  }
+
+  function setWsCellStyle (ws, r, c, style) {
+    var ref = XLSX.utils.encode_cell({ r: r, c: c });
+    if (!ws[ref]) ws[ref] = { v: '', t: 's' };
+    ws[ref].s = style;
+  }
+
+  function stylizeTableauWs (ws, meta) {
+    if (!meta || !meta.colCount) return;
+    for (var c = 0; c < meta.colCount; c++) setWsCellStyle(ws, meta.headerRow, c, XS.header);
+    if (meta.sofincoCol >= 0) setWsCellStyle(ws, meta.headerRow, meta.sofincoCol, XS.sofincoHd);
+    (meta.sectionRows || []).forEach(function (r) {
+      for (var c = 0; c < meta.colCount; c++) setWsCellStyle(ws, r, c, XS.section);
+    });
+    if (meta.sofincoCol >= 0) {
+      var maxR = wsMaxRow(ws);
+      for (var r = meta.headerRow + 1; r <= maxR; r++) {
+        if ((meta.sectionRows || []).indexOf(r) >= 0) continue;
+        setWsCellStyle(ws, r, meta.sofincoCol, XS.sofinco);
+      }
+    }
+  }
+
+  function buildTableauExportRows (p) {
+    var actors = getExportActors(p);
+    if (!p.sections || !p.sections.length || !actors.length) {
+      return { rows: [['Aucune donnée disponible']], meta: null };
+    }
+    var sofincoIdx = actors.indexOf('Sofinco');
+    var rows = [['Critère'].concat(actors)];
+    var sectionRows = [];
+    p.sections.forEach(function (sec, si) {
+      if (si > 0) rows.push([]);
+      if (sec.title) {
+        sectionRows.push(rows.length);
+        var secRow = [sec.title];
+        for (var i = 0; i < actors.length; i++) secRow.push('');
+        rows.push(secRow);
+      }
+      (sec.rows || []).forEach(function (row) {
+        var line = [row.critere];
+        actors.forEach(function (actor) {
+          line.push(exportPlainVal(row.values && row.values[actor]));
+        });
+        rows.push(line);
+      });
+    });
+    return {
+      rows: rows,
+      meta: {
+        headerRow: 0,
+        colCount: actors.length + 1,
+        sofincoCol: sofincoIdx >= 0 ? sofincoIdx + 1 : -1,
+        sectionRows: sectionRows
+      }
+    };
+  }
+
+  function buildDiffExportRows (p) {
+    var diffs = DATA.differenciateurs[p.id] || {};
+    var actors = getDiffActors(p, diffs);
+    if (!actors.length) return [['Aucune donnée disponible']];
+    var rows = [['Acteur', 'Tags', 'Différence', 'Pourquoi', 'Conclusion / Positionnement', 'Statut']];
+    actors.forEach(function (actor) {
+      var d = diffs[actor] || {};
+      var tags = (d.tags || []).join(', ');
+      var diff = d.difference || '';
+      var pq = d.pourquoi || '';
+      var conclusion = d.conclusion || d.positionnement || '';
+      var status = d.status === 'genere' ? 'Généré' : (d.status === 'valide' ? 'Validé' : '');
+      if (actor === 'Sofinco' && !diff && tags) diff = tags;
+      rows.push([actor, tags, diff, pq, conclusion, status]);
+    });
+    return rows;
+  }
+
+  function buildTauxExportRows (p) {
+    var d = DATA.taux && DATA.taux[p.id];
+    if (!d || !d.actors || !d.actors.length) return [['Aucune donnée disponible']];
+
+    var usureMap = {};
+    (d.usure || []).forEach(function (u) { usureMap[u.id] = u.taux; });
+    var usB1 = usureMap.b1 || null;
+    var usB2 = usureMap.b2 || null;
+    var usB3 = usureMap.b3 || null;
 
     var rows = [];
-    rows.push(['Benchmark Taux Crédit Renouvelable', '', '', '', 'Source : Observatoire de la concurrence', '', '', '', '', '', 'Mai 2026']);
+    rows.push(['Benchmark taux — ' + p.label, '', '', '', 'Source : Observatoire de la concurrence', '', '', '', '', '']);
     rows.push([]);
-    rows.push(['', '', '', '', '0 € – 3 000 €', '', '', '3 000 – 6 000 €', '', '', 'Plus de 6 000 €', '', '']);
-    rows.push(['Établissement', 'Produit', 'Catégorie', 'Sous-tranche',
-      'Avr. 2026', 'Mai 2026', 'Variation',
-      'Avr. 2026', 'Mai 2026', 'Variation',
-      'Avr. 2026', 'Mai 2026', 'Variation', 'Note']);
+    rows.push(['Établissement', 'Produit', 'Sous-tranche',
+      '0 – 3 000 €', '% plafond',
+      '3 000 – 6 000 €', '% plafond',
+      '> 6 000 €', '% plafond', 'Note']);
 
-    /* Ligne taux d'usure */
-    var usureMap = {};
-    d.usure.forEach(function (u) { usureMap[u.id] = u.taux; });
-    rows.push(['TAUX D\'USURE', 'Banque de France', 'Référence', '',
-      usureMap.b1, usureMap.b1, 0,
-      usureMap.b2, usureMap.b2, 0,
-      usureMap.b3, usureMap.b3, 0, '']);
-    rows.push([]);
+    rows.push(['TAUX D\'USURE', 'Banque de France', '',
+      usB1 != null ? fmtRateExport(usB1) : '—', '100 %',
+      usB2 != null ? fmtRateExport(usB2) : '—', '100 %',
+      usB3 != null ? fmtRateExport(usB3) : '—', '100 %', '']);
 
-    d.actors.forEach(function (actor) {
+    var sorted = d.actors.slice().sort(function (a, b) {
+      if (a.cat !== b.cat) return a.cat === 'bancaire' ? -1 : 1;
+      if (a.isUs !== b.isUs) return a.isUs ? 1 : -1;
+      return a.nom.localeCompare(b.nom, 'fr');
+    });
+
+    sorted.forEach(function (actor) {
       actor.rows.forEach(function (row, ri) {
         rows.push([
           ri === 0 ? actor.nom : '',
-          ri === 0 ? actor.produit : '',
-          ri === 0 ? (actor.cat === 'bancaire' ? 'Banque' : 'Soc. financière') : '',
-          row.tranche || '',
-          row.b1 !== null ? +(((row.b1 || 0) - (row.b1v || 0)).toFixed(6)) : null,
-          row.b1 !== null ? row.b1 : null,
-          row.b1 !== null ? (row.b1v || 0) : null,
-          row.b2 !== null ? +(((row.b2 || 0) - (row.b2v || 0)).toFixed(6)) : null,
-          row.b2 !== null ? row.b2 : null,
-          row.b2 !== null ? (row.b2v || 0) : null,
-          row.b3 !== null ? +(((row.b3 || 0) - (row.b3v || 0)).toFixed(6)) : null,
-          row.b3 !== null ? row.b3 : null,
-          row.b3 !== null ? (row.b3v || 0) : null,
+          ri === 0 ? (actor.produit || '') : '',
+          row.tranche || '—',
+          fmtRateExport(row.b1),
+          fmtUpctExport(row.b1, usB1),
+          fmtRateExport(row.b2),
+          fmtUpctExport(row.b2, usB2),
+          fmtRateExport(row.b3),
+          fmtUpctExport(row.b3, usB3),
           ri === 0 ? (actor.comment || '') : ''
         ]);
       });
     });
+    return rows;
+  }
 
+  function buildPromosExportRows (p) {
+    var promos = DATA.promos[p.id] || [];
+    if (!promos.length) return [['Aucune donnée disponible']];
+    var rows = [['Acteur', 'Taux', 'Durée', 'Montant', 'Date fin', 'Canal']];
+    promos.forEach(function (pr) {
+      rows.push([
+        pr.actor || '',
+        exportPlainVal(pr.taux),
+        exportPlainVal(pr.duree),
+        exportPlainVal(pr.montant),
+        exportPlainVal(pr.dateFin),
+        exportPlainVal(pr.canal)
+      ]);
+    });
+    return rows;
+  }
+
+  function buildActusExportRows (p) {
+    var items = getProductActusExport(p);
+    if (!items.length) return [['Aucune donnée disponible']];
+    var rows = [['Date', 'Acteur', 'Type', 'Titre', 'Source', 'Impact']];
+    items.forEach(function (e) {
+      rows.push([
+        fmtDate(e.date),
+        e.acteur || '',
+        e.type || '',
+        e.titre || '',
+        e.source || '',
+        e.impact || ''
+      ]);
+    });
+    return rows;
+  }
+
+  function rowsToStyledSheet (rows, meta) {
     var ws = XLSX.utils.aoa_to_sheet(rows);
-    /* Largeurs colonnes */
-    ws['!cols'] = [22,26,16,20, 10,10,10, 12,12,10, 12,12,10, 40].map(function (w) { return { wch: w }; });
+    if (meta) stylizeTableauWs(ws, meta);
+    if (rows[0] && rows[0].length) {
+      ws['!cols'] = rows[0].map(function (_, i) { return { wch: i === 0 ? 28 : 18 }; });
+    }
+    return ws;
+  }
+
+  function exportProductXlsx (p, selectedTabs) {
     var wb = XLSX.utils.book_new();
+    var sheetNames = {
+      tableau: 'Tableau',
+      differenciateurs: 'Différenciateurs',
+      taux: 'Taux',
+      promos: 'Promos',
+      actualites: 'Actualités'
+    };
+
+    selectedTabs.forEach(function (tabId) {
+      var ws;
+      if (tabId === 'tableau') {
+        var tb = buildTableauExportRows(p);
+        ws = rowsToStyledSheet(tb.rows, tb.meta);
+      } else if (tabId === 'differenciateurs') {
+        ws = rowsToStyledSheet(buildDiffExportRows(p));
+      } else if (tabId === 'taux') {
+        ws = rowsToStyledSheet(buildTauxExportRows(p));
+      } else if (tabId === 'promos') {
+        ws = rowsToStyledSheet(buildPromosExportRows(p));
+      } else if (tabId === 'actualites') {
+        ws = rowsToStyledSheet(buildActusExportRows(p));
+      }
+      if (ws) XLSX.utils.book_append_sheet(wb, ws, sheetNames[tabId] || tabId);
+    });
+
+    XLSX.writeFile(wb, exportFileBase(p) + '.xlsx');
+  }
+
+  function downloadBlob (blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function wordText (text, opts) {
+    if (typeof docx === 'undefined') throw new Error('Librairie docx non chargée.');
+    var O = Object.assign({ bold: false }, opts || {});
+    return new docx.TextRun({ text: String(text == null ? '' : text), bold: O.bold });
+  }
+
+  function wordPara (textOrRuns, opts) {
+    var O = Object.assign({ heading: null, spacingAfter: 120 }, opts || {});
+    var children = Array.isArray(textOrRuns) ? textOrRuns : [wordText(textOrRuns)];
+    return new docx.Paragraph({
+      children: children,
+      heading: O.heading,
+      spacing: { after: O.spacingAfter }
+    });
+  }
+
+  function wordTableCell (text, opts) {
+    var O = Object.assign({ bold: false, shading: null, widthPct: null }, opts || {});
+    var cellOpts = {
+      children: [new docx.Paragraph({ children: [wordText(text, { bold: O.bold })] })]
+    };
+    if (O.shading) cellOpts.shading = { fill: O.shading, type: docx.ShadingType.CLEAR, color: 'auto' };
+    if (O.widthPct != null) cellOpts.width = { size: O.widthPct, type: docx.WidthType.PERCENTAGE };
+    return new docx.TableCell(cellOpts);
+  }
+
+  function wordTableFromRows (rows, opts) {
+    var O = Object.assign({ header: true, sofincoCol: -1 }, opts || {});
+    if (!rows || !rows.length) {
+      return new docx.Table({
+        rows: [new docx.TableRow({ children: [wordTableCell('Aucune donnée disponible', { widthPct: 100 })] })]
+      });
+    }
+    var tableRows = rows.map(function (row, ri) {
+      var isHeader = O.header && ri === 0;
+      return new docx.TableRow({
+        children: row.map(function (cell, ci) {
+          var isSof = !isHeader && O.sofincoCol === ci;
+          return wordTableCell(cell, {
+            bold: isHeader,
+            shading: isSof ? 'E0F7F7' : (isHeader ? 'F7F9FA' : null)
+          });
+        })
+      });
+    });
+    return new docx.Table({
+      width: { size: 100, type: docx.WidthType.PERCENTAGE },
+      rows: tableRows
+    });
+  }
+
+  function exportProductWord (p, selectedTabs) {
+    if (typeof docx === 'undefined') {
+      alert('Export Word indisponible — librairie docx non chargée.');
+      return;
+    }
+
+    var sections = [];
+    sections.push(wordPara('SofincoEdge — ' + p.label + ' — ' + fmtDate(today()), { heading: docx.HeadingLevel.TITLE, spacingAfter: 240 }));
+
+    var headings = {
+      tableau: 'Tableau',
+      differenciateurs: 'Différenciateurs',
+      taux: 'Taux',
+      promos: 'Promos',
+      actualites: 'Actualités'
+    };
+
+    selectedTabs.forEach(function (tabId) {
+      sections.push(wordPara(headings[tabId] || tabId, { heading: docx.HeadingLevel.HEADING_1, spacingAfter: 160 }));
+
+      if (tabId === 'tableau') {
+        var tb = buildTableauExportRows(p);
+        sections.push(wordTableFromRows(tb.rows, {
+          header: !!(tb.meta),
+          sofincoCol: tb.meta ? tb.meta.sofincoCol : -1
+        }));
+      } else if (tabId === 'differenciateurs') {
+        sections.push(wordTableFromRows(buildDiffExportRows(p)));
+      } else if (tabId === 'taux') {
+        sections.push(wordTableFromRows(buildTauxExportRows(p)));
+      } else if (tabId === 'promos') {
+        sections.push(wordTableFromRows(buildPromosExportRows(p)));
+      } else if (tabId === 'actualites') {
+        sections.push(wordTableFromRows(buildActusExportRows(p)));
+      }
+      sections.push(wordPara(''));
+    });
+
+    var doc = new docx.Document({ sections: [{ properties: {}, children: sections }] });
+    docx.Packer.toBlob(doc).then(function (blob) {
+      downloadBlob(blob, exportFileBase(p) + '.docx');
+    }).catch(function (err) {
+      alert('Erreur export Word : ' + (err.message || err));
+    });
+  }
+
+  function getSelectedExportTabs () {
+    var out = [];
+    document.querySelectorAll('#export-check-list input[type=checkbox]').forEach(function (cb) {
+      if (cb.checked) out.push(cb.value);
+    });
+    return out;
+  }
+
+  function updateExportConfirmBtn () {
+    var btn = $('export-confirm');
+    if (btn) btn.disabled = getSelectedExportTabs().length === 0;
+  }
+
+  function openExportModal (format) {
+    var p = productById(state.productId);
+    if (!p) return;
+    exportPending.format = format;
+    exportPending.productId = p.id;
+
+    var tabs = getExportTabsForProduct(p);
+    var list = $('export-check-list');
+    list.innerHTML = tabs.map(function (t) {
+      return '<label class="export-check-item"><input type="checkbox" value="' + t.id + '" checked><span>' + esc(t.label) + '</span></label>';
+    }).join('');
+
+    list.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+      cb.addEventListener('change', updateExportConfirmBtn);
+    });
+
+    $('export-product-label').textContent = p.label + ' — export ' + (format === 'word' ? 'Word (.docx)' : 'Excel (.xlsx)');
+    $('export-confirm').innerHTML = format === 'word'
+      ? '<i class="ti ti-file-word"></i> Exporter'
+      : '<i class="ti ti-file-spreadsheet"></i> Exporter';
+    updateExportConfirmBtn();
+    $('modal-export').classList.add('show');
+  }
+
+  function confirmExport () {
+    var p = productById(exportPending.productId);
+    var tabs = getSelectedExportTabs();
+    if (!p || !tabs.length) return;
+    $('modal-export').classList.remove('show');
+    try {
+      if (exportPending.format === 'word') exportProductWord(p, tabs);
+      else exportProductXlsx(p, tabs);
+    } catch (e) {
+      alert('Erreur lors de l\'export : ' + (e.message || e));
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     EXPORT EXCEL TAUX (onglet Taux CR — raccourci)
+  ────────────────────────────────────────── */
+  function exportTauxXlsx () {
+    var p = productById('cr');
+    if (!p || !DATA.taux || !DATA.taux.cr) return;
+    var wb = XLSX.utils.book_new();
+    var ws = rowsToStyledSheet(buildTauxExportRows(p));
     XLSX.utils.book_append_sheet(wb, ws, 'Taux CR');
-    XLSX.writeFile(wb, 'benchmark-taux-cr-' + d.updatedAt + '.xlsx');
+    XLSX.writeFile(wb, 'benchmark-taux-cr-' + (DATA.taux.cr.updatedAt || today()) + '.xlsx');
   }
 
   /* ──────────────────────────────────────────
@@ -3010,6 +3420,12 @@
       navigate('actus');
     });
 
+    /* Modal export produit */
+    $('export-close').addEventListener('click', function () { $('modal-export').classList.remove('show'); });
+    $('export-cancel').addEventListener('click', function () { $('modal-export').classList.remove('show'); });
+    $('modal-export').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+    $('export-confirm').addEventListener('click', confirmExport);
+
     /* Modal courriel */
     $('btn-mail').addEventListener('click', function () {
       $('mail-body').value = mailText();
@@ -3043,6 +3459,7 @@
   window.simUpdate         = simUpdate;
   window.switchSimDuree    = switchSimDuree;
   window.exportTauxXlsx   = exportTauxXlsx;
+  window.openExportModal  = openExportModal;
   window.setActuFilter    = setActuFilter;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
