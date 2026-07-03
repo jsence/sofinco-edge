@@ -342,6 +342,13 @@
     .news-body { flex: 1; }
     .news-meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
     .news-text { font-size: 13px; }
+    .news-resume { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+    .actu-fiabilite-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+      padding: 2px 7px; border-radius: 99px; margin-left: 6px; vertical-align: middle;
+      background: rgba(245,158,11,0.16); color: var(--orange); border: 1px solid rgba(245,158,11,0.35);
+    }
     .empty-state { text-align: center; padding: 56px 20px; color: var(--muted); }
     .empty-state i { font-size: 44px; display: block; margin-bottom: 10px; color: #D1D5DB; }
 
@@ -2333,8 +2340,12 @@
     html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(e.acteur) +
       (e.produit ? ' &nbsp;·&nbsp; ' + pLabel(e.produit) : ' &nbsp;·&nbsp; Transverse') + '</div>';
     html += '<div class="news-text"><span class="actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span>&nbsp; ' + esc(e.titre);
+    if (e.fiabilite === 'a_verifier') {
+      html += ' <span class="actu-fiabilite-badge"><i class="ti ti-alert-circle" style="font-size:10px"></i>À vérifier</span>';
+    }
     if (e.source) html += ' <a href="' + esc(e.source) + '" target="_blank" rel="noopener" style="font-size:11px">(source)</a>';
     html += '</div>';
+    if (e.resume) html += '<div class="news-resume">' + esc(e.resume) + '</div>';
     if (e.impact) html += '<div class="news-impact">Impact : <strong>' + esc(e.impact) + '</strong></div>';
     html += '</div>';
     if (isNew(e.date)) html += '<span class="badge b-new">Nouveau</span>';
@@ -2366,6 +2377,12 @@
     html += '<div class="detail-ac"><div class="detail-ac-name">Produit</div><div class="detail-ac-val">' + (e.produit ? esc(pLabel(e.produit)) : 'Transverse') + '</div></div>';
     html += '<div class="detail-ac"><div class="detail-ac-name">Date</div><div class="detail-ac-val">' + fmtDate(e.date) + '</div></div>';
     if (e.impact) html += '<div class="detail-ac"><div class="detail-ac-name">Impact</div><div class="detail-ac-val">' + esc(e.impact) + '</div></div>';
+    if (e.fiabilite === 'a_verifier') {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val"><span class="actu-fiabilite-badge">À vérifier</span></div></div>';
+    } else if (e.fiabilite === 'confirmee') {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">Confirmée</div></div>';
+    }
+    if (e.resume) html += '<div class="detail-ac" style="grid-column:1/-1"><div class="detail-ac-name">Résumé</div><div class="detail-ac-val">' + esc(e.resume) + '</div></div>';
     if (e.source) html += '<div class="detail-ac"><div class="detail-ac-name">Source</div><div class="detail-ac-val"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div></div>';
     html += '</div>';
     $('detail-body').innerHTML = html;
