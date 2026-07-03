@@ -140,6 +140,8 @@
         type: a.type,
         produit: a.produit_id,
         titre: a.titre,
+        resume: a.resume || null,
+        fiabilite: a.fiabilite || null,
         source: a.source,
         impact: IMPACT_REV[a.impact] || a.impact
       };
@@ -511,13 +513,8 @@
     var map = await ensureActorByName(sb, payload.acteur, idByNom);
     var acteurId = map[payload.acteur];
     var titre = String(payload.titre || '').trim();
-    if (payload.resume) {
-      var resume = String(payload.resume).trim();
-      if (resume) titre = titre + '\n\n' + resume;
-    }
-    if (payload.fiabilite === 'a_verifier') {
-      titre = '[À vérifier] ' + titre;
-    }
+    var resume = payload.resume ? String(payload.resume).trim() : null;
+    var fiabilite = payload.fiabilite === 'a_verifier' ? 'a_verifier' : (payload.fiabilite === 'confirmee' ? 'confirmee' : null);
     var impactKey = IMPACT_TO_DB[String(payload.impact || '').toLowerCase()] || null;
     var row = {
       date: payload.date || new Date().toISOString().slice(0, 10),
@@ -525,6 +522,8 @@
       type: payload.type,
       produit_id: payload.produit_id || null,
       titre: titre,
+      resume: resume || null,
+      fiabilite: fiabilite,
       source: payload.source,
       impact: impactKey
     };
