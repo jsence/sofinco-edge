@@ -153,15 +153,7 @@
     .sb-footer {
       padding: 10px 8px 14px;
       border-top: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 0;
     }
-    .sb-footer-group { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
-    .sb-footer-group.sb-footer-export { background: var(--bg); margin: 0 -8px -14px; padding: 10px 8px 14px; border-radius: 0 0 0 0; }
-    .sb-footer-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.5px; color: var(--muted); padding: 0 4px 2px;
-    }
-    .sb-footer-divider { height: 1px; background: var(--border); margin: 2px 0; }
 
     /* ── BUTTONS ──────────────────────────────── */
     .btn {
@@ -196,8 +188,12 @@
       position: sticky; top: 0; z-index: 100;
     }
     #burger { display: none; padding: 6px; border-radius: 8px; }
-    .topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
-    .topbar-date { font-size: 12px; color: var(--muted); }
+    .topbar-title { font-size: 15px; font-weight: 600; flex: 1; min-width: 0; }
+    .topbar-actions {
+      display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0; margin-left: auto;
+    }
+    .topbar-last-update { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
     #content { flex: 1; padding: 28px 32px; transition: opacity 250ms ease; }
     #content.fading { opacity: 0; }
@@ -850,7 +846,8 @@
       #sidebar.open { transform: translateX(0); box-shadow: var(--sh-md); }
       #main { margin-left: 0; }
       #burger { display: flex; }
-      #topbar { padding: 0 16px; }
+      #topbar { padding: 0 16px; gap: 8px; }
+      .topbar-actions { gap: 8px; }
       #content { padding: 20px 16px; }
       .products-grid { grid-template-columns: 1fr; }
       .shortcuts-grid { grid-template-columns: repeat(2,1fr); }
@@ -862,6 +859,9 @@
     @media (max-width: 640px) {
       .actors-grid { grid-template-columns: 1fr; }
       .promo-body { flex-direction: column; align-items: flex-start; }
+      .topbar-last-update { display: none; }
+      .topbar-btn-label { display: none; }
+      #btn-contributeur { padding: 5px 8px; }
     }
 
     /* ── UTILS ────────────────────────────────── */
@@ -1111,19 +1111,9 @@
   </nav>
 
   <div class="sb-footer">
-    <div class="sb-footer-group sb-footer-contrib">
-      <div class="sb-footer-label">Contribuer</div>
-      <button class="btn btn-primary btn-full" id="btn-contributeur">
-        <i class="ti ti-user-edit"></i> Espace contributeur
-      </button>
-    </div>
-    <div class="sb-footer-divider"></div>
-    <div class="sb-footer-group sb-footer-export">
-      <div class="sb-footer-label">Exporter</div>
-      <button class="btn btn-secondary btn-full" id="btn-export-general">
-        <i class="ti ti-download"></i> Exporter
-      </button>
-    </div>
+    <button class="btn btn-secondary btn-full" id="btn-export-general">
+      <i class="ti ti-download"></i> Exporter
+    </button>
   </div>
 </aside>
 
@@ -1134,7 +1124,12 @@
   <header id="topbar">
     <button class="btn btn-ghost" id="burger"><i class="ti ti-menu-2" style="font-size:20px"></i></button>
     <span class="topbar-title" id="topbar-title">Accueil</span>
-    <span class="topbar-date" id="topbar-date"></span>
+    <div class="topbar-actions">
+      <span class="topbar-last-update" id="topbar-last-update">Dernière mise à jour : —</span>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-contributeur">
+        <i class="ti ti-user-edit"></i> <span class="topbar-btn-label">Espace contributeur</span>
+      </button>
+    </div>
   </header>
 
   <div id="data-loading"><div class="data-load-box"><i class="ti ti-loader-2"></i> Chargement des données…</div></div>
@@ -1678,6 +1673,37 @@
     return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
   }
 
+  function normalizeIsoDate (dateStr) {
+    if (!dateStr) return null;
+    var s = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  }
+
+  function getGlobalLastUpdateIso () {
+    var latest = null;
+    function consider (dateStr) {
+      var iso = normalizeIsoDate(dateStr);
+      if (!iso) return;
+      if (!latest || iso > latest) latest = iso;
+    }
+    DATA.produits.forEach(function (p) { consider(p.updatedAt); });
+    if (DATA.taux && DATA.taux.cr) consider(DATA.taux.cr.updatedAt);
+    actuList().forEach(function (a) { consider(a.date); });
+    return latest;
+  }
+
+  function renderTopbarMeta () {
+    var lastEl = $('topbar-last-update');
+    if (!lastEl) return;
+    var latest = getGlobalLastUpdateIso();
+    lastEl.textContent = latest
+      ? ('Dernière mise à jour : ' + fmtDate(latest))
+      : 'Dernière mise à jour : —';
+  }
+
   function isNew (dateStr) {
     if (!dateStr) return false;
     return (Date.now() - new Date(dateStr).getTime()) < 7 * 864e5;
@@ -2012,7 +2038,7 @@
 
     var p = state.productId ? productById(state.productId) : null;
     $('topbar-title').textContent = state.view === 'home' ? '' : (state.view === 'actus' ? 'Actualités' : (p ? p.label : ''));
-    $('topbar-date').textContent = fmtDate(today());
+    renderTopbarMeta();
   }
 
   /* ──────────────────────────────────────────
