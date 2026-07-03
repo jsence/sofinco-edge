@@ -927,21 +927,63 @@
     .contrib-manual-link:hover { text-decoration: underline; }
     .contrib-back-link { font-size: 12px; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; margin-bottom: 14px; display: inline-flex; align-items: center; gap: 4px; }
     .contrib-back-link:hover { color: var(--text); }
-    .contrib-bulk-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+    .contrib-bulk-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .contrib-json-drop {
+      border: 2px dashed var(--border); border-radius: 10px;
+      position: relative; cursor: text;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+    .contrib-json-drop:hover, .contrib-json-drop.drag { border-color: var(--tq); background: var(--tq-light); }
+    .contrib-json-drop.has-content {
+      border-style: solid; background: var(--bg); cursor: default;
+    }
+    .contrib-json-drop.has-content:hover { background: var(--bg); }
+    .contrib-json-empty {
+      padding: 36px 24px; text-align: center; pointer-events: none;
+    }
+    .contrib-json-empty i { font-size: 40px; color: var(--tq-ink); display: block; margin-bottom: 12px; }
+    .contrib-json-empty p { color: var(--muted); font-size: 13px; margin: 0; }
+    .contrib-json-empty .dz-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .contrib-json-browse {
+      pointer-events: auto; font-size: 13px; color: var(--tq-ink); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 0; text-decoration: underline;
+    }
+    .contrib-json-browse:hover { color: var(--navy); }
+    .contrib-json-drop.has-content .contrib-json-empty { display: none; }
+    .contrib-bulk-json-editor {
+      display: none; width: 100%; min-height: 148px; max-height: 240px;
+      border: none; border-radius: 10px; padding: 14px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px; line-height: 1.55; color: var(--text); background: var(--bg);
+      resize: vertical; outline: none;
+    }
+    .contrib-json-drop.has-content .contrib-bulk-json-editor { display: block; }
     .contrib-bulk-input {
       width: 100%; min-width: 70px; padding: 4px 6px; border-radius: 6px; font-size: 12px;
       border: 1px solid transparent; background: transparent; color: var(--text); font-family: inherit;
+      transition: border-color 150ms ease, background 150ms ease;
     }
     .contrib-bulk-input:hover, .contrib-bulk-input:focus { border-color: var(--border); background: var(--surface); outline: none; }
     .contrib-bulk-cell-error .contrib-bulk-input { border-color: var(--red); background: rgba(225,45,45,0.06); }
-    .contrib-bulk-table-wrap { margin-top: 18px; max-height: 340px; overflow: auto; }
-    .contrib-bulk-table-wrap table { font-size: 12px; }
-    .contrib-bulk-table-wrap th { white-space: nowrap; font-size: 11px; }
-    .contrib-bulk-table-wrap td { vertical-align: middle; padding: 6px 8px; }
-    .contrib-bulk-row-err { font-size: 11px; color: var(--red); max-width: 140px; }
-    .contrib-bulk-mode-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
-    .contrib-bulk-mode-actu { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
-    .contrib-bulk-mode-synth { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .contrib-bulk-tbl { max-height: 340px; margin-top: 10px; }
+    .contrib-bulk-tbl table { font-size: 12px; }
+    .contrib-bulk-tbl th { white-space: nowrap; font-size: 11px; padding: 10px 12px; }
+    .contrib-bulk-tbl td { vertical-align: middle; padding: 8px 12px; white-space: normal; }
+    .contrib-bulk-tbl td:first-child, .contrib-bulk-tbl th:first-child {
+      position: static; min-width: auto; max-width: none; border-right: none; background: inherit;
+    }
+    .contrib-bulk-tbl tbody tr { transition: background 150ms ease; }
+    .contrib-bulk-tbl tbody tr.contrib-bulk-row-invalid td { background: rgba(225,45,45,0.06); }
+    .contrib-bulk-tbl tbody tr.contrib-bulk-row-invalid:hover td { background: rgba(225,45,45,0.1); }
+    .contrib-bulk-tbl .badge { max-width: 140px; white-space: normal; text-align: left; line-height: 1.35; }
+    .contrib-bulk-cb { width: 16px; height: 16px; accent-color: var(--tq-ink); cursor: pointer; flex-shrink: 0; }
+    .contrib-bulk-footer {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-top: 14px;
+    }
+    .contrib-bulk-footer-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    #contrib-bulk-selected-count { font-size: 11px; padding: 4px 10px; }
+    #contrib-bulk-publish { transition: background 150ms ease, box-shadow 150ms ease, opacity 150ms ease; }
+    #contrib-bulk-publish.is-loading i { animation: spin 1s linear infinite; }
   </style>
 </head>
 <body>
@@ -1111,25 +1153,36 @@
       <!-- Étape 2 : import groupé (vue principale) -->
       <div id="contrib-step-import" class="contrib-step-hidden">
         <button type="button" class="contrib-manual-link" id="contrib-goto-manual"><i class="ti ti-plus"></i> Ajouter une entrée manuellement</button>
-        <p style="font-size:14px;color:var(--text);margin-bottom:12px">Import groupé — collez ou téléversez un tableau JSON, relisez puis publiez en masse.</p>
 
-        <textarea class="mail-ta" id="contrib-bulk-json" style="height:140px" placeholder='[{"mode":"actualite","acteur":"Cofidis","produit":"pb","type":"Produit","titre":"...","resume":"...","source":"https://..."},{"mode":"synthese","synthese_type":"nouvelle_tendance","produit":"cr","titre":"...","detail":"..."}]'></textarea>
+        <div class="section-hd"><i class="ti ti-file-import"></i> Import groupé</div>
+        <p class="text-muted text-sm" style="margin-bottom:16px">Collez ou téléversez un tableau JSON, relisez puis publiez en masse.</p>
+
+        <div class="contrib-json-drop" id="contrib-bulk-drop-zone">
+          <div class="contrib-json-empty" id="contrib-bulk-json-empty">
+            <i class="ti ti-brackets"></i>
+            <p class="dz-title">Collez votre JSON ici ou glissez un fichier</p>
+            <p>ou <button type="button" class="contrib-json-browse" id="contrib-bulk-file-btn">parcourir un fichier .json</button></p>
+          </div>
+          <textarea class="contrib-bulk-json-editor" id="contrib-bulk-json" spellcheck="false" placeholder='[{"mode":"actualite","acteur":"Cofidis","produit":"pb","type":"Produit","titre":"...","resume":"...","source":"https://..."}]'></textarea>
+          <input type="file" id="contrib-bulk-file" accept=".json,application/json" style="display:none">
+        </div>
 
         <div class="contrib-bulk-actions">
-          <button type="button" class="btn btn-secondary btn-sm" id="contrib-bulk-file-btn"><i class="ti ti-upload"></i> Téléverser un fichier .json</button>
-          <input type="file" id="contrib-bulk-file" accept=".json,application/json" style="display:none">
-          <button type="button" class="btn btn-primary btn-sm" id="contrib-bulk-analyze"><i class="ti ti-search"></i> Analyser</button>
+          <button type="button" class="btn btn-primary" id="contrib-bulk-analyze"><i class="ti ti-search"></i> Analyser</button>
         </div>
         <p class="contrib-error" id="contrib-bulk-parse-error" style="display:none"></p>
 
         <div id="contrib-bulk-review" class="contrib-step-hidden">
           <div class="section-hd" style="margin-top:18px;margin-bottom:10px"><i class="ti ti-table"></i> Relecture avant publication</div>
-          <div class="contrib-bulk-table-wrap tbl-wrap" id="contrib-bulk-table-wrap"></div>
+          <div class="tbl-wrap contrib-bulk-tbl" id="contrib-bulk-table-wrap"></div>
           <p class="contrib-error" id="contrib-bulk-publish-error" style="display:none;margin-top:10px"></p>
           <p class="contrib-success" id="contrib-bulk-publish-success" style="display:none;margin-top:10px"></p>
-          <div class="flex gap-2 justify-end" style="gap:10px;margin-top:14px">
-            <button type="button" class="btn btn-secondary" id="contrib-bulk-cancel">Annuler</button>
-            <button type="button" class="btn btn-primary" id="contrib-bulk-publish" disabled><i class="ti ti-send"></i> Publier les 0 entrées sélectionnées</button>
+          <div class="contrib-bulk-footer">
+            <span class="badge b-tq" id="contrib-bulk-selected-count" style="display:none">0 entrée sélectionnée</span>
+            <div class="contrib-bulk-footer-actions">
+              <button type="button" class="btn btn-secondary" id="contrib-bulk-cancel">Annuler</button>
+              <button type="button" class="btn btn-primary" id="contrib-bulk-publish" disabled><i class="ti ti-send"></i> Publier</button>
+            </div>
           </div>
         </div>
       </div>
@@ -3657,16 +3710,40 @@
     }).join('');
   }
 
+  function syncContribBulkJsonZone () {
+    var ta = $('contrib-bulk-json');
+    var zone = $('contrib-bulk-drop-zone');
+    if (!ta || !zone) return;
+    var has = !!(ta.value || '').trim() || zone.classList.contains('contrib-json-editing');
+    zone.classList.toggle('has-content', has);
+  }
+
+  function setBulkPublishLoading (loading) {
+    var btn = $('contrib-bulk-publish');
+    if (!btn) return;
+    if (loading) {
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+      btn.innerHTML = '<i class="ti ti-loader-2"></i> Publication en cours…';
+    } else {
+      btn.classList.remove('is-loading');
+      updateBulkPublishBtn();
+    }
+  }
+
   function resetContribBulkImport () {
     contribBulkRows = [];
     contribBulkNextId = 1;
+    var zone = $('contrib-bulk-drop-zone');
+    if (zone) zone.classList.remove('contrib-json-editing', 'drag');
     $('contrib-bulk-json').value = '';
+    syncContribBulkJsonZone();
     $('contrib-bulk-parse-error').style.display = 'none';
     $('contrib-bulk-publish-error').style.display = 'none';
     $('contrib-bulk-publish-success').style.display = 'none';
     $('contrib-bulk-review').classList.add('contrib-step-hidden');
     $('contrib-bulk-table-wrap').innerHTML = '';
-    updateBulkPublishBtn();
+    setBulkPublishLoading(false);
   }
 
   function showContribImportView () {
@@ -3967,26 +4044,28 @@
     var allSelected = allValidSelected.length && allValidSelected.every(function (r) { return r.selected; });
 
     var html = '<table><thead><tr>';
-    html += '<th style="width:36px"><input type="checkbox" id="contrib-bulk-select-all"' + (allSelected ? ' checked' : '') + ' title="Tout sélectionner"></th>';
+    html += '<th style="width:36px"><input type="checkbox" class="contrib-bulk-cb" id="contrib-bulk-select-all"' + (allSelected ? ' checked' : '') + ' title="Tout sélectionner"></th>';
     html += '<th>#</th><th>Mode</th><th>Acteur</th><th>Produit</th><th>Type</th><th>Titre</th><th>Résumé / Détail</th><th>Source</th><th>Statut</th>';
     html += '</tr></thead><tbody>';
 
     contribBulkRows.forEach(function (row, idx) {
       var f = row.fields;
       var errCls = function (field) { return row.errors && row.errors[field] ? ' contrib-bulk-cell-error' : ''; };
-      var modeLbl = row.mode === 'actu' ? 'Actualité' : 'Synthèse';
-      var modeCls = row.mode === 'actu' ? 'contrib-bulk-mode-actu' : 'contrib-bulk-mode-synth';
+      var modeBadge = row.mode === 'actu'
+        ? '<span class="badge b-tq">Actualité</span>'
+        : '<span class="badge b-gray">Synthèse</span>';
       var resumeOrDetail = row.mode === 'actu' ? (f.resume || '') : (f.detail || '');
       var typeVal = row.mode === 'actu' ? f.type : f.synthese_type;
       var status = row.publishError
-        ? ('<span class="contrib-bulk-row-err">' + esc(row.publishError) + '</span>')
-        : (row.valid ? '<span style="color:var(--green);font-size:11px">OK</span>' : '<span class="contrib-bulk-row-err">Champs manquants</span>');
+        ? ('<span class="badge b-red">' + esc(row.publishError) + '</span>')
+        : (row.valid ? '<span class="badge b-green">OK</span>' : '<span class="badge b-red">Champs manquants</span>');
+      var rowCls = (!row.valid || row.publishError) ? ' contrib-bulk-row-invalid' : '';
 
-      html += '<tr data-bulk-row="' + row.id + '">';
-      html += '<td><input type="checkbox" class="contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
+      html += '<tr data-bulk-row="' + row.id + '" class="' + rowCls.trim() + '">';
+      html += '<td><input type="checkbox" class="contrib-bulk-cb contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
         (row.selected && row.valid ? ' checked' : '') + (row.valid ? '' : ' disabled') + '></td>';
       html += '<td style="color:var(--muted)">' + (idx + 1) + '</td>';
-      html += '<td><span class="contrib-bulk-mode-tag ' + modeCls + '">' + modeLbl + '</span></td>';
+      html += '<td>' + modeBadge + '</td>';
       html += '<td class="' + errCls('acteur').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
       html += '<td class="' + errCls('produit_id').trim() + '">' + bulkCellInput(row.id, 'produit_id', f.produit_id) + '</td>';
       html += '<td class="' + errCls(row.mode === 'actu' ? 'type' : 'synthese_type').trim() + '">' + bulkCellInput(row.id, row.mode === 'actu' ? 'type' : 'synthese_type', typeVal) + '</td>';
@@ -4040,11 +4119,17 @@
 
   function updateBulkPublishBtn () {
     var btn = $('contrib-bulk-publish');
-    if (!btn) return;
+    var badge = $('contrib-bulk-selected-count');
+    if (!btn || btn.classList.contains('is-loading')) return;
     var selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
     var hasInvalidSelected = contribBulkRows.some(function (r) { return r.selected && !r.valid; });
-    btn.innerHTML = '<i class="ti ti-send"></i> Publier les ' + selected.length + ' entrée' + (selected.length > 1 ? 's' : '') + ' sélectionnée' + (selected.length > 1 ? 's' : '');
-    btn.disabled = selected.length === 0 || hasInvalidSelected;
+    var n = selected.length;
+    if (badge) {
+      badge.textContent = n + ' entrée' + (n !== 1 ? 's' : '') + ' sélectionnée' + (n !== 1 ? 's' : '');
+      badge.style.display = contribBulkRows.length ? 'inline-flex' : 'none';
+    }
+    btn.innerHTML = '<i class="ti ti-send"></i> Publier';
+    btn.disabled = n === 0 || hasInvalidSelected;
   }
 
   function analyzeBulkImport () {
@@ -4079,6 +4164,9 @@
     var reader = new FileReader();
     reader.onload = function (e) {
       $('contrib-bulk-json').value = e.target.result;
+      var zone = $('contrib-bulk-drop-zone');
+      if (zone) zone.classList.add('contrib-json-editing');
+      syncContribBulkJsonZone();
       $('contrib-bulk-parse-error').style.display = 'none';
     };
     reader.onerror = function () {
@@ -4103,6 +4191,7 @@
     });
 
     try {
+      setBulkPublishLoading(true);
       var res = await SofincoSupabase.publishContributionEntriesBulk(sbClient, entries, actorIdByNom);
       Object.assign(actorIdByNom, res.map);
 
@@ -4147,6 +4236,8 @@
     } catch (e) {
       errEl.textContent = 'Erreur lors de la publication : ' + (e.message || e);
       errEl.style.display = 'block';
+    } finally {
+      setBulkPublishLoading(false);
     }
   }
 
@@ -4341,12 +4432,40 @@
     $('contrib-back-import').addEventListener('click', showContribImportView);
     $('contrib-bulk-analyze').addEventListener('click', analyzeBulkImport);
     $('contrib-bulk-publish').addEventListener('click', publishBulkContributions);
-    $('contrib-bulk-file-btn').addEventListener('click', function () { $('contrib-bulk-file').click(); });
+    $('contrib-bulk-file-btn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      $('contrib-bulk-file').click();
+    });
     $('contrib-bulk-file').addEventListener('change', function () {
       var f = this.files[0];
       if (f) readContribBulkFile(f);
       this.value = '';
     });
+    (function initContribBulkJsonZone () {
+      var zone = $('contrib-bulk-drop-zone');
+      var ta = $('contrib-bulk-json');
+      if (!zone || !ta) return;
+      zone.addEventListener('click', function (e) {
+        if (e.target.closest('.contrib-json-browse') || e.target.closest('#contrib-bulk-analyze')) return;
+        zone.classList.add('contrib-json-editing');
+        syncContribBulkJsonZone();
+        ta.focus();
+      });
+      ta.addEventListener('input', syncContribBulkJsonZone);
+      ta.addEventListener('blur', function () {
+        if (!(ta.value || '').trim()) zone.classList.remove('contrib-json-editing');
+        syncContribBulkJsonZone();
+      });
+      zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', function () { zone.classList.remove('drag'); });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        zone.classList.remove('drag');
+        var f = e.dataTransfer.files[0];
+        if (f) readContribBulkFile(f);
+      });
+      syncContribBulkJsonZone();
+    })();
     $('contrib-tab-actu').addEventListener('click', function () { switchContribMode('actu'); });
     $('contrib-tab-synth').addEventListener('click', function () { switchContribMode('synth'); });
     $('contrib-json-toggle').addEventListener('click', function () {
