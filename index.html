@@ -923,6 +923,25 @@
     .contrib-json-zone { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
     .contrib-json-zone .mail-ta { height: 120px; margin-top: 8px; }
     .contrib-step-hidden { display: none !important; }
+    .contrib-manual-link { font-size: 13px; color: var(--tq-ink); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; margin-bottom: 16px; display: inline-flex; align-items: center; gap: 4px; }
+    .contrib-manual-link:hover { text-decoration: underline; }
+    .contrib-back-link { font-size: 12px; color: var(--muted); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; margin-bottom: 14px; display: inline-flex; align-items: center; gap: 4px; }
+    .contrib-back-link:hover { color: var(--text); }
+    .contrib-bulk-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+    .contrib-bulk-input {
+      width: 100%; min-width: 70px; padding: 4px 6px; border-radius: 6px; font-size: 12px;
+      border: 1px solid transparent; background: transparent; color: var(--text); font-family: inherit;
+    }
+    .contrib-bulk-input:hover, .contrib-bulk-input:focus { border-color: var(--border); background: var(--surface); outline: none; }
+    .contrib-bulk-cell-error .contrib-bulk-input { border-color: var(--red); background: rgba(225,45,45,0.06); }
+    .contrib-bulk-table-wrap { margin-top: 18px; max-height: 340px; overflow: auto; }
+    .contrib-bulk-table-wrap table { font-size: 12px; }
+    .contrib-bulk-table-wrap th { white-space: nowrap; font-size: 11px; }
+    .contrib-bulk-table-wrap td { vertical-align: middle; padding: 6px 8px; }
+    .contrib-bulk-row-err { font-size: 11px; color: var(--red); max-width: 140px; }
+    .contrib-bulk-mode-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    .contrib-bulk-mode-actu { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
+    .contrib-bulk-mode-synth { background: rgba(124,58,237,0.12); color: var(--purple); }
   </style>
 </head>
 <body>
@@ -1089,8 +1108,35 @@
         </div>
       </div>
 
-      <!-- Étape 2 : formulaire -->
-      <div id="contrib-step-form" class="contrib-step-hidden">
+      <!-- Étape 2 : import groupé (vue principale) -->
+      <div id="contrib-step-import" class="contrib-step-hidden">
+        <button type="button" class="contrib-manual-link" id="contrib-goto-manual"><i class="ti ti-plus"></i> Ajouter une entrée manuellement</button>
+        <p style="font-size:14px;color:var(--text);margin-bottom:12px">Import groupé — collez ou téléversez un tableau JSON, relisez puis publiez en masse.</p>
+
+        <textarea class="mail-ta" id="contrib-bulk-json" style="height:140px" placeholder='[{"mode":"actualite","acteur":"Cofidis","produit":"pb","type":"Produit","titre":"...","resume":"...","source":"https://..."},{"mode":"synthese","synthese_type":"nouvelle_tendance","produit":"cr","titre":"...","detail":"..."}]'></textarea>
+
+        <div class="contrib-bulk-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-bulk-file-btn"><i class="ti ti-upload"></i> Téléverser un fichier .json</button>
+          <input type="file" id="contrib-bulk-file" accept=".json,application/json" style="display:none">
+          <button type="button" class="btn btn-primary btn-sm" id="contrib-bulk-analyze"><i class="ti ti-search"></i> Analyser</button>
+        </div>
+        <p class="contrib-error" id="contrib-bulk-parse-error" style="display:none"></p>
+
+        <div id="contrib-bulk-review" class="contrib-step-hidden">
+          <div class="section-hd" style="margin-top:18px;margin-bottom:10px"><i class="ti ti-table"></i> Relecture avant publication</div>
+          <div class="contrib-bulk-table-wrap tbl-wrap" id="contrib-bulk-table-wrap"></div>
+          <p class="contrib-error" id="contrib-bulk-publish-error" style="display:none;margin-top:10px"></p>
+          <p class="contrib-success" id="contrib-bulk-publish-success" style="display:none;margin-top:10px"></p>
+          <div class="flex gap-2 justify-end" style="gap:10px;margin-top:14px">
+            <button type="button" class="btn btn-secondary" id="contrib-bulk-cancel">Annuler</button>
+            <button type="button" class="btn btn-primary" id="contrib-bulk-publish" disabled><i class="ti ti-send"></i> Publier les 0 entrées sélectionnées</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 2b : saisie manuelle (option secondaire) -->
+      <div id="contrib-step-manual" class="contrib-step-hidden">
+        <button type="button" class="contrib-back-link" id="contrib-back-import"><i class="ti ti-arrow-left"></i> Retour à l'import groupé</button>
         <div class="tabs" style="margin-bottom:20px">
           <button type="button" class="tab-btn active" id="contrib-tab-actu"><i class="ti ti-news"></i> Actualité</button>
           <button type="button" class="tab-btn" id="contrib-tab-synth"><i class="ti ti-star"></i> Synthèse</button>
@@ -3579,6 +3625,8 @@
   var ACCESS_CODE = 'SOFINCO2026'; /* ← Remplacer par votre code d'accès */
   var contribUnlocked = false;
   var contribMode = 'actu';
+  var contribBulkRows = [];
+  var contribBulkNextId = 1;
 
   var CONTRIB_PRODUIT_MAP = {
     'prêt personnel': 'pb', 'pret personnel': 'pb', 'pp': 'pb', 'pb': 'pb',
@@ -3609,11 +3657,37 @@
     }).join('');
   }
 
+  function resetContribBulkImport () {
+    contribBulkRows = [];
+    contribBulkNextId = 1;
+    $('contrib-bulk-json').value = '';
+    $('contrib-bulk-parse-error').style.display = 'none';
+    $('contrib-bulk-publish-error').style.display = 'none';
+    $('contrib-bulk-publish-success').style.display = 'none';
+    $('contrib-bulk-review').classList.add('contrib-step-hidden');
+    $('contrib-bulk-table-wrap').innerHTML = '';
+    updateBulkPublishBtn();
+  }
+
+  function showContribImportView () {
+    $('contrib-step-import').classList.remove('contrib-step-hidden');
+    $('contrib-step-manual').classList.add('contrib-step-hidden');
+  }
+
+  function showContribManualView () {
+    $('contrib-step-import').classList.add('contrib-step-hidden');
+    $('contrib-step-manual').classList.remove('contrib-step-hidden');
+    resetContribActuForm();
+    resetContribSynthForm();
+    switchContribMode('actu');
+  }
+
   function resetContribModal () {
     contribUnlocked = false;
     contribMode = 'actu';
     $('contrib-step-access').classList.remove('contrib-step-hidden');
-    $('contrib-step-form').classList.add('contrib-step-hidden');
+    $('contrib-step-import').classList.add('contrib-step-hidden');
+    $('contrib-step-manual').classList.add('contrib-step-hidden');
     $('contrib-access-code').value = '';
     $('contrib-access-error').style.display = 'none';
     $('contrib-submit-error').style.display = 'none';
@@ -3621,6 +3695,7 @@
     $('contrib-json-panel').style.display = 'none';
     $('contrib-json-input').value = '';
     $('contrib-json-error').style.display = 'none';
+    resetContribBulkImport();
     resetContribActuForm();
     resetContribSynthForm();
     switchContribMode('actu');
@@ -3679,10 +3754,8 @@
     err.style.display = 'none';
     contribUnlocked = true;
     $('contrib-step-access').classList.add('contrib-step-hidden');
-    $('contrib-step-form').classList.remove('contrib-step-hidden');
-    resetContribActuForm();
-    resetContribSynthForm();
-    updateContribPublishBtn();
+    resetContribBulkImport();
+    showContribImportView();
   }
 
   function switchContribMode (mode) {
@@ -3734,6 +3807,347 @@
     if (!btn || !contribUnlocked) return;
     var ok = contribMode === 'actu' ? isContribActuValid() : isContribSynthValid();
     btn.disabled = !ok;
+  }
+
+  function detectBulkEntryMode (obj) {
+    var mode = String(obj.mode || obj.Mode || '').toLowerCase();
+    if (mode.indexOf('synth') >= 0 || mode === 'synthese' || mode === 'synthèse') return 'synth';
+    if (mode.indexOf('actu') >= 0 || mode === 'actualite' || mode === 'actualité') return 'actu';
+    if (obj.synthese_type || obj.synth_type) return 'synth';
+    var st = normalizeBulkSynthType(obj);
+    if (st && ['nouveau_diff', 'maj_diff', 'nouvelle_tendance', 'synthese_mensuelle'].indexOf(st) >= 0 && !obj.source) {
+      return 'synth';
+    }
+    return 'actu';
+  }
+
+  function normalizeBulkFiabilite (val) {
+    if (!val) return 'confirmee';
+    var f = String(val).toLowerCase();
+    return (f.indexOf('verif') >= 0) ? 'a_verifier' : 'confirmee';
+  }
+
+  function normalizeBulkSynthType (obj) {
+    var st = obj.synthese_type || obj.synth_type || obj.type || '';
+    st = String(st).toLowerCase();
+    if (st.indexOf('nouveau') >= 0 && st.indexOf('diff') >= 0) return 'nouveau_diff';
+    if (st.indexOf('maj') >= 0 || st.indexOf('mise') >= 0) return 'maj_diff';
+    if (st.indexOf('tendance') >= 0) return 'nouvelle_tendance';
+    if (st.indexOf('synthese') >= 0 || st.indexOf('mensuelle') >= 0) return 'synthese_mensuelle';
+    return st || '';
+  }
+
+  function normalizeBulkEntryFromJson (obj, lineNum) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      throw new Error('Ligne ' + lineNum + ' : objet JSON attendu.');
+    }
+    var mode = detectBulkEntryMode(obj);
+    if (mode === 'actu') {
+      return {
+        id: contribBulkNextId++,
+        mode: 'actu',
+        selected: true,
+        publishError: '',
+        fields: {
+          acteur: String(obj.acteur || '').trim(),
+          produit_id: normalizeProduitValue(obj.produit != null ? obj.produit : obj.produit_id),
+          type: String(obj.type || '').trim(),
+          titre: String(obj.titre || '').trim().slice(0, 100),
+          resume: String(obj.resume || '').trim().slice(0, 300),
+          impact: String(obj.impact || '').trim(),
+          fiabilite: normalizeBulkFiabilite(obj.fiabilite),
+          source: String(obj.source || '').trim(),
+          date: String(obj.date || today()).trim()
+        }
+      };
+    }
+    var tags = obj.tags;
+    if (Array.isArray(tags)) tags = tags.join(', ');
+    return {
+      id: contribBulkNextId++,
+      mode: 'synth',
+      selected: true,
+      publishError: '',
+      fields: {
+        synthese_type: normalizeBulkSynthType(obj),
+        produit_id: normalizeProduitValue(obj.produit != null ? obj.produit : obj.produit_id),
+        acteur: String(obj.acteur || '').trim(),
+        titre: String(obj.titre || obj.conclusion || '').trim(),
+        detail: String(obj.detail || '').trim(),
+        tags: String(tags || '').trim(),
+        periode: String(obj.periode || '').trim()
+      }
+    };
+  }
+
+  function validateBulkRow (row) {
+    var errors = {};
+    var f = row.fields;
+    if (row.mode === 'actu') {
+      if (!f.acteur) errors.acteur = true;
+      if (!f.type) errors.type = true;
+      if (!f.titre) errors.titre = true;
+      if (!f.source) errors.source = true;
+    } else {
+      if (!f.synthese_type) errors.synthese_type = true;
+      if (!f.produit_id) errors.produit_id = true;
+      if (!f.titre) errors.titre = true;
+      if ((f.synthese_type === 'nouveau_diff' || f.synthese_type === 'maj_diff') && !f.acteur) {
+        errors.acteur = true;
+      }
+    }
+    row.errors = errors;
+    row.valid = Object.keys(errors).length === 0;
+    if (!row.valid) row.selected = false;
+    return row;
+  }
+
+  function buildBulkPayload (row) {
+    var f = row.fields;
+    if (row.mode === 'actu') {
+      return {
+        acteur: f.acteur,
+        produit_id: f.produit_id || null,
+        type: f.type,
+        titre: f.titre,
+        resume: f.resume,
+        impact: f.impact,
+        fiabilite: f.fiabilite,
+        source: f.source,
+        date: f.date || today()
+      };
+    }
+    return {
+      syntheseType: f.synthese_type,
+      produit_id: f.produit_id,
+      acteur: f.acteur,
+      conclusion: f.titre,
+      detail: f.detail,
+      tags: (f.tags || '').split(',').map(function (t) { return t.trim(); }).filter(Boolean),
+      periode: f.periode
+    };
+  }
+
+  function parseBulkContribJsonArray (raw) {
+    var parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      throw new Error('JSON invalide : ' + e.message);
+    }
+    if (!Array.isArray(parsed)) {
+      if (parsed && Array.isArray(parsed.entries)) parsed = parsed.entries;
+      else if (parsed && Array.isArray(parsed.items)) parsed = parsed.items;
+      else throw new Error('Format attendu : un tableau JSON ([{...}, {...}]).');
+    }
+    if (!parsed.length) throw new Error('Le tableau JSON est vide.');
+    var rows = [];
+    for (var i = 0; i < parsed.length; i++) {
+      try {
+        rows.push(validateBulkRow(normalizeBulkEntryFromJson(parsed[i], i + 1)));
+      } catch (e) {
+        throw new Error(e.message || ('Erreur ligne ' + (i + 1)));
+      }
+    }
+    return rows;
+  }
+
+  function bulkCellInput (rowId, field, value, wide) {
+    return '<input type="text" class="contrib-bulk-input" data-row-id="' + rowId + '" data-field="' + field + '" value="' + esc(value || '') + '"' + (wide ? ' style="min-width:120px"' : '') + '>';
+  }
+
+  function renderContribBulkTable () {
+    var wrap = $('contrib-bulk-table-wrap');
+    if (!wrap) return;
+    if (!contribBulkRows.length) {
+      wrap.innerHTML = '';
+      return;
+    }
+    var allValidSelected = contribBulkRows.filter(function (r) { return r.valid; });
+    var allSelected = allValidSelected.length && allValidSelected.every(function (r) { return r.selected; });
+
+    var html = '<table><thead><tr>';
+    html += '<th style="width:36px"><input type="checkbox" id="contrib-bulk-select-all"' + (allSelected ? ' checked' : '') + ' title="Tout sélectionner"></th>';
+    html += '<th>#</th><th>Mode</th><th>Acteur</th><th>Produit</th><th>Type</th><th>Titre</th><th>Résumé / Détail</th><th>Source</th><th>Statut</th>';
+    html += '</tr></thead><tbody>';
+
+    contribBulkRows.forEach(function (row, idx) {
+      var f = row.fields;
+      var errCls = function (field) { return row.errors && row.errors[field] ? ' contrib-bulk-cell-error' : ''; };
+      var modeLbl = row.mode === 'actu' ? 'Actualité' : 'Synthèse';
+      var modeCls = row.mode === 'actu' ? 'contrib-bulk-mode-actu' : 'contrib-bulk-mode-synth';
+      var resumeOrDetail = row.mode === 'actu' ? (f.resume || '') : (f.detail || '');
+      var typeVal = row.mode === 'actu' ? f.type : f.synthese_type;
+      var status = row.publishError
+        ? ('<span class="contrib-bulk-row-err">' + esc(row.publishError) + '</span>')
+        : (row.valid ? '<span style="color:var(--green);font-size:11px">OK</span>' : '<span class="contrib-bulk-row-err">Champs manquants</span>');
+
+      html += '<tr data-bulk-row="' + row.id + '">';
+      html += '<td><input type="checkbox" class="contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
+        (row.selected && row.valid ? ' checked' : '') + (row.valid ? '' : ' disabled') + '></td>';
+      html += '<td style="color:var(--muted)">' + (idx + 1) + '</td>';
+      html += '<td><span class="contrib-bulk-mode-tag ' + modeCls + '">' + modeLbl + '</span></td>';
+      html += '<td class="' + errCls('acteur').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
+      html += '<td class="' + errCls('produit_id').trim() + '">' + bulkCellInput(row.id, 'produit_id', f.produit_id) + '</td>';
+      html += '<td class="' + errCls(row.mode === 'actu' ? 'type' : 'synthese_type').trim() + '">' + bulkCellInput(row.id, row.mode === 'actu' ? 'type' : 'synthese_type', typeVal) + '</td>';
+      html += '<td class="' + errCls('titre').trim() + '">' + bulkCellInput(row.id, 'titre', f.titre, true) + '</td>';
+      html += '<td>' + bulkCellInput(row.id, row.mode === 'actu' ? 'resume' : 'detail', resumeOrDetail, true) + '</td>';
+      html += '<td class="' + errCls('source').trim() + '">' + bulkCellInput(row.id, 'source', row.mode === 'actu' ? f.source : '', true) + '</td>';
+      html += '<td>' + status + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+
+    var selectAll = $('contrib-bulk-select-all');
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        var on = selectAll.checked;
+        contribBulkRows.forEach(function (r) { if (r.valid) r.selected = on; });
+        renderContribBulkTable();
+        updateBulkPublishBtn();
+      });
+    }
+
+    wrap.querySelectorAll('.contrib-bulk-row-cb').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var rid = parseInt(cb.getAttribute('data-row-id'), 10);
+        var row = contribBulkRows.find(function (r) { return r.id === rid; });
+        if (row && row.valid) row.selected = cb.checked;
+        updateBulkPublishBtn();
+      });
+    });
+
+    wrap.querySelectorAll('.contrib-bulk-input').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        var rid = parseInt(inp.getAttribute('data-row-id'), 10);
+        var field = inp.getAttribute('data-field');
+        var row = contribBulkRows.find(function (r) { return r.id === rid; });
+        if (!row) return;
+        row.fields[field] = inp.value;
+        if (field === 'produit_id') row.fields.produit_id = normalizeProduitValue(inp.value);
+        validateBulkRow(row);
+        if (!row.valid) row.selected = false;
+        row.publishError = '';
+        renderContribBulkTable();
+        updateBulkPublishBtn();
+      });
+    });
+
+    updateBulkPublishBtn();
+  }
+
+  function updateBulkPublishBtn () {
+    var btn = $('contrib-bulk-publish');
+    if (!btn) return;
+    var selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
+    var hasInvalidSelected = contribBulkRows.some(function (r) { return r.selected && !r.valid; });
+    btn.innerHTML = '<i class="ti ti-send"></i> Publier les ' + selected.length + ' entrée' + (selected.length > 1 ? 's' : '') + ' sélectionnée' + (selected.length > 1 ? 's' : '');
+    btn.disabled = selected.length === 0 || hasInvalidSelected;
+  }
+
+  function analyzeBulkImport () {
+    var raw = ($('contrib-bulk-json').value || '').trim();
+    var errEl = $('contrib-bulk-parse-error');
+    errEl.style.display = 'none';
+    $('contrib-bulk-publish-error').style.display = 'none';
+    $('contrib-bulk-publish-success').style.display = 'none';
+    if (!raw) {
+      errEl.textContent = 'Collez ou téléversez un tableau JSON avant d\'analyser.';
+      errEl.style.display = 'block';
+      return;
+    }
+    try {
+      contribBulkNextId = 1;
+      contribBulkRows = parseBulkContribJsonArray(raw);
+      $('contrib-bulk-review').classList.remove('contrib-step-hidden');
+      renderContribBulkTable();
+    } catch (e) {
+      errEl.textContent = e.message || String(e);
+      errEl.style.display = 'block';
+    }
+  }
+
+  function readContribBulkFile (file) {
+    if (!file) return;
+    if (!/\.json$/i.test(file.name)) {
+      $('contrib-bulk-parse-error').textContent = 'Fichier .json requis.';
+      $('contrib-bulk-parse-error').style.display = 'block';
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('contrib-bulk-json').value = e.target.result;
+      $('contrib-bulk-parse-error').style.display = 'none';
+    };
+    reader.onerror = function () {
+      $('contrib-bulk-parse-error').textContent = 'Impossible de lire le fichier.';
+      $('contrib-bulk-parse-error').style.display = 'block';
+    };
+    reader.readAsText(file);
+  }
+
+  async function publishBulkContributions () {
+    if (!contribUnlocked || !sbClient) return;
+    var selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
+    if (!selected.length) return;
+
+    var errEl = $('contrib-bulk-publish-error');
+    var okEl = $('contrib-bulk-publish-success');
+    errEl.style.display = 'none';
+    okEl.style.display = 'none';
+
+    var entries = selected.map(function (row) {
+      return { bulkIndex: row.id, mode: row.mode, payload: buildBulkPayload(row) };
+    });
+
+    try {
+      var res = await SofincoSupabase.publishContributionEntriesBulk(sbClient, entries, actorIdByNom);
+      Object.assign(actorIdByNom, res.map);
+
+      var okCount = 0;
+      var failCount = 0;
+      res.results.forEach(function (r) {
+        var row = contribBulkRows.find(function (x) { return x.id === r.bulkIndex; });
+        if (!row) return;
+        if (r.ok) {
+          okCount++;
+        } else {
+          failCount++;
+          row.publishError = r.error || 'Erreur inconnue';
+          row.selected = true;
+        }
+      });
+
+      var publishedIds = {};
+      res.results.forEach(function (r) { if (r.ok) publishedIds[r.bulkIndex] = true; });
+      contribBulkRows = contribBulkRows.filter(function (r) { return !publishedIds[r.id]; });
+
+      if (okCount > 0) {
+        var reload = await SofincoSupabase.loadAllData(sbClient);
+        applyLoadedData(reload);
+        render();
+      }
+
+      if (failCount === 0) {
+        okEl.textContent = okCount + ' entrée' + (okCount > 1 ? 's' : '') + ' publiée' + (okCount > 1 ? 's' : '') + ' avec succès.';
+        okEl.style.display = 'block';
+        resetContribBulkImport();
+      } else {
+        errEl.textContent = okCount + ' publiée' + (okCount > 1 ? 's' : '') + ', ' + failCount + ' en échec — corrigez les lignes en rouge et réessayez.';
+        errEl.style.display = 'block';
+        if (contribBulkRows.length) {
+          $('contrib-bulk-review').classList.remove('contrib-step-hidden');
+          renderContribBulkTable();
+        } else {
+          resetContribBulkImport();
+        }
+      }
+    } catch (e) {
+      errEl.textContent = 'Erreur lors de la publication : ' + (e.message || e);
+      errEl.style.display = 'block';
+    }
   }
 
   function parseContribJson () {
@@ -3917,10 +4331,21 @@
     $('contrib-close').addEventListener('click', closeContribModal);
     $('contrib-access-cancel').addEventListener('click', closeContribModal);
     $('contrib-form-cancel').addEventListener('click', closeContribModal);
+    $('contrib-bulk-cancel').addEventListener('click', closeContribModal);
     $('modal-contributeur').addEventListener('click', function (e) { if (e.target === this) closeContribModal(); });
     $('contrib-access-submit').addEventListener('click', validateContribAccess);
     $('contrib-access-code').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') validateContribAccess();
+    });
+    $('contrib-goto-manual').addEventListener('click', showContribManualView);
+    $('contrib-back-import').addEventListener('click', showContribImportView);
+    $('contrib-bulk-analyze').addEventListener('click', analyzeBulkImport);
+    $('contrib-bulk-publish').addEventListener('click', publishBulkContributions);
+    $('contrib-bulk-file-btn').addEventListener('click', function () { $('contrib-bulk-file').click(); });
+    $('contrib-bulk-file').addEventListener('change', function () {
+      var f = this.files[0];
+      if (f) readContribBulkFile(f);
+      this.value = '';
     });
     $('contrib-tab-actu').addEventListener('click', function () { switchContribMode('actu'); });
     $('contrib-tab-synth').addEventListener('click', function () { switchContribMode('synth'); });

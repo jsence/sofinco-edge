@@ -587,6 +587,80 @@
     return { row: data, map: map };
   }
 
+  function buildActualiteDbRow(payload, acteurId) {
+    var titre = String(payload.titre || '').trim();
+    var resume = payload.resume ? String(payload.resume).trim() : null;
+    var fiabilite = payload.fiabilite === 'a_verifier' ? 'a_verifier' : (payload.fiabilite === 'confirmee' ? 'confirmee' : null);
+    var impactKey = IMPACT_TO_DB[String(payload.impact || '').toLowerCase()] || null;
+    return {
+      date: payload.date || new Date().toISOString().slice(0, 10),
+      acteur_id: acteurId,
+      type: payload.type,
+      produit_id: payload.produit_id || null,
+      titre: titre,
+      resume: resume || null,
+      fiabilite: fiabilite,
+      source: payload.source,
+      impact: impactKey
+    };
+  }
+
+  async function publishContributionEntriesBulk(sb, entries, idByNom) {
+    var map = Object.assign({}, idByNom || {});
+    var results = [];
+    var actuEntries = entries.filter(function (e) { return e.mode === 'actu'; });
+    var synthEntries = entries.filter(function (e) { return e.mode === 'synth'; });
+
+    if (actuEntries.length) {
+      var acteurNames = [];
+      actuEntries.forEach(function (e) { if (e.payload.acteur) acteurNames.push(e.payload.acteur); });
+      var uniqueNames = acteurNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
+      if (uniqueNames.length) {
+        var merged = await ensureActors(sb, uniqueNames, {}, {});
+        Object.assign(map, merged);
+      }
+      var actuRows = actuEntries.map(function (e) {
+        return buildActualiteDbRow(e.payload, map[e.payload.acteur]);
+      });
+      var batchRes = await sb.from('actualites').insert(actuRows).select('*');
+      if (batchRes.error) {
+        for (var ai = 0; ai < actuEntries.length; ai++) {
+          try {
+            var one = await insertContributionActualite(sb, actuEntries[ai].payload, map);
+            Object.assign(map, one.map);
+            results.push({ bulkIndex: actuEntries[ai].bulkIndex, ok: true });
+          } catch (e) {
+            results.push({ bulkIndex: actuEntries[ai].bulkIndex, ok: false, error: e.message || String(e) });
+          }
+        }
+      } else {
+        actuEntries.forEach(function (e) {
+          results.push({ bulkIndex: e.bulkIndex, ok: true });
+        });
+      }
+    }
+
+    for (var si = 0; si < synthEntries.length; si++) {
+      var entry = synthEntries[si];
+      var payload = entry.payload;
+      var synthType = payload.syntheseType;
+      try {
+        var res;
+        if (synthType === 'nouveau_diff' || synthType === 'maj_diff') {
+          res = await upsertContributionDifferenciateur(sb, payload, map);
+        } else {
+          res = await insertContributionTendance(sb, payload, map);
+        }
+        Object.assign(map, res.map);
+        results.push({ bulkIndex: entry.bulkIndex, ok: true });
+      } catch (e) {
+        results.push({ bulkIndex: entry.bulkIndex, ok: false, error: e.message || String(e) });
+      }
+    }
+
+    return { map: map, results: results };
+  }
+
   global.SofincoSupabase = {
     toActorId: toActorId,
     createClient: createClient,
@@ -597,6 +671,7 @@
     syncAllFromImport: syncAllFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
-    insertContributionTendance: insertContributionTendance
+    insertContributionTendance: insertContributionTendance,
+    publishContributionEntriesBulk: publishContributionEntriesBulk
   };
 })(window);
