@@ -900,6 +900,22 @@
     .at-corporate{ background: #F3F4F6; color: var(--muted); }
     .at-presse   { background: rgba(245,158,11,0.14); color: var(--orange); }
     .news-impact { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+    /* ── ESPACE CONTRIBUTEUR ──────────────────── */
+    .contrib-field { margin-bottom: 14px; }
+    .contrib-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-bottom: 6px; }
+    .contrib-input {
+      width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 13px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit;
+    }
+    .contrib-input:focus { outline: none; border-color: var(--tq-ink); box-shadow: 0 0 0 3px var(--tq-light); }
+    .contrib-textarea { min-height: 88px; resize: vertical; }
+    .contrib-char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+    .contrib-error { font-size: 12px; color: var(--red); margin-top: 8px; }
+    .contrib-success { font-size: 13px; color: var(--green); margin-top: 8px; }
+    .contrib-json-zone { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .contrib-json-zone .mail-ta { height: 120px; margin-top: 8px; }
+    .contrib-step-hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -958,6 +974,9 @@
     </button>
     <button class="btn btn-secondary btn-full" id="btn-mail">
       <i class="ti ti-mail"></i> Exporter résumé courriel
+    </button>
+    <button class="btn btn-secondary btn-full" id="btn-contributeur">
+      <i class="ti ti-user-edit"></i> Espace contributeur
     </button>
   </div>
 </aside>
@@ -1036,6 +1055,169 @@
       <div class="flex gap-2 justify-end" style="gap:10px">
         <button type="button" class="btn btn-secondary" id="export-cancel">Annuler</button>
         <button type="button" class="btn btn-primary" id="export-confirm" disabled><i class="ti ti-download"></i> Exporter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — ESPACE CONTRIBUTEUR -->
+<div class="overlay" id="modal-contributeur">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <span class="modal-title"><i class="ti ti-user-edit" style="color:var(--tq-ink)"></i> Espace contributeur</span>
+      <button class="modal-x" id="contrib-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Étape 1 : code d'accès -->
+      <div id="contrib-step-access">
+        <p style="font-size:14px;color:var(--text);margin-bottom:16px">Entrez le code d'accès contributeur pour publier une actualité ou une synthèse.</p>
+        <div class="contrib-field">
+          <label class="contrib-label" for="contrib-access-code">Code d'accès</label>
+          <input type="password" class="contrib-input" id="contrib-access-code" placeholder="Code contributeur" autocomplete="off">
+        </div>
+        <p class="contrib-error" id="contrib-access-error" style="display:none"></p>
+        <div class="flex gap-2 justify-end" style="gap:10px;margin-top:8px">
+          <button type="button" class="btn btn-secondary" id="contrib-access-cancel">Annuler</button>
+          <button type="button" class="btn btn-primary" id="contrib-access-submit">Valider</button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : formulaire -->
+      <div id="contrib-step-form" class="contrib-step-hidden">
+        <div class="tabs" style="margin-bottom:20px">
+          <button type="button" class="tab-btn active" id="contrib-tab-actu"><i class="ti ti-news"></i> Actualité</button>
+          <button type="button" class="tab-btn" id="contrib-tab-synth"><i class="ti ti-star"></i> Synthèse</button>
+        </div>
+
+        <!-- Mode Actualité -->
+        <div id="contrib-form-actu">
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-acteur">Acteur *</label>
+            <input type="text" class="contrib-input" id="contrib-actu-acteur" list="contrib-acteur-list" placeholder="Nom de l'acteur">
+            <datalist id="contrib-acteur-list"></datalist>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-produit">Produit</label>
+            <select class="actu-select contrib-input" id="contrib-actu-produit" style="width:100%">
+              <option value="">Non applicable</option>
+              <option value="pb">Prêt Personnel</option>
+              <option value="cr">Crédit Renouvelable</option>
+              <option value="nxcb">Paiement Fractionné</option>
+              <option value="rac">Rachat de Crédit</option>
+              <option value="carte">Carte</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-type">Type *</label>
+            <select class="actu-select contrib-input" id="contrib-actu-type" style="width:100%">
+              <option value="">— Choisir —</option>
+              <option value="Produit">Produit</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Digital">Digital</option>
+              <option value="Corporate">Corporate</option>
+              <option value="Presse">Presse</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-titre">Titre *</label>
+            <input type="text" class="contrib-input" id="contrib-actu-titre" maxlength="100" placeholder="Titre court">
+            <div class="contrib-char-count"><span id="contrib-actu-titre-count">0</span>/100</div>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-resume">Résumé</label>
+            <textarea class="contrib-input contrib-textarea" id="contrib-actu-resume" maxlength="300" placeholder="Résumé (300 caractères max)"></textarea>
+            <div class="contrib-char-count"><span id="contrib-actu-resume-count">0</span>/300</div>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-impact">Impact</label>
+            <select class="actu-select contrib-input" id="contrib-actu-impact" style="width:100%">
+              <option value="">— Choisir —</option>
+              <option value="menace directe">Menace directe</option>
+              <option value="à surveiller">À surveiller</option>
+              <option value="neutre">Neutre</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-fiabilite">Fiabilité</label>
+            <select class="actu-select contrib-input" id="contrib-actu-fiabilite" style="width:100%">
+              <option value="confirmee">Confirmée</option>
+              <option value="a_verifier">À vérifier</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-source">Source (URL) *</label>
+            <input type="url" class="contrib-input" id="contrib-actu-source" placeholder="https://...">
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-actu-date">Date d'observation</label>
+            <input type="date" class="contrib-input" id="contrib-actu-date">
+          </div>
+        </div>
+
+        <!-- Mode Synthèse -->
+        <div id="contrib-form-synth" class="contrib-step-hidden">
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-type">Type *</label>
+            <select class="actu-select contrib-input" id="contrib-synth-type" style="width:100%">
+              <option value="">— Choisir —</option>
+              <option value="nouveau_diff">Nouveau différenciateur</option>
+              <option value="maj_diff">Mise à jour différenciateur</option>
+              <option value="nouvelle_tendance">Nouvelle tendance</option>
+              <option value="synthese_mensuelle">Synthèse mensuelle</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-produit">Produit *</label>
+            <select class="actu-select contrib-input" id="contrib-synth-produit" style="width:100%">
+              <option value="">— Choisir —</option>
+              <option value="pb">Prêt Personnel</option>
+              <option value="cr">Crédit Renouvelable</option>
+              <option value="nxcb">Paiement Fractionné</option>
+              <option value="rac">Rachat de Crédit</option>
+              <option value="carte">Carte</option>
+            </select>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-acteur">Acteur concerné</label>
+            <input type="text" class="contrib-input" id="contrib-synth-acteur" list="contrib-acteur-list" placeholder="Optionnel selon le type">
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-titre">Titre / conclusion *</label>
+            <input type="text" class="contrib-input" id="contrib-synth-titre" placeholder="Titre ou conclusion">
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-detail">Détail</label>
+            <textarea class="contrib-input contrib-textarea" id="contrib-synth-detail" placeholder="Texte long"></textarea>
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-tags">Tags</label>
+            <input type="text" class="contrib-input" id="contrib-synth-tags" placeholder="Séparés par des virgules">
+          </div>
+          <div class="contrib-field">
+            <label class="contrib-label" for="contrib-synth-periode">Période concernée</label>
+            <input type="text" class="contrib-input" id="contrib-synth-periode" placeholder="Ex. Juin 2026">
+          </div>
+        </div>
+
+        <!-- Coller JSON (commun aux deux modes) -->
+        <div class="contrib-json-zone">
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-json-toggle"><i class="ti ti-braces"></i> Coller un JSON structuré</button>
+          <div id="contrib-json-panel" style="display:none;margin-top:10px">
+            <textarea class="mail-ta" id="contrib-json-input" placeholder='{"acteur":"...","produit":"pb","type":"Produit","titre":"...","resume":"...","impact":"À surveiller","source":"https://..."}'></textarea>
+            <div class="flex gap-2 justify-end" style="gap:8px;margin-top:8px">
+              <button type="button" class="btn btn-secondary btn-sm" id="contrib-json-analyze">Analyser</button>
+            </div>
+            <p class="contrib-error" id="contrib-json-error" style="display:none"></p>
+          </div>
+        </div>
+
+        <p class="contrib-error" id="contrib-submit-error" style="display:none"></p>
+        <p class="contrib-success" id="contrib-submit-success" style="display:none"></p>
+
+        <div class="flex gap-2 justify-end" style="gap:10px;margin-top:18px">
+          <button type="button" class="btn btn-secondary" id="contrib-form-cancel">Annuler</button>
+          <button type="button" class="btn btn-primary" id="contrib-publish" disabled><i class="ti ti-send"></i> Publier</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3375,6 +3557,276 @@
   }
 
   /* ──────────────────────────────────────────
+     ESPACE CONTRIBUTEUR
+  ────────────────────────────────────────── */
+  var ACCESS_CODE = 'SOFINCO2026'; /* ← Remplacer par votre code d'accès */
+  var contribUnlocked = false;
+  var contribMode = 'actu';
+
+  var CONTRIB_PRODUIT_MAP = {
+    'prêt personnel': 'pb', 'pret personnel': 'pb', 'pp': 'pb', 'pb': 'pb',
+    'crédit renouvelable': 'cr', 'credit renouvelable': 'cr', 'cr': 'cr',
+    'paiement fractionné': 'nxcb', 'paiement fractionne': 'nxcb', 'nxcb': 'nxcb',
+    'rachat de crédit': 'rac', 'rachat de credit': 'rac', 'rac': 'rac',
+    'carte': 'carte', 'non applicable': '', '': ''
+  };
+
+  function allKnownActors () {
+    var seen = {}, out = [];
+    (DATA.produits || []).forEach(function (p) {
+      (p.acteurs || []).forEach(function (a) {
+        if (a && !seen[a]) { seen[a] = 1; out.push(a); }
+      });
+    });
+    actuList().forEach(function (e) {
+      if (e.acteur && !seen[e.acteur]) { seen[e.acteur] = 1; out.push(e.acteur); }
+    });
+    return out.sort(function (a, b) { return a.localeCompare(b, 'fr'); });
+  }
+
+  function refreshContribActorList () {
+    var dl = $('contrib-acteur-list');
+    if (!dl) return;
+    dl.innerHTML = allKnownActors().map(function (a) {
+      return '<option value="' + esc(a) + '">';
+    }).join('');
+  }
+
+  function resetContribModal () {
+    contribUnlocked = false;
+    contribMode = 'actu';
+    $('contrib-step-access').classList.remove('contrib-step-hidden');
+    $('contrib-step-form').classList.add('contrib-step-hidden');
+    $('contrib-access-code').value = '';
+    $('contrib-access-error').style.display = 'none';
+    $('contrib-submit-error').style.display = 'none';
+    $('contrib-submit-success').style.display = 'none';
+    $('contrib-json-panel').style.display = 'none';
+    $('contrib-json-input').value = '';
+    $('contrib-json-error').style.display = 'none';
+    resetContribActuForm();
+    resetContribSynthForm();
+    switchContribMode('actu');
+  }
+
+  function resetContribActuForm () {
+    $('contrib-actu-acteur').value = '';
+    $('contrib-actu-produit').value = '';
+    $('contrib-actu-type').value = '';
+    $('contrib-actu-titre').value = '';
+    $('contrib-actu-resume').value = '';
+    $('contrib-actu-impact').value = '';
+    $('contrib-actu-fiabilite').value = 'confirmee';
+    $('contrib-actu-source').value = '';
+    $('contrib-actu-date').value = today();
+    updateContribCharCount('contrib-actu-titre', 'contrib-actu-titre-count', 100);
+    updateContribCharCount('contrib-actu-resume', 'contrib-actu-resume-count', 300);
+    updateContribPublishBtn();
+  }
+
+  function resetContribSynthForm () {
+    $('contrib-synth-type').value = '';
+    $('contrib-synth-produit').value = state.productId || '';
+    $('contrib-synth-acteur').value = '';
+    $('contrib-synth-titre').value = '';
+    $('contrib-synth-detail').value = '';
+    $('contrib-synth-tags').value = '';
+    $('contrib-synth-periode').value = '';
+    updateContribPublishBtn();
+  }
+
+  function openContribModal () {
+    if (!dataReady) {
+      alert('Données non chargées — veuillez patienter.');
+      return;
+    }
+    resetContribModal();
+    refreshContribActorList();
+    $('modal-contributeur').classList.add('show');
+    setTimeout(function () { $('contrib-access-code').focus(); }, 50);
+  }
+
+  function closeContribModal () {
+    $('modal-contributeur').classList.remove('show');
+    resetContribModal();
+  }
+
+  function validateContribAccess () {
+    var code = ($('contrib-access-code').value || '').trim();
+    var err = $('contrib-access-error');
+    if (code !== ACCESS_CODE) {
+      err.textContent = 'Code incorrect. Réessayez.';
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    contribUnlocked = true;
+    $('contrib-step-access').classList.add('contrib-step-hidden');
+    $('contrib-step-form').classList.remove('contrib-step-hidden');
+    resetContribActuForm();
+    resetContribSynthForm();
+    updateContribPublishBtn();
+  }
+
+  function switchContribMode (mode) {
+    contribMode = mode;
+    var isActu = mode === 'actu';
+    $('contrib-tab-actu').classList.toggle('active', isActu);
+    $('contrib-tab-synth').classList.toggle('active', !isActu);
+    $('contrib-form-actu').classList.toggle('contrib-step-hidden', !isActu);
+    $('contrib-form-synth').classList.toggle('contrib-step-hidden', isActu);
+    updateContribPublishBtn();
+  }
+
+  function updateContribCharCount (inputId, countId, max) {
+    var el = $(inputId), cnt = $(countId);
+    if (!el || !cnt) return;
+    cnt.textContent = String(el.value || '').length;
+  }
+
+  function normalizeProduitValue (val) {
+    if (!val) return '';
+    var key = String(val).trim().toLowerCase();
+    if (CONTRIB_PRODUIT_MAP[key] !== undefined) return CONTRIB_PRODUIT_MAP[key];
+    if (CONTRIB_PRODUIT_MAP[val] !== undefined) return CONTRIB_PRODUIT_MAP[val];
+    return val;
+  }
+
+  function isContribActuValid () {
+    return !!(
+      ($('contrib-actu-acteur').value || '').trim() &&
+      ($('contrib-actu-type').value || '').trim() &&
+      ($('contrib-actu-titre').value || '').trim() &&
+      ($('contrib-actu-source').value || '').trim()
+    );
+  }
+
+  function isContribSynthValid () {
+    var type = ($('contrib-synth-type').value || '').trim();
+    var produit = ($('contrib-synth-produit').value || '').trim();
+    var titre = ($('contrib-synth-titre').value || '').trim();
+    if (!type || !produit || !titre) return false;
+    if (type === 'nouveau_diff' || type === 'maj_diff') {
+      return !!($('contrib-synth-acteur').value || '').trim();
+    }
+    return true;
+  }
+
+  function updateContribPublishBtn () {
+    var btn = $('contrib-publish');
+    if (!btn || !contribUnlocked) return;
+    var ok = contribMode === 'actu' ? isContribActuValid() : isContribSynthValid();
+    btn.disabled = !ok;
+  }
+
+  function parseContribJson () {
+    var raw = ($('contrib-json-input').value || '').trim();
+    var errEl = $('contrib-json-error');
+    if (!raw) {
+      errEl.textContent = 'Collez un JSON avant d\'analyser.';
+      errEl.style.display = 'block';
+      return;
+    }
+    try {
+      var data = JSON.parse(raw);
+      errEl.style.display = 'none';
+
+      if (data.acteur || data.titre || data.source || data.type) {
+        switchContribMode('actu');
+        if (data.acteur) $('contrib-actu-acteur').value = data.acteur;
+        if (data.produit != null) $('contrib-actu-produit').value = normalizeProduitValue(data.produit);
+        if (data.type) $('contrib-actu-type').value = data.type;
+        if (data.titre) $('contrib-actu-titre').value = String(data.titre).slice(0, 100);
+        if (data.resume) $('contrib-actu-resume').value = String(data.resume).slice(0, 300);
+        if (data.impact) $('contrib-actu-impact').value = data.impact;
+        if (data.fiabilite) {
+          var f = String(data.fiabilite).toLowerCase();
+          $('contrib-actu-fiabilite').value = (f.indexOf('verif') >= 0) ? 'a_verifier' : 'confirmee';
+        }
+        if (data.source) $('contrib-actu-source').value = data.source;
+        if (data.date) $('contrib-actu-date').value = data.date;
+        updateContribCharCount('contrib-actu-titre', 'contrib-actu-titre-count', 100);
+        updateContribCharCount('contrib-actu-resume', 'contrib-actu-resume-count', 300);
+      } else if (data.synthese_type || data.synth_type || data.detail || data.tags) {
+        switchContribMode('synth');
+        var st = data.synthese_type || data.synth_type || data.type || '';
+        if (st) $('contrib-synth-type').value = st;
+        if (data.produit) $('contrib-synth-produit').value = normalizeProduitValue(data.produit);
+        if (data.acteur) $('contrib-synth-acteur').value = data.acteur;
+        if (data.titre || data.conclusion) $('contrib-synth-titre').value = data.titre || data.conclusion;
+        if (data.detail) $('contrib-synth-detail').value = data.detail;
+        if (data.tags) $('contrib-synth-tags').value = Array.isArray(data.tags) ? data.tags.join(', ') : data.tags;
+        if (data.periode) $('contrib-synth-periode').value = data.periode;
+      } else {
+        throw new Error('JSON reconnu mais champs insuffisants (acteur/titre/source ou champs synthèse).');
+      }
+      updateContribPublishBtn();
+    } catch (e) {
+      errEl.textContent = 'JSON invalide : ' + (e.message || e);
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function publishContribution () {
+    if (!contribUnlocked || !sbClient) return;
+    var errEl = $('contrib-submit-error');
+    var okEl = $('contrib-submit-success');
+    errEl.style.display = 'none';
+    okEl.style.display = 'none';
+
+    try {
+      if (contribMode === 'actu') {
+        if (!isContribActuValid()) throw new Error('Remplissez les champs obligatoires (Acteur, Type, Titre, Source).');
+        var payload = {
+          acteur: ($('contrib-actu-acteur').value || '').trim(),
+          produit_id: ($('contrib-actu-produit').value || '').trim() || null,
+          type: ($('contrib-actu-type').value || '').trim(),
+          titre: ($('contrib-actu-titre').value || '').trim(),
+          resume: ($('contrib-actu-resume').value || '').trim(),
+          impact: ($('contrib-actu-impact').value || '').trim(),
+          fiabilite: $('contrib-actu-fiabilite').value,
+          source: ($('contrib-actu-source').value || '').trim(),
+          date: ($('contrib-actu-date').value || '').trim() || today()
+        };
+        var res = await SofincoSupabase.insertContributionActualite(sbClient, payload, actorIdByNom);
+        Object.assign(actorIdByNom, res.map);
+      } else {
+        if (!isContribSynthValid()) throw new Error('Remplissez les champs obligatoires.');
+        var synthType = ($('contrib-synth-type').value || '').trim();
+        var synthPayload = {
+          produit_id: ($('contrib-synth-produit').value || '').trim(),
+          acteur: ($('contrib-synth-acteur').value || '').trim(),
+          conclusion: ($('contrib-synth-titre').value || '').trim(),
+          detail: ($('contrib-synth-detail').value || '').trim(),
+          tags: ($('contrib-synth-tags').value || '').split(',').map(function (t) { return t.trim(); }).filter(Boolean),
+          periode: ($('contrib-synth-periode').value || '').trim(),
+          syntheseType: synthType
+        };
+        var res2;
+        if (synthType === 'nouveau_diff' || synthType === 'maj_diff') {
+          res2 = await SofincoSupabase.upsertContributionDifferenciateur(sbClient, synthPayload, actorIdByNom);
+        } else {
+          res2 = await SofincoSupabase.insertContributionTendance(sbClient, synthPayload, actorIdByNom);
+        }
+        Object.assign(actorIdByNom, res2.map);
+      }
+
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
+      render();
+
+      okEl.textContent = 'Publication réussie — les données ont été mises à jour.';
+      okEl.style.display = 'block';
+      resetContribActuForm();
+      resetContribSynthForm();
+      setTimeout(function () { closeContribModal(); }, 1200);
+    } catch (e) {
+      errEl.textContent = e.message || String(e);
+      errEl.style.display = 'block';
+    }
+  }
+
+  /* ──────────────────────────────────────────
      INIT
   ────────────────────────────────────────── */
   function init () {
@@ -3442,6 +3894,41 @@
     /* Modal détail */
     $('detail-close').addEventListener('click', function () { $('modal-detail').classList.remove('show'); });
     $('modal-detail').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+
+    /* Espace contributeur */
+    $('btn-contributeur').addEventListener('click', openContribModal);
+    $('contrib-close').addEventListener('click', closeContribModal);
+    $('contrib-access-cancel').addEventListener('click', closeContribModal);
+    $('contrib-form-cancel').addEventListener('click', closeContribModal);
+    $('modal-contributeur').addEventListener('click', function (e) { if (e.target === this) closeContribModal(); });
+    $('contrib-access-submit').addEventListener('click', validateContribAccess);
+    $('contrib-access-code').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') validateContribAccess();
+    });
+    $('contrib-tab-actu').addEventListener('click', function () { switchContribMode('actu'); });
+    $('contrib-tab-synth').addEventListener('click', function () { switchContribMode('synth'); });
+    $('contrib-json-toggle').addEventListener('click', function () {
+      var p = $('contrib-json-panel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    });
+    $('contrib-json-analyze').addEventListener('click', parseContribJson);
+    $('contrib-publish').addEventListener('click', publishContribution);
+    ['contrib-actu-acteur', 'contrib-actu-type', 'contrib-actu-titre', 'contrib-actu-source'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.addEventListener('input', updateContribPublishBtn);
+    });
+    ['contrib-synth-type', 'contrib-synth-produit', 'contrib-synth-titre', 'contrib-synth-acteur'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.addEventListener('input', updateContribPublishBtn);
+      if (el && el.tagName === 'SELECT') el.addEventListener('change', updateContribPublishBtn);
+    });
+    $('contrib-actu-titre').addEventListener('input', function () {
+      updateContribCharCount('contrib-actu-titre', 'contrib-actu-titre-count', 100);
+      updateContribPublishBtn();
+    });
+    $('contrib-actu-resume').addEventListener('input', function () {
+      updateContribCharCount('contrib-actu-resume', 'contrib-actu-resume-count', 300);
+    });
 
     bootstrapData();
   }
