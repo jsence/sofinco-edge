@@ -727,6 +727,7 @@
       background: var(--surface); border-radius: 14px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
       width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+      transition: width 350ms ease, max-width 350ms ease;
     }
     .modal-lg { width: 860px; }
     .modal-hd {
@@ -782,9 +783,9 @@
     .modal-export-general .modal-body-scroll { overflow-y: auto; flex: 1; min-height: 0; }
 
     /* ── Porte d'accès contributeur ───────────── */
-    .modal.contrib-gate-mode { width: 440px; }
-    .modal.contrib-gate-mode .modal-hd { display: none; }
-    .modal.contrib-gate-mode .modal-body { padding: 36px 32px 30px; }
+    #modal-contributeur > .modal.contrib-gate-mode { width: 360px; }
+    #modal-contributeur > .modal.contrib-gate-mode .modal-hd { display: none; }
+    #modal-contributeur > .modal.contrib-gate-mode .modal-body { padding: 36px 28px 28px; }
     .contrib-access-gate { text-align: center; }
     .contrib-access-icon { margin-bottom: 14px; }
     .contrib-access-icon i { font-size: 52px; color: var(--tq-ink); line-height: 1; }
@@ -800,6 +801,22 @@
     }
     .contrib-access-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
     .contrib-access-submit { width: 100%; justify-content: center; padding: 12px 20px; font-size: 14px; }
+
+    .contrib-hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (max-width: 640px) { .contrib-hub-grid { grid-template-columns: 1fr; } }
+    .contrib-hub-card {
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+      padding: 28px 20px; border: 1.5px solid var(--border); border-radius: var(--r);
+      background: var(--bg); cursor: pointer; font-family: inherit;
+      transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+    }
+    .contrib-hub-card:hover {
+      border-color: var(--tq); background: var(--tq-light);
+      box-shadow: 0 8px 24px rgba(79,216,216,0.18); transform: translateY(-2px);
+    }
+    .contrib-hub-card i { font-size: 36px; color: var(--tq-ink); }
+    .contrib-hub-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .contrib-hub-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
     .drop-zone {
       border: 2px dashed var(--border); border-radius: 10px;
@@ -1096,10 +1113,7 @@
   <div class="sb-footer">
     <div class="sb-footer-group sb-footer-contrib">
       <div class="sb-footer-label">Contribuer</div>
-      <button class="btn btn-primary btn-full" id="btn-import">
-        <i class="ti ti-upload"></i> Mettre à jour les données
-      </button>
-      <button class="btn btn-secondary btn-full" id="btn-contributeur">
+      <button class="btn btn-primary btn-full" id="btn-contributeur">
         <i class="ti ti-user-edit"></i> Espace contributeur
       </button>
     </div>
@@ -1130,29 +1144,6 @@
     <div id="view-home" class="view active"></div>
     <div id="view-product" class="view"></div>
     <div id="view-actus" class="view"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     MODAL — IMPORT
-════════════════════════════════════════════ -->
-<div class="overlay" id="modal-import">
-  <div class="modal">
-    <div class="modal-hd">
-      <span class="modal-title">Importer les données Excel</span>
-      <button class="modal-x" id="import-close"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="drop-zone" id="drop-zone">
-        <i class="ti ti-file-spreadsheet"></i>
-        <p class="dz-title">Glisser le fichier Excel ici</p>
-        <p>ou cliquer pour sélectionner — format .xlsx uniquement</p>
-      </div>
-      <input type="file" id="file-input" accept=".xlsx" style="display:none">
-      <div class="bg-note mt-4">
-        <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1248,7 +1239,7 @@
       <div id="contrib-step-access" class="contrib-access-gate">
         <div class="contrib-access-icon"><i class="ti ti-shield-lock"></i></div>
         <h2 class="contrib-access-title">Accès contributeur</h2>
-        <p class="contrib-access-desc">Entrez le code d'accès contributeur pour publier une actualité ou une synthèse.</p>
+        <p class="contrib-access-desc">Entrez le code d'accès pour importer des données (Excel ou JSON) et publier des contributions.</p>
         <div class="contrib-field contrib-access-field">
           <label class="contrib-label" for="contrib-access-code">Code d'accès</label>
           <input type="password" class="contrib-input contrib-access-input" id="contrib-access-code" placeholder="••••••••••" autocomplete="off">
@@ -1256,12 +1247,46 @@
         <p class="contrib-error" id="contrib-access-error" style="display:none;text-align:left"></p>
         <div class="contrib-access-actions">
           <button type="button" class="btn btn-primary contrib-access-submit" id="contrib-access-submit">Valider</button>
-          <button type="button" class="btn btn-secondary" id="contrib-access-cancel">Annuler</button>
         </div>
       </div>
 
-      <!-- Étape 2 : import groupé (vue principale) -->
+      <!-- Étape 2 : choix du mode d'import -->
+      <div id="contrib-step-hub" class="contrib-step-hidden">
+        <div class="section-hd"><i class="ti ti-user-edit"></i> Que souhaitez-vous faire ?</div>
+        <p class="text-muted text-sm" style="margin-bottom:18px">Choisissez un mode d'import pour mettre à jour les données.</p>
+        <div class="contrib-hub-grid">
+          <button type="button" class="contrib-hub-card" id="contrib-goto-excel">
+            <i class="ti ti-file-spreadsheet"></i>
+            <span class="contrib-hub-title">Importer un fichier Excel</span>
+            <span class="contrib-hub-desc">Mettre à jour les tableaux produits (.xlsx)</span>
+          </button>
+          <button type="button" class="contrib-hub-card" id="contrib-goto-json">
+            <i class="ti ti-brackets"></i>
+            <span class="contrib-hub-title">Import groupé JSON</span>
+            <span class="contrib-hub-desc">Publier plusieurs actualités ou synthèses</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2a : import Excel -->
+      <div id="contrib-step-excel" class="contrib-step-hidden">
+        <button type="button" class="contrib-back-link" id="contrib-back-hub-from-excel"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="section-hd"><i class="ti ti-upload"></i> Importer un fichier Excel</div>
+        <p class="text-muted text-sm" style="margin-bottom:16px">Glissez ou sélectionnez un fichier .xlsx pour mettre à jour les données.</p>
+        <div class="drop-zone" id="drop-zone">
+          <i class="ti ti-file-spreadsheet"></i>
+          <p class="dz-title">Glisser le fichier Excel ici</p>
+          <p>ou cliquer pour sélectionner — format .xlsx uniquement</p>
+        </div>
+        <input type="file" id="file-input" accept=".xlsx" style="display:none">
+        <div class="bg-note mt-4">
+          <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS
+        </div>
+      </div>
+
+      <!-- Étape 2b : import groupé JSON -->
       <div id="contrib-step-import" class="contrib-step-hidden">
+        <button type="button" class="contrib-back-link" id="contrib-back-hub-from-json"><i class="ti ti-arrow-left"></i> Retour</button>
         <button type="button" class="contrib-manual-link" id="contrib-goto-manual"><i class="ti ti-plus"></i> Ajouter une entrée manuellement</button>
 
         <div class="section-hd"><i class="ti ti-file-import"></i> Import groupé</div>
@@ -1930,12 +1955,17 @@
     if (entries.length) pushChangelog(entries);
     setBaseline(newSnap);
 
-    $('modal-import').classList.remove('show');
+    $('modal-contributeur').classList.remove('show');
+    resetContribModalUI();
     render();
     showImportSummary(importStats);
   }
 
   function readXlsx (file) {
+    if (!contribUnlocked) {
+      alert('Accès contributeur requis pour importer un fichier Excel.');
+      return;
+    }
     if (!file.name.match(/\.xlsx$/i)) { alert('Fichier .xlsx requis.'); return; }
     var r = new FileReader();
     r.onload = function (e) {
@@ -3549,11 +3579,36 @@
     return (slug + '_' + sec).slice(0, 31);
   }
 
+  function getContribModalPanel () {
+    return document.querySelector('#modal-contributeur > .modal');
+  }
+
   function syncContribModalGateMode () {
-    var modal = $('modal-contributeur');
-    if (!modal) return;
+    var panel = getContribModalPanel();
+    if (!panel) return;
     var gate = !$('contrib-step-access').classList.contains('contrib-step-hidden');
-    modal.classList.toggle('contrib-gate-mode', gate);
+    panel.classList.toggle('contrib-gate-mode', gate);
+  }
+
+  function hideAllContribSteps () {
+    ['contrib-step-access', 'contrib-step-hub', 'contrib-step-excel', 'contrib-step-import', 'contrib-step-manual'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.classList.add('contrib-step-hidden');
+    });
+  }
+
+  function showContribHubView () {
+    if (!contribUnlocked) return;
+    hideAllContribSteps();
+    $('contrib-step-hub').classList.remove('contrib-step-hidden');
+    syncContribModalGateMode();
+  }
+
+  function showContribExcelView () {
+    if (!contribUnlocked) return;
+    hideAllContribSteps();
+    $('contrib-step-excel').classList.remove('contrib-step-hidden');
+    syncContribModalGateMode();
   }
 
   function getSelectedGeneralExportProducts () {
@@ -4189,13 +4244,15 @@
   }
 
   function showContribImportView () {
+    if (!contribUnlocked) return;
+    hideAllContribSteps();
     $('contrib-step-import').classList.remove('contrib-step-hidden');
-    $('contrib-step-manual').classList.add('contrib-step-hidden');
     syncContribModalGateMode();
   }
 
   function showContribManualView () {
-    $('contrib-step-import').classList.add('contrib-step-hidden');
+    if (!contribUnlocked) return;
+    hideAllContribSteps();
     $('contrib-step-manual').classList.remove('contrib-step-hidden');
     syncContribModalGateMode();
     resetContribActuForm();
@@ -4203,12 +4260,9 @@
     switchContribMode('actu');
   }
 
-  function resetContribModal () {
-    contribUnlocked = false;
+  function resetContribModalUI () {
     contribMode = 'actu';
-    $('contrib-step-access').classList.remove('contrib-step-hidden');
-    $('contrib-step-import').classList.add('contrib-step-hidden');
-    $('contrib-step-manual').classList.add('contrib-step-hidden');
+    hideAllContribSteps();
     $('contrib-access-code').value = '';
     $('contrib-access-error').style.display = 'none';
     $('contrib-submit-error').style.display = 'none';
@@ -4221,6 +4275,12 @@
     resetContribSynthForm();
     switchContribMode('actu');
     syncContribModalGateMode();
+  }
+
+  function resetContribModal () {
+    contribUnlocked = false;
+    resetContribModalUI();
+    $('contrib-step-access').classList.remove('contrib-step-hidden');
   }
 
   function resetContribActuForm () {
@@ -4254,16 +4314,23 @@
       alert('Données non chargées — veuillez patienter.');
       return;
     }
-    resetContribModal();
+    resetContribModalUI();
     refreshContribActorList();
-    syncContribModalGateMode();
+    if (contribUnlocked) {
+      showContribHubView();
+    } else {
+      $('contrib-step-access').classList.remove('contrib-step-hidden');
+      syncContribModalGateMode();
+    }
     $('modal-contributeur').classList.add('show');
-    setTimeout(function () { $('contrib-access-code').focus(); }, 50);
+    if (!contribUnlocked) {
+      setTimeout(function () { $('contrib-access-code').focus(); }, 50);
+    }
   }
 
   function closeContribModal () {
     $('modal-contributeur').classList.remove('show');
-    resetContribModal();
+    resetContribModalUI();
   }
 
   function validateContribAccess () {
@@ -4277,9 +4344,8 @@
     err.style.display = 'none';
     contribUnlocked = true;
     $('contrib-step-access').classList.add('contrib-step-hidden');
-    syncContribModalGateMode();
     resetContribBulkImport();
-    showContribImportView();
+    showContribHubView();
   }
 
   function switchContribMode (mode) {
@@ -4815,22 +4881,23 @@
       }
     });
 
-    /* Modal import */
-    $('btn-import').addEventListener('click', function () { $('modal-import').classList.add('show'); });
-    $('import-close').addEventListener('click', function () { $('modal-import').classList.remove('show'); });
-    $('modal-import').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
-
+    /* Import Excel (espace contributeur protégé) */
     var zone = $('drop-zone'), fin = $('file-input');
-    zone.addEventListener('click', function () { fin.click(); });
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag'); });
-    zone.addEventListener('dragleave', function () { zone.classList.remove('drag'); });
-    zone.addEventListener('drop', function (e) {
-      e.preventDefault(); zone.classList.remove('drag');
-      var f = e.dataTransfer.files[0]; if (f) readXlsx(f);
-    });
-    fin.addEventListener('change', function () {
-      var f = fin.files[0]; if (f) readXlsx(f); fin.value = '';
-    });
+    if (zone && fin) {
+      zone.addEventListener('click', function () {
+        if (!contribUnlocked) return;
+        fin.click();
+      });
+      zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', function () { zone.classList.remove('drag'); });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault(); zone.classList.remove('drag');
+        var f = e.dataTransfer.files[0]; if (f) readXlsx(f);
+      });
+      fin.addEventListener('change', function () {
+        var f = fin.files[0]; if (f) readXlsx(f); fin.value = '';
+      });
+    }
 
     /* Modal résultat import */
     $('import-result-close').addEventListener('click', function () { $('modal-import-result').classList.remove('show'); });
@@ -4870,7 +4937,6 @@
     /* Espace contributeur */
     $('btn-contributeur').addEventListener('click', openContribModal);
     $('contrib-close').addEventListener('click', closeContribModal);
-    $('contrib-access-cancel').addEventListener('click', closeContribModal);
     $('contrib-form-cancel').addEventListener('click', closeContribModal);
     $('contrib-bulk-cancel').addEventListener('click', closeContribModal);
     $('modal-contributeur').addEventListener('click', function (e) { if (e.target === this) closeContribModal(); });
@@ -4878,6 +4944,13 @@
     $('contrib-access-code').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') validateContribAccess();
     });
+    $('contrib-goto-excel').addEventListener('click', showContribExcelView);
+    $('contrib-goto-json').addEventListener('click', function () {
+      resetContribBulkImport();
+      showContribImportView();
+    });
+    $('contrib-back-hub-from-excel').addEventListener('click', showContribHubView);
+    $('contrib-back-hub-from-json').addEventListener('click', showContribHubView);
     $('contrib-goto-manual').addEventListener('click', showContribManualView);
     $('contrib-back-import').addEventListener('click', showContribImportView);
     $('contrib-bulk-analyze').addEventListener('click', analyzeBulkImport);
