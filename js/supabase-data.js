@@ -490,6 +490,104 @@
     return { map: map, stats: totals };
   }
 
+  var IMPACT_TO_DB = {
+    'à surveiller': 'a_surveiller',
+    'a_surveiller': 'a_surveiller',
+    'menace directe': 'menace_directe',
+    'menace_directe': 'menace_directe',
+    'neutre': 'neutre'
+  };
+
+  async function ensureActorByName(sb, nom, idByNom) {
+    var map = Object.assign({}, idByNom || {});
+    if (!nom) throw new Error('Acteur requis.');
+    if (map[nom]) return map;
+    var merged = await ensureActors(sb, [nom], {}, {});
+    Object.assign(map, merged);
+    return map;
+  }
+
+  async function insertContributionActualite(sb, payload, idByNom) {
+    var map = await ensureActorByName(sb, payload.acteur, idByNom);
+    var acteurId = map[payload.acteur];
+    var titre = String(payload.titre || '').trim();
+    if (payload.resume) {
+      var resume = String(payload.resume).trim();
+      if (resume) titre = titre + '\n\n' + resume;
+    }
+    if (payload.fiabilite === 'a_verifier') {
+      titre = '[À vérifier] ' + titre;
+    }
+    var impactKey = IMPACT_TO_DB[String(payload.impact || '').toLowerCase()] || null;
+    var row = {
+      date: payload.date || new Date().toISOString().slice(0, 10),
+      acteur_id: acteurId,
+      type: payload.type,
+      produit_id: payload.produit_id || null,
+      titre: titre,
+      source: payload.source,
+      impact: impactKey
+    };
+    var { data, error } = await sb.from('actualites').insert(row).select('*').single();
+    if (error) throw new Error('actualites: ' + error.message);
+    return { row: data, map: map };
+  }
+
+  async function upsertContributionDifferenciateur(sb, payload, idByNom) {
+    if (!payload.produit_id) throw new Error('Produit requis pour un différenciateur.');
+    if (!payload.acteur) throw new Error('Acteur requis pour un différenciateur.');
+    var map = await ensureActorByName(sb, payload.acteur, idByNom);
+    var tags = (payload.tags || []).filter(Boolean);
+    var periode = payload.periode ? String(payload.periode).trim() : '';
+    var detail = String(payload.detail || '').trim();
+    var conclusion = String(payload.conclusion || '').trim();
+    var pourquoi = periode ? ('Période : ' + periode + (detail ? '\n' + detail : '')) : detail;
+    var row = {
+      produit_id: payload.produit_id,
+      acteur_id: map[payload.acteur],
+      difference: detail || null,
+      pourquoi: pourquoi || null,
+      conclusion: conclusion || null,
+      tags: tags,
+      status: 'valide'
+    };
+    var { data, error } = await sb.from('differenciateurs')
+      .upsert(row, { onConflict: 'produit_id,acteur_id' })
+      .select('*')
+      .single();
+    if (error) throw new Error('differenciateurs: ' + error.message);
+    return { row: data, map: map };
+  }
+
+  async function insertContributionTendance(sb, payload, idByNom) {
+    if (!payload.produit_id) throw new Error('Produit requis pour une tendance.');
+    var map = Object.assign({}, idByNom || {});
+    var acteurIds = [];
+    if (payload.acteur) {
+      map = await ensureActorByName(sb, payload.acteur, map);
+      acteurIds.push(map[payload.acteur]);
+    }
+    var titre = String(payload.conclusion || payload.titre || '').trim();
+    var periode = payload.periode ? String(payload.periode).trim() : '';
+    if (payload.syntheseType === 'synthese_mensuelle' && periode) {
+      titre = 'Synthèse mensuelle — ' + periode + (titre ? ' : ' + titre : '');
+    } else if (periode && titre.indexOf(periode) < 0) {
+      titre = titre ? (titre + ' (' + periode + ')') : periode;
+    }
+    if (!titre) throw new Error('Titre requis pour une tendance.');
+    var description = String(payload.detail || '').trim();
+    var row = {
+      produit_id: payload.produit_id,
+      titre: titre,
+      description: description,
+      acteurs_concernes: acteurIds,
+      status: 'valide'
+    };
+    var { data, error } = await sb.from('tendances').insert(row).select('*').single();
+    if (error) throw new Error('tendances: ' + error.message);
+    return { row: data, map: map };
+  }
+
   global.SofincoSupabase = {
     toActorId: toActorId,
     createClient: createClient,
@@ -497,6 +595,9 @@
     syncProductToSupabase: syncProductToSupabase,
     syncPromosToSupabase: syncPromosToSupabase,
     syncDifferenciateursToSupabase: syncDifferenciateursToSupabase,
-    syncAllFromImport: syncAllFromImport
+    syncAllFromImport: syncAllFromImport,
+    insertContributionActualite: insertContributionActualite,
+    upsertContributionDifferenciateur: upsertContributionDifferenciateur,
+    insertContributionTendance: insertContributionTendance
   };
 })(window);
