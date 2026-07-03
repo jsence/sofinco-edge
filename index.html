@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -151,8 +153,15 @@
     .sb-footer {
       padding: 10px 8px 14px;
       border-top: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 6px;
+      display: flex; flex-direction: column; gap: 0;
     }
+    .sb-footer-group { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+    .sb-footer-group.sb-footer-export { background: var(--bg); margin: 0 -8px -14px; padding: 10px 8px 14px; border-radius: 0 0 0 0; }
+    .sb-footer-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--muted); padding: 0 4px 2px;
+    }
+    .sb-footer-divider { height: 1px; background: var(--border); margin: 2px 0; }
 
     /* ── BUTTONS ──────────────────────────────── */
     .btn {
@@ -744,6 +753,54 @@
     .export-check-item input { width: 16px; height: 16px; accent-color: var(--tq-ink); cursor: pointer; flex-shrink: 0; }
     .export-check-item span { font-size: 14px; font-weight: 500; color: var(--text); }
 
+    .export-general-block { margin-bottom: 22px; }
+    .export-general-block:last-child { margin-bottom: 0; }
+    .export-general-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px;
+    }
+    .export-format-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .export-format-card {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 16px 10px; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+      background: var(--bg); cursor: pointer; font-family: inherit;
+      transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+    }
+    .export-format-card:hover { border-color: var(--tq-mid); background: var(--tq-pale); }
+    .export-format-card.active { border-color: var(--tq); background: var(--tq-light); box-shadow: 0 0 0 3px var(--tq-pale); }
+    .export-format-card i { font-size: 28px; color: var(--tq-ink); }
+    .export-format-card span { font-size: 12px; font-weight: 600; color: var(--text); }
+    .export-format-card small { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .export-check-item.is-disabled { opacity: 0.45; pointer-events: none; }
+    .export-general-ft {
+      padding: 16px 30px 24px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0;
+    }
+    #export-general-confirm { transition: background 150ms ease, box-shadow 150ms ease, opacity 150ms ease; }
+    #export-general-confirm.is-loading i { animation: spin 1s linear infinite; }
+    .modal-export-general { width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-export-general .modal-body-scroll { overflow-y: auto; flex: 1; min-height: 0; }
+
+    /* ── Porte d'accès contributeur ───────────── */
+    .modal.contrib-gate-mode { width: 440px; }
+    .modal.contrib-gate-mode .modal-hd { display: none; }
+    .modal.contrib-gate-mode .modal-body { padding: 36px 32px 30px; }
+    .contrib-access-gate { text-align: center; }
+    .contrib-access-icon { margin-bottom: 14px; }
+    .contrib-access-icon i { font-size: 52px; color: var(--tq-ink); line-height: 1; }
+    .contrib-access-title { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .contrib-access-desc { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 22px; }
+    .contrib-access-field { text-align: left; margin-bottom: 18px; }
+    .contrib-access-input {
+      font-size: 18px; padding: 14px 16px; text-align: center; letter-spacing: 0.12em;
+      border-width: 2px;
+    }
+    .contrib-access-input:focus {
+      border-color: var(--tq-ink); box-shadow: 0 0 0 4px var(--tq-light);
+    }
+    .contrib-access-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    .contrib-access-submit { width: 100%; justify-content: center; padding: 12px 20px; font-size: 14px; }
+
     .drop-zone {
       border: 2px dashed var(--border); border-radius: 10px;
       padding: 40px; text-align: center; cursor: pointer;
@@ -1037,15 +1094,22 @@
   </nav>
 
   <div class="sb-footer">
-    <button class="btn btn-primary btn-full" id="btn-import">
-      <i class="ti ti-upload"></i> Mettre à jour les données
-    </button>
-    <button class="btn btn-secondary btn-full" id="btn-mail">
-      <i class="ti ti-mail"></i> Exporter résumé courriel
-    </button>
-    <button class="btn btn-secondary btn-full" id="btn-contributeur">
-      <i class="ti ti-user-edit"></i> Espace contributeur
-    </button>
+    <div class="sb-footer-group sb-footer-contrib">
+      <div class="sb-footer-label">Contribuer</div>
+      <button class="btn btn-primary btn-full" id="btn-import">
+        <i class="ti ti-upload"></i> Mettre à jour les données
+      </button>
+      <button class="btn btn-secondary btn-full" id="btn-contributeur">
+        <i class="ti ti-user-edit"></i> Espace contributeur
+      </button>
+    </div>
+    <div class="sb-footer-divider"></div>
+    <div class="sb-footer-group sb-footer-export">
+      <div class="sb-footer-label">Exporter</div>
+      <button class="btn btn-secondary btn-full" id="btn-export-general">
+        <i class="ti ti-download"></i> Exporter
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -1109,7 +1173,7 @@
   </div>
 </div>
 
-<!-- MODAL — EXPORT PRODUIT -->
+<!-- MODAL — EXPORT PRODUIT (page produit) -->
 <div class="overlay" id="modal-export">
   <div class="modal" style="width:480px">
     <div class="modal-hd">
@@ -1128,6 +1192,50 @@
   </div>
 </div>
 
+<!-- MODAL — EXPORT GÉNÉRAL -->
+<div class="overlay" id="modal-export-general">
+  <div class="modal modal-export-general">
+    <div class="modal-hd">
+      <span class="modal-title"><i class="ti ti-download" style="color:var(--tq-ink)"></i> Exporter</span>
+      <button class="modal-x" id="export-general-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body modal-body-scroll">
+      <div class="export-general-block">
+        <div class="export-general-label">Format</div>
+        <div class="export-format-grid" id="export-format-grid">
+          <button type="button" class="export-format-card active" data-format="xlsx">
+            <i class="ti ti-file-spreadsheet"></i>
+            <span>Excel</span>
+            <small>.xlsx</small>
+          </button>
+          <button type="button" class="export-format-card" data-format="docx">
+            <i class="ti ti-file-word"></i>
+            <span>Word</span>
+            <small>.docx</small>
+          </button>
+          <button type="button" class="export-format-card" data-format="pptx">
+            <i class="ti ti-presentation"></i>
+            <span>PowerPoint</span>
+            <small>.pptx</small>
+          </button>
+        </div>
+      </div>
+      <div class="export-general-block">
+        <div class="export-general-label">Produits</div>
+        <div class="export-check-list" id="export-general-products"></div>
+      </div>
+      <div class="export-general-block">
+        <div class="export-general-label">Sections</div>
+        <div class="export-check-list" id="export-general-sections"></div>
+      </div>
+    </div>
+    <div class="export-general-ft">
+      <button type="button" class="btn btn-secondary" id="export-general-cancel">Annuler</button>
+      <button type="button" class="btn btn-primary" id="export-general-confirm"><i class="ti ti-download"></i> Générer l'export</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL — ESPACE CONTRIBUTEUR -->
 <div class="overlay" id="modal-contributeur">
   <div class="modal modal-lg">
@@ -1137,16 +1245,18 @@
     </div>
     <div class="modal-body">
       <!-- Étape 1 : code d'accès -->
-      <div id="contrib-step-access">
-        <p style="font-size:14px;color:var(--text);margin-bottom:16px">Entrez le code d'accès contributeur pour publier une actualité ou une synthèse.</p>
-        <div class="contrib-field">
+      <div id="contrib-step-access" class="contrib-access-gate">
+        <div class="contrib-access-icon"><i class="ti ti-shield-lock"></i></div>
+        <h2 class="contrib-access-title">Accès contributeur</h2>
+        <p class="contrib-access-desc">Entrez le code d'accès contributeur pour publier une actualité ou une synthèse.</p>
+        <div class="contrib-field contrib-access-field">
           <label class="contrib-label" for="contrib-access-code">Code d'accès</label>
-          <input type="password" class="contrib-input" id="contrib-access-code" placeholder="Code contributeur" autocomplete="off">
+          <input type="password" class="contrib-input contrib-access-input" id="contrib-access-code" placeholder="••••••••••" autocomplete="off">
         </div>
-        <p class="contrib-error" id="contrib-access-error" style="display:none"></p>
-        <div class="flex gap-2 justify-end" style="gap:10px;margin-top:8px">
+        <p class="contrib-error" id="contrib-access-error" style="display:none;text-align:left"></p>
+        <div class="contrib-access-actions">
+          <button type="button" class="btn btn-primary contrib-access-submit" id="contrib-access-submit">Valider</button>
           <button type="button" class="btn btn-secondary" id="contrib-access-cancel">Annuler</button>
-          <button type="button" class="btn btn-primary" id="contrib-access-submit">Valider</button>
         </div>
       </div>
 
@@ -2970,6 +3080,16 @@
   ────────────────────────────────────────── */
   var EXPORT_SLUG = { pb: 'PretPersonnel', cr: 'CreditRenouvelable', nxcb: 'NxCB', rac: 'RAC', carte: 'Carte' };
   var exportPending = { format: null, productId: null };
+  var generalExportPending = { format: 'xlsx' };
+
+  var GENERAL_EXPORT_SECTIONS = [
+    { id: 'tableau', label: 'Tableau comparatif' },
+    { id: 'comparaison', label: 'Comparaison' },
+    { id: 'differenciateurs', label: 'Différenciateurs' },
+    { id: 'promos', label: 'Promos' },
+    { id: 'actualites', label: 'Actualités' },
+    { id: 'taux', label: 'Taux', tauxOnly: true }
+  ];
 
   var XS = {
     header: { fill: { patternType: 'solid', fgColor: { rgb: 'F7F9FA' } }, font: { bold: true } },
@@ -3047,8 +3167,8 @@
     }
   }
 
-  function buildTableauExportRows (p) {
-    var actors = getExportActors(p);
+  function buildTableauExportRows (p, actorsOverride) {
+    var actors = actorsOverride || getExportActors(p);
     if (!p.sections || !p.sections.length || !actors.length) {
       return { rows: [['Aucune donnée disponible']], meta: null };
     }
@@ -3163,6 +3283,28 @@
       ]);
     });
     return rows;
+  }
+
+  function buildComparaisonExportRows (p) {
+    var allActors = getExportActors(p);
+    var sel = (state.compareActors[p.id] || allActors).filter(function (a) { return allActors.indexOf(a) >= 0; });
+    if (!sel.length) sel = allActors.slice();
+    return buildTableauExportRows(p, orderTableActors(sel));
+  }
+
+  function buildSectionExportData (p, sectionId) {
+    if (sectionId === 'tableau') return buildTableauExportRows(p);
+    if (sectionId === 'comparaison') return buildComparaisonExportRows(p);
+    if (sectionId === 'differenciateurs') return { rows: buildDiffExportRows(p), meta: null };
+    if (sectionId === 'taux') return { rows: buildTauxExportRows(p), meta: null };
+    if (sectionId === 'promos') return { rows: buildPromosExportRows(p), meta: null };
+    if (sectionId === 'actualites') return { rows: buildActusExportRows(p), meta: null };
+    return { rows: [['Section inconnue']], meta: null };
+  }
+
+  function sectionIsAvailableForProduct (sectionId, productId) {
+    if (sectionId === 'taux') return productHasTauxTab(productId);
+    return true;
   }
 
   function buildActusExportRows (p) {
@@ -3376,6 +3518,306 @@
       else exportProductXlsx(p, tabs);
     } catch (e) {
       alert('Erreur lors de l\'export : ' + (e.message || e));
+    }
+  }
+
+  var EXPORT_SECTION_LABELS = {
+    tableau: 'Tableau comparatif',
+    comparaison: 'Comparaison',
+    differenciateurs: 'Différenciateurs',
+    promos: 'Promos',
+    actualites: 'Actualités',
+    taux: 'Taux'
+  };
+
+  var EXPORT_SHEET_SHORT = {
+    tableau: 'Tableau',
+    comparaison: 'Compar',
+    differenciateurs: 'Diff',
+    promos: 'Promos',
+    actualites: 'Actus',
+    taux: 'Taux'
+  };
+
+  function generalExportFilename (ext) {
+    return 'sofincoedge-export-' + today() + '.' + ext;
+  }
+
+  function makeExcelSheetName (productId, sectionId) {
+    var slug = (EXPORT_SLUG[productId] || productId).slice(0, 10);
+    var sec = EXPORT_SHEET_SHORT[sectionId] || sectionId;
+    return (slug + '_' + sec).slice(0, 31);
+  }
+
+  function syncContribModalGateMode () {
+    var modal = $('modal-contributeur');
+    if (!modal) return;
+    var gate = !$('contrib-step-access').classList.contains('contrib-step-hidden');
+    modal.classList.toggle('contrib-gate-mode', gate);
+  }
+
+  function getSelectedGeneralExportProducts () {
+    var out = [];
+    document.querySelectorAll('#export-general-products input[type=checkbox][data-product]').forEach(function (cb) {
+      if (cb.checked) out.push(cb.getAttribute('data-product'));
+    });
+    return out;
+  }
+
+  function getSelectedGeneralExportSections () {
+    var out = [];
+    document.querySelectorAll('#export-general-sections input[type=checkbox][data-section]').forEach(function (cb) {
+      if (cb.checked && !cb.disabled) out.push(cb.getAttribute('data-section'));
+    });
+    return out;
+  }
+
+  function selectedProductsIncludeTaux () {
+    return getSelectedGeneralExportProducts().some(function (id) { return productHasTauxTab(id); });
+  }
+
+  function syncGeneralExportTauxOption () {
+    var tauxItem = document.querySelector('#export-general-sections [data-section-taux="1"]');
+    if (!tauxItem) return;
+    var show = selectedProductsIncludeTaux();
+    tauxItem.style.display = show ? '' : 'none';
+    var tauxCb = tauxItem.querySelector('input[data-section="taux"]');
+    if (tauxCb && !show) tauxCb.checked = false;
+  }
+
+  function updateGeneralExportConfirmBtn () {
+    var btn = $('export-general-confirm');
+    if (!btn || btn.classList.contains('is-loading')) return;
+    btn.disabled = !(getSelectedGeneralExportProducts().length && getSelectedGeneralExportSections().length);
+  }
+
+  function bindGeneralExportCheckboxes (root, onChange) {
+    root.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+      cb.addEventListener('change', onChange);
+    });
+  }
+
+  function renderGeneralExportModal () {
+    generalExportPending.format = 'xlsx';
+    document.querySelectorAll('#export-format-grid .export-format-card').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-format') === 'xlsx');
+    });
+
+    var prodList = $('export-general-products');
+    var prodHtml = '<label class="export-check-item"><input type="checkbox" id="export-general-all-products" checked><span>Tous les produits</span></label>';
+    DATA.produits.forEach(function (p) {
+      prodHtml += '<label class="export-check-item"><input type="checkbox" data-product="' + p.id + '" checked><span>' + esc(p.label) + '</span></label>';
+    });
+    prodList.innerHTML = prodHtml;
+
+    var secList = $('export-general-sections');
+    var secHtml = '<label class="export-check-item"><input type="checkbox" id="export-general-all-sections" checked><span>Toutes les sections</span></label>';
+    GENERAL_EXPORT_SECTIONS.forEach(function (s) {
+      secHtml += '<label class="export-check-item"' + (s.tauxOnly ? ' data-section-taux="1"' : '') + '>';
+      secHtml += '<input type="checkbox" data-section="' + s.id + '" checked>';
+      secHtml += '<span>' + esc(s.label) + '</span></label>';
+    });
+    secList.innerHTML = secHtml;
+
+    var allProdCb = $('export-general-all-products');
+    allProdCb.addEventListener('change', function () {
+      var on = allProdCb.checked;
+      prodList.querySelectorAll('input[data-product]').forEach(function (cb) { cb.checked = on; });
+      syncGeneralExportTauxOption();
+      updateGeneralExportConfirmBtn();
+    });
+    bindGeneralExportCheckboxes(prodList, function (e) {
+      if (e.target.id === 'export-general-all-products') return;
+      var boxes = prodList.querySelectorAll('input[data-product]');
+      var allOn = Array.prototype.every.call(boxes, function (b) { return b.checked; });
+      allProdCb.checked = allOn;
+      syncGeneralExportTauxOption();
+      updateGeneralExportConfirmBtn();
+    });
+
+    var allSecCb = $('export-general-all-sections');
+    allSecCb.addEventListener('change', function () {
+      var on = allSecCb.checked;
+      secList.querySelectorAll('input[data-section]').forEach(function (cb) {
+        if (cb.closest('.export-check-item').style.display === 'none') return;
+        cb.checked = on;
+      });
+      updateGeneralExportConfirmBtn();
+    });
+    bindGeneralExportCheckboxes(secList, function (e) {
+      if (e.target.id === 'export-general-all-sections') return;
+      var boxes = Array.prototype.filter.call(secList.querySelectorAll('input[data-section]'), function (cb) {
+        return cb.closest('.export-check-item').style.display !== 'none';
+      });
+      var allOn = boxes.length && boxes.every(function (b) { return b.checked; });
+      allSecCb.checked = allOn;
+      updateGeneralExportConfirmBtn();
+    });
+
+    document.querySelectorAll('#export-format-grid .export-format-card').forEach(function (btn) {
+      btn.onclick = function () {
+        generalExportPending.format = btn.getAttribute('data-format');
+        document.querySelectorAll('#export-format-grid .export-format-card').forEach(function (b) {
+          b.classList.toggle('active', b === btn);
+        });
+      };
+    });
+
+    syncGeneralExportTauxOption();
+    updateGeneralExportConfirmBtn();
+  }
+
+  function openGeneralExportModal () {
+    if (!dataReady) {
+      alert('Données non chargées — veuillez patienter.');
+      return;
+    }
+    renderGeneralExportModal();
+    $('modal-export-general').classList.add('show');
+  }
+
+  function setGeneralExportLoading (loading) {
+    var btn = $('export-general-confirm');
+    if (!btn) return;
+    if (loading) {
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+      btn.innerHTML = '<i class="ti ti-loader-2"></i> Génération en cours…';
+    } else {
+      btn.classList.remove('is-loading');
+      btn.innerHTML = '<i class="ti ti-download"></i> Générer l\'export';
+      updateGeneralExportConfirmBtn();
+    }
+  }
+
+  function buildGeneralExportPlan (productIds, sectionIds) {
+    var plan = [];
+    productIds.forEach(function (pid) {
+      sectionIds.forEach(function (sid) {
+        if (!sectionIsAvailableForProduct(sid, pid)) return;
+        var p = productById(pid);
+        if (p) plan.push({ product: p, sectionId: sid });
+      });
+    });
+    return plan;
+  }
+
+  function exportGeneralXlsx (plan) {
+    var wb = XLSX.utils.book_new();
+    var usedNames = {};
+    plan.forEach(function (item) {
+      var data = buildSectionExportData(item.product, item.sectionId);
+      var ws = rowsToStyledSheet(data.rows, data.meta);
+      var base = makeExcelSheetName(item.product.id, item.sectionId);
+      var name = base;
+      var n = 2;
+      while (usedNames[name]) {
+        name = (base.slice(0, 28) + '_' + n).slice(0, 31);
+        n++;
+      }
+      usedNames[name] = true;
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    });
+    if (!wb.SheetNames.length) throw new Error('Aucune donnée à exporter.');
+    XLSX.writeFile(wb, generalExportFilename('xlsx'));
+  }
+
+  function exportGeneralWord (plan) {
+    if (typeof docx === 'undefined') throw new Error('Librairie docx non chargée.');
+    var sections = [];
+    sections.push(wordPara('SofincoEdge — Export multi-produits — ' + fmtDate(today()), {
+      heading: docx.HeadingLevel.TITLE, spacingAfter: 240
+    }));
+
+    plan.forEach(function (item) {
+      var heading = item.product.label + ' — ' + (EXPORT_SECTION_LABELS[item.sectionId] || item.sectionId);
+      sections.push(wordPara(heading, { heading: docx.HeadingLevel.HEADING_1, spacingAfter: 160 }));
+      var data = buildSectionExportData(item.product, item.sectionId);
+      if (item.sectionId === 'tableau' || item.sectionId === 'comparaison') {
+        sections.push(wordTableFromRows(data.rows, {
+          header: !!data.meta,
+          sofincoCol: data.meta ? data.meta.sofincoCol : -1
+        }));
+      } else {
+        sections.push(wordTableFromRows(data.rows));
+      }
+      sections.push(wordPara(''));
+    });
+
+    return docx.Packer.toBlob(new docx.Document({ sections: [{ properties: {}, children: sections }] }))
+      .then(function (blob) { downloadBlob(blob, generalExportFilename('docx')); });
+  }
+
+  function pptRowsToTable (rows, maxRows) {
+    maxRows = maxRows || 16;
+    if (!rows || !rows.length) return [[{ text: 'Aucune donnée disponible', options: { fontSize: 10 } }]];
+    var slice = rows.slice(0, maxRows);
+    if (rows.length > maxRows) {
+      var colCount = slice[0] ? slice[0].length : 1;
+      var note = [];
+      for (var i = 0; i < colCount; i++) {
+        note.push(i === 0 ? '(… ' + (rows.length - maxRows) + ' lignes supplémentaires)' : '');
+      }
+      slice.push(note);
+    }
+    return slice.map(function (row) {
+      return row.map(function (cell) {
+        return { text: String(cell == null ? '' : cell), options: { fontSize: 9 } };
+      });
+    });
+  }
+
+  function exportGeneralPptx (plan) {
+    if (typeof PptxGenJS === 'undefined') throw new Error('Librairie PptxGenJS non chargée.');
+    var pptx = new PptxGenJS();
+    pptx.title = 'SofincoEdge Export';
+    pptx.layout = 'LAYOUT_WIDE';
+
+    var titleSlide = pptx.addSlide();
+    titleSlide.addText('SofincoEdge', { x: 0.6, y: 1.4, w: 11, h: 0.8, fontSize: 32, bold: true, color: '0B2B4A' });
+    titleSlide.addText('Export du ' + fmtDate(today()), { x: 0.6, y: 2.2, w: 11, h: 0.5, fontSize: 16, color: '666666' });
+    titleSlide.addText(plan.length + ' section' + (plan.length > 1 ? 's' : ''), { x: 0.6, y: 2.8, w: 11, h: 0.4, fontSize: 12, color: '888888' });
+
+    plan.forEach(function (item) {
+      var slide = pptx.addSlide();
+      var heading = item.product.label + ' — ' + (EXPORT_SECTION_LABELS[item.sectionId] || item.sectionId);
+      slide.addText(heading, { x: 0.5, y: 0.35, w: 12, h: 0.6, fontSize: 20, bold: true, color: '0B2B4A' });
+      var data = buildSectionExportData(item.product, item.sectionId);
+      slide.addTable(pptRowsToTable(data.rows, 16), {
+        x: 0.4, y: 1.05, w: 12.5,
+        fontSize: 9,
+        border: { type: 'solid', color: 'CCCCCC', pt: 0.5 }
+      });
+    });
+
+    return pptx.writeFile({ fileName: generalExportFilename('pptx') });
+  }
+
+  async function confirmGeneralExport () {
+    var productIds = getSelectedGeneralExportProducts();
+    var sectionIds = getSelectedGeneralExportSections();
+    if (!productIds.length || !sectionIds.length) return;
+
+    var plan = buildGeneralExportPlan(productIds, sectionIds);
+    if (!plan.length) {
+      alert('Aucune section applicable aux produits sélectionnés.');
+      return;
+    }
+
+    setGeneralExportLoading(true);
+    try {
+      if (generalExportPending.format === 'xlsx') {
+        exportGeneralXlsx(plan);
+      } else if (generalExportPending.format === 'docx') {
+        await exportGeneralWord(plan);
+      } else if (generalExportPending.format === 'pptx') {
+        await exportGeneralPptx(plan);
+      }
+      $('modal-export-general').classList.remove('show');
+    } catch (e) {
+      alert('Erreur lors de l\'export : ' + (e.message || e));
+    } finally {
+      setGeneralExportLoading(false);
     }
   }
 
@@ -3749,11 +4191,13 @@
   function showContribImportView () {
     $('contrib-step-import').classList.remove('contrib-step-hidden');
     $('contrib-step-manual').classList.add('contrib-step-hidden');
+    syncContribModalGateMode();
   }
 
   function showContribManualView () {
     $('contrib-step-import').classList.add('contrib-step-hidden');
     $('contrib-step-manual').classList.remove('contrib-step-hidden');
+    syncContribModalGateMode();
     resetContribActuForm();
     resetContribSynthForm();
     switchContribMode('actu');
@@ -3776,6 +4220,7 @@
     resetContribActuForm();
     resetContribSynthForm();
     switchContribMode('actu');
+    syncContribModalGateMode();
   }
 
   function resetContribActuForm () {
@@ -3811,6 +4256,7 @@
     }
     resetContribModal();
     refreshContribActorList();
+    syncContribModalGateMode();
     $('modal-contributeur').classList.add('show');
     setTimeout(function () { $('contrib-access-code').focus(); }, 50);
   }
@@ -3831,6 +4277,7 @@
     err.style.display = 'none';
     contribUnlocked = true;
     $('contrib-step-access').classList.add('contrib-step-hidden');
+    syncContribModalGateMode();
     resetContribBulkImport();
     showContribImportView();
   }
@@ -4400,11 +4847,14 @@
     $('modal-export').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
     $('export-confirm').addEventListener('click', confirmExport);
 
-    /* Modal courriel */
-    $('btn-mail').addEventListener('click', function () {
-      $('mail-body').value = mailText();
-      $('modal-mail').classList.add('show');
-    });
+    /* Modal export général */
+    $('btn-export-general').addEventListener('click', openGeneralExportModal);
+    $('export-general-close').addEventListener('click', function () { $('modal-export-general').classList.remove('show'); });
+    $('export-general-cancel').addEventListener('click', function () { $('modal-export-general').classList.remove('show'); });
+    $('modal-export-general').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+    $('export-general-confirm').addEventListener('click', confirmGeneralExport);
+
+    /* Modal courriel (conservé, non exposé dans la sidebar) */
     $('mail-close').addEventListener('click', function () { $('modal-mail').classList.remove('show'); });
     $('modal-mail').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
     $('mail-copy').addEventListener('click', function () {
@@ -4508,6 +4958,7 @@
   window.switchSimDuree    = switchSimDuree;
   window.exportTauxXlsx   = exportTauxXlsx;
   window.openExportModal  = openExportModal;
+  window.openGeneralExportModal = openGeneralExportModal;
   window.setActuFilter    = setActuFilter;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
