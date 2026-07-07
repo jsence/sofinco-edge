@@ -1768,7 +1768,7 @@
       var url = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
       return '<img src="' + esc(url) + '" alt="' + esc(actor) + '" class="ac-favicon"' +
         ' style="width:' + size + 'px;height:' + size + 'px"' +
-        ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        ' onerror="this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\'https://icons.duckduckgo.com/ip3/' + domain + '.ico\'">' +
         '<div class="ac-placeholder" style="display:none;width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
     }
     return '<div class="ac-placeholder" style="width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
@@ -2536,7 +2536,8 @@
       html += '<div class="promo-logo-col">';
       if (faviconSrc) {
         html += '<img src="' + esc(faviconSrc) + '" class="promo-logo" alt="' + esc(promo.actor) + '"' +
-          ' onerror="this.style.display=\'none\'">';
+          ' onerror="this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\'https://icons.duckduckgo.com/ip3/' + domain + '.ico\'">' +
+          '<div class="ac-placeholder" style="display:none;width:54px;height:54px">' + esc(initials) + '</div>';
       } else {
         html += '<div class="ac-placeholder" style="width:54px;height:54px">' + esc(initials) + '</div>';
       }
@@ -4105,7 +4106,7 @@
     if (domain) {
       var furl = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
       html += '<img src="' + esc(furl) + '" class="fiche-favicon" alt="' + esc(actor) + '"' +
-        ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        ' onerror="this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\'https://icons.duckduckgo.com/ip3/' + domain + '.ico\'">' +
         '<div class="fiche-placeholder" style="display:none">' + esc(initials) + '</div>';
     } else {
       html += '<div class="fiche-placeholder">' + esc(initials) + '</div>';
