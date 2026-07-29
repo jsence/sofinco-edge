@@ -540,21 +540,31 @@
 
   async function upsertContributionDifferenciateur(sb, payload, idByNom) {
     if (!payload.produit_id) throw new Error('Produit requis pour un différenciateur.');
-    if (!payload.acteur) throw new Error('Acteur requis pour un différenciateur.');
-    var map = await ensureActorByName(sb, payload.acteur, idByNom);
+    var map = Object.assign({}, idByNom || {});
+    var acteurId = payload.acteur_id || null;
+    var acteurNom = payload.acteur ? String(payload.acteur).trim() : '';
+    if (acteurNom) {
+      map = await ensureActorByName(sb, acteurNom, map);
+      acteurId = map[acteurNom];
+    }
+    if (!acteurId) throw new Error('Acteur requis pour un différenciateur.');
+
     var tags = (payload.tags || []).filter(Boolean);
     var periode = payload.periode ? String(payload.periode).trim() : '';
-    var detail = String(payload.detail || '').trim();
+    var detail = payload.difference != null ? String(payload.difference).trim() : String(payload.detail || '').trim();
     var conclusion = String(payload.conclusion || '').trim();
-    var pourquoi = periode ? ('Période : ' + periode + (detail ? '\n' + detail : '')) : detail;
+    var pourquoi = payload.pourquoi != null && String(payload.pourquoi).trim()
+      ? String(payload.pourquoi).trim()
+      : (periode ? ('Période : ' + periode + (detail ? '\n' + detail : '')) : detail);
+    var status = payload.status === 'genere' ? 'genere' : (payload.status === 'valide' ? 'valide' : 'valide');
     var row = {
       produit_id: payload.produit_id,
-      acteur_id: map[payload.acteur],
+      acteur_id: acteurId,
       difference: detail || null,
       pourquoi: pourquoi || null,
       conclusion: conclusion || null,
       tags: tags,
-      status: 'valide'
+      status: status
     };
     var { data, error } = await sb.from('differenciateurs')
       .upsert(row, { onConflict: 'produit_id,acteur_id' })
