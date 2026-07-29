@@ -1077,6 +1077,9 @@
     #contrib-bulk-selected-count { font-size: 11px; padding: 4px 10px; }
     #contrib-bulk-publish { transition: background 150ms ease, box-shadow 150ms ease, opacity 150ms ease; }
     #contrib-bulk-publish.is-loading i { animation: spin 1s linear infinite; }
+    .contrib-import-mode-tabs { margin-bottom: 16px; }
+    .contrib-bulk-subtabs { margin-top: 12px; margin-bottom: 4px; }
+    .contrib-bulk-rows-json { min-width: 200px; font-family: ui-monospace, monospace; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -1304,7 +1307,12 @@
         <button type="button" class="contrib-manual-link" id="contrib-goto-manual"><i class="ti ti-plus"></i> Ajouter une entrée manuellement</button>
 
         <div class="section-hd"><i class="ti ti-file-import"></i> Import groupé</div>
-        <p class="text-muted text-sm" style="margin-bottom:16px">Collez ou téléversez un tableau JSON, relisez puis publiez en masse.</p>
+        <p class="text-muted text-sm" style="margin-bottom:12px">Collez ou téléversez un JSON, relisez puis publiez en masse.</p>
+
+        <div class="tabs contrib-import-mode-tabs" id="contrib-import-mode-tabs">
+          <button type="button" class="tab-btn active" id="contrib-import-mode-actu"><i class="ti ti-news"></i> Actualités</button>
+          <button type="button" class="tab-btn" id="contrib-import-mode-taux"><i class="ti ti-percentage"></i> Taux &amp; Promos</button>
+        </div>
 
         <div class="contrib-json-drop" id="contrib-bulk-drop-zone">
           <div class="contrib-json-empty" id="contrib-bulk-json-empty">
@@ -1323,6 +1331,10 @@
 
         <div id="contrib-bulk-review" class="contrib-step-hidden">
           <div class="section-hd" style="margin-top:18px;margin-bottom:10px"><i class="ti ti-table"></i> Relecture avant publication</div>
+          <div class="tabs contrib-bulk-subtabs contrib-step-hidden" id="contrib-bulk-subtabs">
+            <button type="button" class="tab-btn active" id="contrib-bulk-tab-promos"><i class="ti ti-tag"></i> Promos</button>
+            <button type="button" class="tab-btn" id="contrib-bulk-tab-taux"><i class="ti ti-chart-bar"></i> Taux</button>
+          </div>
           <div class="tbl-wrap contrib-bulk-tbl" id="contrib-bulk-table-wrap"></div>
           <p class="contrib-error" id="contrib-bulk-publish-error" style="display:none;margin-top:10px"></p>
           <p class="contrib-success" id="contrib-bulk-publish-success" style="display:none;margin-top:10px"></p>
@@ -4222,7 +4234,12 @@
   var contribUnlocked = false;
   var contribMode = 'actu';
   var contribBulkRows = [];
+  var contribBulkPromoRows = [];
+  var contribBulkTauxRows = [];
   var contribBulkNextId = 1;
+  var contribBulkImportMode = 'actu';
+  var contribBulkReviewTab = 'promos';
+  var contribBulkReplacePromoKeys = {};
 
   var CONTRIB_PRODUIT_MAP = {
     'prêt personnel': 'pb', 'pret personnel': 'pb', 'pp': 'pb', 'pb': 'pb',
@@ -4253,6 +4270,34 @@
     }).join('');
   }
 
+  function contribBulkJsonPlaceholder () {
+    if (contribBulkImportMode === 'taux_promos') {
+      return '{"promos":[{"produit_id":"cr","acteur_id":"cofidis","taux":"0%","duree":"12 mois","montant":"jusqu\'à 3 000 €","date_fin":"31/12/2026","canal":"en ligne","lien":"https://..."}],"taux":[{"acteur_id":"cofidis","produit_nom":"Crédit renouvelable","categorie":"financiere","rows":[{"tranche":"","b1":0.15,"b1v":0,"b2":0.12,"b2v":0,"b3":0.09,"b3v":0}],"commentaire":""}]}';
+    }
+    return '[{"mode":"actualite","acteur":"Cofidis","produit":"pb","type":"Produit","titre":"...","resume":"...","source":"https://..."}]';
+  }
+
+  function syncContribBulkPlaceholder () {
+    var ta = $('contrib-bulk-json');
+    if (ta) ta.placeholder = contribBulkJsonPlaceholder();
+  }
+
+  function switchContribBulkImportMode (mode) {
+    contribBulkImportMode = mode;
+    var isActu = mode === 'actu';
+    $('contrib-import-mode-actu').classList.toggle('active', isActu);
+    $('contrib-import-mode-taux').classList.toggle('active', !isActu);
+    syncContribBulkPlaceholder();
+    resetContribBulkImport(false);
+  }
+
+  function switchContribBulkReviewTab (tab) {
+    contribBulkReviewTab = tab;
+    $('contrib-bulk-tab-promos').classList.toggle('active', tab === 'promos');
+    $('contrib-bulk-tab-taux').classList.toggle('active', tab === 'taux');
+    renderContribBulkTable();
+  }
+
   function syncContribBulkJsonZone () {
     var ta = $('contrib-bulk-json');
     var zone = $('contrib-bulk-drop-zone');
@@ -4274,12 +4319,26 @@
     }
   }
 
-  function resetContribBulkImport () {
+  function resetContribBulkImport (resetMode) {
     contribBulkRows = [];
+    contribBulkPromoRows = [];
+    contribBulkTauxRows = [];
     contribBulkNextId = 1;
+    contribBulkReviewTab = 'promos';
+    contribBulkReplacePromoKeys = {};
+    if (resetMode !== false) {
+      contribBulkImportMode = 'actu';
+      $('contrib-import-mode-actu').classList.add('active');
+      $('contrib-import-mode-taux').classList.remove('active');
+    }
+    var subtabs = $('contrib-bulk-subtabs');
+    if (subtabs) subtabs.classList.add('contrib-step-hidden');
+    if ($('contrib-bulk-tab-promos')) $('contrib-bulk-tab-promos').classList.add('active');
+    if ($('contrib-bulk-tab-taux')) $('contrib-bulk-tab-taux').classList.remove('active');
     var zone = $('contrib-bulk-drop-zone');
     if (zone) zone.classList.remove('contrib-json-editing', 'drag');
     $('contrib-bulk-json').value = '';
+    syncContribBulkPlaceholder();
     syncContribBulkJsonZone();
     $('contrib-bulk-parse-error').style.display = 'none';
     $('contrib-bulk-publish-error').style.display = 'none';
@@ -4293,6 +4352,7 @@
     if (!contribUnlocked) return;
     hideAllContribSteps();
     $('contrib-step-import').classList.remove('contrib-step-hidden');
+    syncContribBulkPlaceholder();
     syncContribModalGateMode();
   }
 
@@ -4588,6 +4648,175 @@
     return rows;
   }
 
+  function normalizeBulkPromoFromJson (obj, lineNum) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      throw new Error('Promo ligne ' + lineNum + ' : objet JSON attendu.');
+    }
+    var acteurId = String(obj.acteur_id || '').trim();
+    var acteur = String(obj.acteur || '').trim();
+    return {
+      id: contribBulkNextId++,
+      kind: 'promo',
+      selected: true,
+      publishError: '',
+      fields: {
+        produit_id: normalizeProduitValue(obj.produit_id != null ? obj.produit_id : obj.produit),
+        acteur_id: acteurId,
+        acteur: acteur,
+        taux: obj.taux != null ? String(obj.taux) : '',
+        duree: obj.duree != null ? String(obj.duree) : '',
+        montant: obj.montant != null ? String(obj.montant) : '',
+        date_fin: obj.date_fin != null ? String(obj.date_fin) : '',
+        canal: obj.canal != null ? String(obj.canal) : '',
+        lien: obj.lien != null ? String(obj.lien) : ''
+      }
+    };
+  }
+
+  function normalizeBulkTauxFromJson (obj, lineNum) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      throw new Error('Taux ligne ' + lineNum + ' : objet JSON attendu.');
+    }
+    var acteurId = String(obj.acteur_id || '').trim();
+    var acteur = String(obj.acteur || '').trim();
+    var rowsVal = obj.rows;
+    var rowsStr = '';
+    if (Array.isArray(rowsVal)) rowsStr = JSON.stringify(rowsVal);
+    else if (rowsVal != null) rowsStr = String(rowsVal);
+    return {
+      id: contribBulkNextId++,
+      kind: 'taux',
+      selected: true,
+      publishError: '',
+      fields: {
+        acteur_id: acteurId,
+        acteur: acteur,
+        produit_nom: String(obj.produit_nom || '').trim(),
+        categorie: String(obj.categorie || '').trim().toLowerCase(),
+        rows: rowsStr,
+        commentaire: obj.commentaire != null ? String(obj.commentaire) : ''
+      }
+    };
+  }
+
+  function validateBulkPromoRow (row) {
+    var errors = {};
+    var f = row.fields;
+    if (!f.produit_id) errors.produit_id = true;
+    if (!f.acteur_id && !f.acteur) errors.acteur_id = true;
+    row.errors = errors;
+    row.valid = Object.keys(errors).length === 0;
+    if (!row.valid) row.selected = false;
+    return row;
+  }
+
+  function validateBulkTauxRow (row) {
+    var errors = {};
+    var f = row.fields;
+    if (!f.acteur_id && !f.acteur) errors.acteur_id = true;
+    if (!f.produit_nom) errors.produit_nom = true;
+    if (f.categorie !== 'bancaire' && f.categorie !== 'financiere') errors.categorie = true;
+    if (!f.rows) {
+      errors.rows = true;
+    } else {
+      try {
+        var parsed = JSON.parse(f.rows);
+        if (!Array.isArray(parsed)) errors.rows = true;
+        else row.parsedRows = parsed;
+      } catch (e) {
+        errors.rows = true;
+      }
+    }
+    row.errors = errors;
+    row.valid = Object.keys(errors).length === 0;
+    if (!row.valid) row.selected = false;
+    return row;
+  }
+
+  function parseBulkTauxPromosJson (raw) {
+    var parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      throw new Error('JSON invalide : ' + e.message);
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Format attendu : {"promos":[...],"taux":[...]}');
+    }
+    var promosRaw = Array.isArray(parsed.promos) ? parsed.promos : [];
+    var tauxRaw = Array.isArray(parsed.taux) ? parsed.taux : [];
+    if (!promosRaw.length && !tauxRaw.length) {
+      throw new Error('Au moins une entrée dans "promos" ou "taux" est requise.');
+    }
+    var promos = [];
+    var taux = [];
+    for (var pi = 0; pi < promosRaw.length; pi++) {
+      try {
+        promos.push(validateBulkPromoRow(normalizeBulkPromoFromJson(promosRaw[pi], pi + 1)));
+      } catch (e) {
+        throw new Error(e.message || ('Erreur promos[' + pi + ']'));
+      }
+    }
+    for (var ti = 0; ti < tauxRaw.length; ti++) {
+      try {
+        taux.push(validateBulkTauxRow(normalizeBulkTauxFromJson(tauxRaw[ti], ti + 1)));
+      } catch (e) {
+        throw new Error(e.message || ('Erreur taux[' + ti + ']'));
+      }
+    }
+    return { promos: promos, taux: taux };
+  }
+
+  function activeBulkRows () {
+    if (contribBulkImportMode === 'taux_promos') {
+      return contribBulkReviewTab === 'taux' ? contribBulkTauxRows : contribBulkPromoRows;
+    }
+    return contribBulkRows;
+  }
+
+  function findBulkRowById (rowId) {
+    if (contribBulkImportMode === 'taux_promos') {
+      return contribBulkPromoRows.find(function (r) { return r.id === rowId; }) ||
+        contribBulkTauxRows.find(function (r) { return r.id === rowId; });
+    }
+    return contribBulkRows.find(function (r) { return r.id === rowId; });
+  }
+
+  function buildBulkPromoPayload (row) {
+    var f = row.fields;
+    return {
+      bulkIndex: row.id,
+      produit_id: f.produit_id,
+      acteur_id: f.acteur_id || null,
+      acteur: f.acteur || null,
+      taux: f.taux || null,
+      duree: f.duree || null,
+      montant: f.montant || null,
+      date_fin: f.date_fin || null,
+      canal: f.canal || null,
+      lien: f.lien || null
+    };
+  }
+
+  function buildBulkTauxPayload (row) {
+    var f = row.fields;
+    return {
+      bulkIndex: row.id,
+      acteur_id: f.acteur_id || null,
+      acteur: f.acteur || null,
+      produit_nom: f.produit_nom,
+      categorie: f.categorie,
+      rows: row.parsedRows || JSON.parse(f.rows),
+      commentaire: f.commentaire || null
+    };
+  }
+
+  function promoReplaceKeyFromRow (row) {
+    var f = row.fields;
+    var aid = f.acteur_id || (f.acteur ? SofincoSupabase.toActorId(f.acteur) : '');
+    return f.produit_id + '\0' + aid;
+  }
+
   function bulkCellInput (rowId, field, value, wide) {
     return '<input type="text" class="contrib-bulk-input" data-row-id="' + rowId + '" data-field="' + field + '" value="' + esc(value || '') + '"' + (wide ? ' style="min-width:120px"' : '') + '>';
   }
@@ -4595,54 +4824,124 @@
   function renderContribBulkTable () {
     var wrap = $('contrib-bulk-table-wrap');
     if (!wrap) return;
-    if (!contribBulkRows.length) {
-      wrap.innerHTML = '';
-      return;
+
+    var subtabs = $('contrib-bulk-subtabs');
+    if (subtabs) {
+      subtabs.classList.toggle('contrib-step-hidden', contribBulkImportMode !== 'taux_promos');
     }
-    var allValidSelected = contribBulkRows.filter(function (r) { return r.valid; });
-    var allSelected = allValidSelected.length && allValidSelected.every(function (r) { return r.selected; });
 
-    var html = '<table><thead><tr>';
-    html += '<th style="width:36px"><input type="checkbox" class="contrib-bulk-cb" id="contrib-bulk-select-all"' + (allSelected ? ' checked' : '') + ' title="Tout sélectionner"></th>';
-    html += '<th>#</th><th>Mode</th><th>Acteur</th><th>Produit</th><th>Type</th><th>Titre</th><th>Résumé / Détail</th><th>Source</th><th>Statut</th>';
-    html += '</tr></thead><tbody>';
+    if (contribBulkImportMode === 'taux_promos') {
+      var rows = activeBulkRows();
+      if (!contribBulkPromoRows.length && !contribBulkTauxRows.length) {
+        wrap.innerHTML = '';
+        updateBulkPublishBtn();
+        return;
+      }
+      if (!rows.length) {
+        wrap.innerHTML = '<p class="text-muted text-sm" style="padding:12px">Aucune entrée dans cet onglet.</p>';
+        updateBulkPublishBtn();
+        return;
+      }
 
-    contribBulkRows.forEach(function (row, idx) {
-      var f = row.fields;
-      var errCls = function (field) { return row.errors && row.errors[field] ? ' contrib-bulk-cell-error' : ''; };
-      var modeBadge = row.mode === 'actu'
-        ? '<span class="badge b-tq">Actualité</span>'
-        : '<span class="badge b-gray">Synthèse</span>';
-      var resumeOrDetail = row.mode === 'actu' ? (f.resume || '') : (f.detail || '');
-      var typeVal = row.mode === 'actu' ? f.type : f.synthese_type;
-      var status = row.publishError
-        ? ('<span class="badge b-red">' + esc(row.publishError) + '</span>')
-        : (row.valid ? '<span class="badge b-green">OK</span>' : '<span class="badge b-red">Champs manquants</span>');
-      var rowCls = (!row.valid || row.publishError) ? ' contrib-bulk-row-invalid' : '';
+      var allValidSelected = rows.filter(function (r) { return r.valid; });
+      var allSelected = allValidSelected.length && allValidSelected.every(function (r) { return r.selected; });
+      var html = '<table><thead><tr>';
+      html += '<th style="width:36px"><input type="checkbox" class="contrib-bulk-cb" id="contrib-bulk-select-all"' + (allSelected ? ' checked' : '') + ' title="Tout sélectionner"></th>';
+      html += '<th>#</th>';
 
-      html += '<tr data-bulk-row="' + row.id + '" class="' + rowCls.trim() + '">';
-      html += '<td><input type="checkbox" class="contrib-bulk-cb contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
-        (row.selected && row.valid ? ' checked' : '') + (row.valid ? '' : ' disabled') + '></td>';
-      html += '<td style="color:var(--muted)">' + (idx + 1) + '</td>';
-      html += '<td>' + modeBadge + '</td>';
-      html += '<td class="' + errCls('acteur').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
-      html += '<td class="' + errCls('produit_id').trim() + '">' + bulkCellInput(row.id, 'produit_id', f.produit_id) + '</td>';
-      html += '<td class="' + errCls(row.mode === 'actu' ? 'type' : 'synthese_type').trim() + '">' + bulkCellInput(row.id, row.mode === 'actu' ? 'type' : 'synthese_type', typeVal) + '</td>';
-      html += '<td class="' + errCls('titre').trim() + '">' + bulkCellInput(row.id, 'titre', f.titre, true) + '</td>';
-      html += '<td>' + bulkCellInput(row.id, row.mode === 'actu' ? 'resume' : 'detail', resumeOrDetail, true) + '</td>';
-      html += '<td class="' + errCls('source').trim() + '">' + bulkCellInput(row.id, 'source', row.mode === 'actu' ? f.source : '', true) + '</td>';
-      html += '<td>' + status + '</td>';
-      html += '</tr>';
-    });
+      if (contribBulkReviewTab === 'promos') {
+        html += '<th>Produit</th><th>Acteur ID</th><th>Acteur</th><th>Taux</th><th>Durée</th><th>Montant</th><th>Date fin</th><th>Canal</th><th>Lien</th><th>Statut</th>';
+      } else {
+        html += '<th>Acteur ID</th><th>Acteur</th><th>Produit nom</th><th>Catégorie</th><th>Rows (JSON)</th><th>Commentaire</th><th>Statut</th>';
+      }
+      html += '</tr></thead><tbody>';
 
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
+      rows.forEach(function (row, idx) {
+        var f = row.fields;
+        var errCls = function (field) { return row.errors && row.errors[field] ? ' contrib-bulk-cell-error' : ''; };
+        var status = row.publishError
+          ? ('<span class="badge b-red">' + esc(row.publishError) + '</span>')
+          : (row.valid ? '<span class="badge b-green">OK</span>' : '<span class="badge b-red">Champs manquants</span>');
+        var rowCls = (!row.valid || row.publishError) ? ' contrib-bulk-row-invalid' : '';
+        html += '<tr data-bulk-row="' + row.id + '" class="' + rowCls.trim() + '">';
+        html += '<td><input type="checkbox" class="contrib-bulk-cb contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
+          (row.selected && row.valid ? ' checked' : '') + (row.valid ? '' : ' disabled') + '></td>';
+        html += '<td style="color:var(--muted)">' + (idx + 1) + '</td>';
+        if (contribBulkReviewTab === 'promos') {
+          html += '<td class="' + errCls('produit_id').trim() + '">' + bulkCellInput(row.id, 'produit_id', f.produit_id) + '</td>';
+          html += '<td class="' + errCls('acteur_id').trim() + '">' + bulkCellInput(row.id, 'acteur_id', f.acteur_id) + '</td>';
+          html += '<td class="' + errCls('acteur_id').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'taux', f.taux) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'duree', f.duree) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'montant', f.montant) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'date_fin', f.date_fin) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'canal', f.canal) + '</td>';
+          html += '<td>' + bulkCellInput(row.id, 'lien', f.lien, true) + '</td>';
+        } else {
+          html += '<td class="' + errCls('acteur_id').trim() + '">' + bulkCellInput(row.id, 'acteur_id', f.acteur_id) + '</td>';
+          html += '<td class="' + errCls('acteur_id').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
+          html += '<td class="' + errCls('produit_nom').trim() + '">' + bulkCellInput(row.id, 'produit_nom', f.produit_nom, true) + '</td>';
+          html += '<td class="' + errCls('categorie').trim() + '">' + bulkCellInput(row.id, 'categorie', f.categorie) + '</td>';
+          html += '<td class="' + errCls('rows').trim() + '"><input type="text" class="contrib-bulk-input contrib-bulk-rows-json" data-row-id="' + row.id + '" data-field="rows" value="' + esc(f.rows || '') + '"></td>';
+          html += '<td>' + bulkCellInput(row.id, 'commentaire', f.commentaire, true) + '</td>';
+        }
+        html += '<td>' + status + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    } else {
+      if (!contribBulkRows.length) {
+        wrap.innerHTML = '';
+        updateBulkPublishBtn();
+        return;
+      }
+
+      var allValidSelectedActu = contribBulkRows.filter(function (r) { return r.valid; });
+      var allSelectedActu = allValidSelectedActu.length && allValidSelectedActu.every(function (r) { return r.selected; });
+
+      var htmlActu = '<table><thead><tr>';
+      htmlActu += '<th style="width:36px"><input type="checkbox" class="contrib-bulk-cb" id="contrib-bulk-select-all"' + (allSelectedActu ? ' checked' : '') + ' title="Tout sélectionner"></th>';
+      htmlActu += '<th>#</th><th>Mode</th><th>Acteur</th><th>Produit</th><th>Type</th><th>Titre</th><th>Résumé / Détail</th><th>Source</th><th>Statut</th>';
+      htmlActu += '</tr></thead><tbody>';
+
+      contribBulkRows.forEach(function (row, idx) {
+        var f = row.fields;
+        var errCls = function (field) { return row.errors && row.errors[field] ? ' contrib-bulk-cell-error' : ''; };
+        var modeBadge = row.mode === 'actu'
+          ? '<span class="badge b-tq">Actualité</span>'
+          : '<span class="badge b-gray">Synthèse</span>';
+        var resumeOrDetail = row.mode === 'actu' ? (f.resume || '') : (f.detail || '');
+        var typeVal = row.mode === 'actu' ? f.type : f.synthese_type;
+        var status = row.publishError
+          ? ('<span class="badge b-red">' + esc(row.publishError) + '</span>')
+          : (row.valid ? '<span class="badge b-green">OK</span>' : '<span class="badge b-red">Champs manquants</span>');
+        var rowCls = (!row.valid || row.publishError) ? ' contrib-bulk-row-invalid' : '';
+
+        htmlActu += '<tr data-bulk-row="' + row.id + '" class="' + rowCls.trim() + '">';
+        htmlActu += '<td><input type="checkbox" class="contrib-bulk-cb contrib-bulk-row-cb" data-row-id="' + row.id + '"' +
+          (row.selected && row.valid ? ' checked' : '') + (row.valid ? '' : ' disabled') + '></td>';
+        htmlActu += '<td style="color:var(--muted)">' + (idx + 1) + '</td>';
+        htmlActu += '<td>' + modeBadge + '</td>';
+        htmlActu += '<td class="' + errCls('acteur').trim() + '">' + bulkCellInput(row.id, 'acteur', f.acteur) + '</td>';
+        htmlActu += '<td class="' + errCls('produit_id').trim() + '">' + bulkCellInput(row.id, 'produit_id', f.produit_id) + '</td>';
+        htmlActu += '<td class="' + errCls(row.mode === 'actu' ? 'type' : 'synthese_type').trim() + '">' + bulkCellInput(row.id, row.mode === 'actu' ? 'type' : 'synthese_type', typeVal) + '</td>';
+        htmlActu += '<td class="' + errCls('titre').trim() + '">' + bulkCellInput(row.id, 'titre', f.titre, true) + '</td>';
+        htmlActu += '<td>' + bulkCellInput(row.id, row.mode === 'actu' ? 'resume' : 'detail', resumeOrDetail, true) + '</td>';
+        htmlActu += '<td class="' + errCls('source').trim() + '">' + bulkCellInput(row.id, 'source', row.mode === 'actu' ? f.source : '', true) + '</td>';
+        htmlActu += '<td>' + status + '</td>';
+        htmlActu += '</tr>';
+      });
+
+      htmlActu += '</tbody></table>';
+      wrap.innerHTML = htmlActu;
+    }
 
     var selectAll = $('contrib-bulk-select-all');
     if (selectAll) {
       selectAll.addEventListener('change', function () {
         var on = selectAll.checked;
-        contribBulkRows.forEach(function (r) { if (r.valid) r.selected = on; });
+        activeBulkRows().forEach(function (r) { if (r.valid) r.selected = on; });
         renderContribBulkTable();
         updateBulkPublishBtn();
       });
@@ -4651,7 +4950,7 @@
     wrap.querySelectorAll('.contrib-bulk-row-cb').forEach(function (cb) {
       cb.addEventListener('change', function () {
         var rid = parseInt(cb.getAttribute('data-row-id'), 10);
-        var row = contribBulkRows.find(function (r) { return r.id === rid; });
+        var row = findBulkRowById(rid);
         if (row && row.valid) row.selected = cb.checked;
         updateBulkPublishBtn();
       });
@@ -4661,11 +4960,13 @@
       inp.addEventListener('input', function () {
         var rid = parseInt(inp.getAttribute('data-row-id'), 10);
         var field = inp.getAttribute('data-field');
-        var row = contribBulkRows.find(function (r) { return r.id === rid; });
+        var row = findBulkRowById(rid);
         if (!row) return;
         row.fields[field] = inp.value;
         if (field === 'produit_id') row.fields.produit_id = normalizeProduitValue(inp.value);
-        validateBulkRow(row);
+        if (row.kind === 'promo') validateBulkPromoRow(row);
+        else if (row.kind === 'taux') validateBulkTauxRow(row);
+        else validateBulkRow(row);
         if (!row.valid) row.selected = false;
         row.publishError = '';
         renderContribBulkTable();
@@ -4680,12 +4981,27 @@
     var btn = $('contrib-bulk-publish');
     var badge = $('contrib-bulk-selected-count');
     if (!btn || btn.classList.contains('is-loading')) return;
-    var selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
-    var hasInvalidSelected = contribBulkRows.some(function (r) { return r.selected && !r.valid; });
+    var selected;
+    var totalRows;
+    if (contribBulkImportMode === 'taux_promos') {
+      selected = contribBulkPromoRows.filter(function (r) { return r.selected && r.valid; })
+        .concat(contribBulkTauxRows.filter(function (r) { return r.selected && r.valid; }));
+      totalRows = contribBulkPromoRows.length + contribBulkTauxRows.length;
+    } else {
+      selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
+      totalRows = contribBulkRows.length;
+    }
+    var hasInvalidSelected = false;
+    if (contribBulkImportMode === 'taux_promos') {
+      hasInvalidSelected = contribBulkPromoRows.some(function (r) { return r.selected && !r.valid; }) ||
+        contribBulkTauxRows.some(function (r) { return r.selected && !r.valid; });
+    } else {
+      hasInvalidSelected = contribBulkRows.some(function (r) { return r.selected && !r.valid; });
+    }
     var n = selected.length;
     if (badge) {
       badge.textContent = n + ' entrée' + (n !== 1 ? 's' : '') + ' sélectionnée' + (n !== 1 ? 's' : '');
-      badge.style.display = contribBulkRows.length ? 'inline-flex' : 'none';
+      badge.style.display = totalRows ? 'inline-flex' : 'none';
     }
     btn.innerHTML = '<i class="ti ti-send"></i> Publier';
     btn.disabled = n === 0 || hasInvalidSelected;
@@ -4698,13 +5014,22 @@
     $('contrib-bulk-publish-error').style.display = 'none';
     $('contrib-bulk-publish-success').style.display = 'none';
     if (!raw) {
-      errEl.textContent = 'Collez ou téléversez un tableau JSON avant d\'analyser.';
+      errEl.textContent = 'Collez ou téléversez un JSON avant d\'analyser.';
       errEl.style.display = 'block';
       return;
     }
     try {
       contribBulkNextId = 1;
-      contribBulkRows = parseBulkContribJsonArray(raw);
+      contribBulkReplacePromoKeys = {};
+      if (contribBulkImportMode === 'taux_promos') {
+        var parsedTp = parseBulkTauxPromosJson(raw);
+        contribBulkPromoRows = parsedTp.promos;
+        contribBulkTauxRows = parsedTp.taux;
+        contribBulkReviewTab = contribBulkPromoRows.length ? 'promos' : 'taux';
+        switchContribBulkReviewTab(contribBulkReviewTab);
+      } else {
+        contribBulkRows = parseBulkContribJsonArray(raw);
+      }
       $('contrib-bulk-review').classList.remove('contrib-step-hidden');
       renderContribBulkTable();
     } catch (e) {
@@ -4735,8 +5060,97 @@
     reader.readAsText(file);
   }
 
+  async function publishBulkTauxPromos () {
+    var selectedPromos = contribBulkPromoRows.filter(function (r) { return r.selected && r.valid; });
+    var selectedTaux = contribBulkTauxRows.filter(function (r) { return r.selected && r.valid; });
+    if (!selectedPromos.length && !selectedTaux.length) return;
+
+    var errEl = $('contrib-bulk-publish-error');
+    var okEl = $('contrib-bulk-publish-success');
+    errEl.style.display = 'none';
+    okEl.style.display = 'none';
+
+    var promoPayloads = selectedPromos.map(buildBulkPromoPayload);
+    var replaceKeys = Object.assign({}, contribBulkReplacePromoKeys);
+
+    try {
+      var duplicates = await SofincoSupabase.findExistingPromos(sbClient, promoPayloads, actorIdByNom);
+      var newDuplicates = duplicates.filter(function (d) {
+        var key = d.produit_id + '\0' + d.acteur_id;
+        return !replaceKeys[key];
+      });
+      if (newDuplicates.length) {
+        var msg = newDuplicates.length + ' promo' + (newDuplicates.length > 1 ? 's' : '') +
+          ' existent déjà (même produit + acteur). Remplacer les entrées existantes ?';
+        if (!window.confirm(msg)) return;
+        newDuplicates.forEach(function (d) {
+          replaceKeys[d.produit_id + '\0' + d.acteur_id] = true;
+        });
+        contribBulkReplacePromoKeys = replaceKeys;
+      }
+
+      setBulkPublishLoading(true);
+      var res = await SofincoSupabase.publishContributionTauxPromosBulk(sbClient, {
+        promos: promoPayloads,
+        taux: selectedTaux.map(buildBulkTauxPayload),
+        replacePromoKeys: replaceKeys
+      }, actorIdByNom);
+      Object.assign(actorIdByNom, res.map);
+
+      var okCount = 0;
+      var failCount = 0;
+      res.results.forEach(function (r) {
+        var row = findBulkRowById(r.bulkIndex);
+        if (!row) return;
+        if (r.ok) {
+          okCount++;
+        } else {
+          failCount++;
+          row.publishError = r.error || 'Erreur inconnue';
+          row.selected = true;
+        }
+      });
+
+      var publishedIds = {};
+      res.results.forEach(function (r) { if (r.ok) publishedIds[r.bulkIndex] = true; });
+      contribBulkPromoRows = contribBulkPromoRows.filter(function (r) { return !publishedIds[r.id]; });
+      contribBulkTauxRows = contribBulkTauxRows.filter(function (r) { return !publishedIds[r.id]; });
+
+      if (okCount > 0) {
+        var reload = await SofincoSupabase.loadAllData(sbClient);
+        applyLoadedData(reload);
+        render();
+      }
+
+      if (failCount === 0) {
+        okEl.textContent = okCount + ' entrée' + (okCount > 1 ? 's' : '') + ' publiée' + (okCount > 1 ? 's' : '') + ' avec succès.';
+        okEl.style.display = 'block';
+        resetContribBulkImport(false);
+      } else {
+        errEl.textContent = okCount + ' publiée' + (okCount > 1 ? 's' : '') + ', ' + failCount + ' en échec — corrigez les lignes en rouge et réessayez.';
+        errEl.style.display = 'block';
+        if (contribBulkPromoRows.length || contribBulkTauxRows.length) {
+          $('contrib-bulk-review').classList.remove('contrib-step-hidden');
+          renderContribBulkTable();
+        } else {
+          resetContribBulkImport(false);
+        }
+      }
+    } catch (e) {
+      errEl.textContent = 'Erreur lors de la publication : ' + (e.message || e);
+      errEl.style.display = 'block';
+    } finally {
+      setBulkPublishLoading(false);
+    }
+  }
+
   async function publishBulkContributions () {
     if (!contribUnlocked || !sbClient) return;
+    if (contribBulkImportMode === 'taux_promos') {
+      await publishBulkTauxPromos();
+      return;
+    }
+
     var selected = contribBulkRows.filter(function (r) { return r.selected && r.valid; });
     if (!selected.length) return;
 
@@ -5000,6 +5414,11 @@
     $('contrib-goto-manual').addEventListener('click', showContribManualView);
     $('contrib-back-import').addEventListener('click', showContribImportView);
     $('contrib-bulk-analyze').addEventListener('click', analyzeBulkImport);
+    $('contrib-import-mode-actu').addEventListener('click', function () { switchContribBulkImportMode('actu'); });
+    $('contrib-import-mode-taux').addEventListener('click', function () { switchContribBulkImportMode('taux_promos'); });
+    $('contrib-bulk-tab-promos').addEventListener('click', function () { switchContribBulkReviewTab('promos'); });
+    $('contrib-bulk-tab-taux').addEventListener('click', function () { switchContribBulkReviewTab('taux'); });
+    syncContribBulkPlaceholder();
     $('contrib-bulk-publish').addEventListener('click', publishBulkContributions);
     $('contrib-bulk-file-btn').addEventListener('click', function (e) {
       e.stopPropagation();

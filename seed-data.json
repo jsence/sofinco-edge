@@ -5,7 +5,7 @@
     "counts": {
       "acteurs": 24,
       "produits": 5,
-      "acteurs_produits": 36,
+      "acteurs_produits": 35,
       "criteres": 132,
       "valeurs": 921,
       "promos": 5,
@@ -254,19 +254,14 @@
       "ordre": 4
     },
     {
-      "acteur_id": "floa",
+      "acteur_id": "younited",
       "produit_id": "pb",
       "ordre": 5
     },
     {
-      "acteur_id": "younited",
-      "produit_id": "pb",
-      "ordre": 6
-    },
-    {
       "acteur_id": "boursobank",
       "produit_id": "pb",
-      "ordre": 7
+      "ordre": 6
     },
     {
       "acteur_id": "sofinco",
