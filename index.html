@@ -1139,6 +1139,7 @@
       <i class="ti ti-download"></i> Exporter
     </button>
   </div>
+  <div id="build-stamp-indicator" style="position:fixed;bottom:8px;left:8px;font-size:10px;color:#9ca3af;z-index:9999"></div>
 </aside>
 
 <!-- ═══════════════════════════════════════════
@@ -1520,6 +1521,8 @@
 <script>
 (function () {
   'use strict';
+  var BUILD_STAMP = "29/07/2026 17:35";
+  document.getElementById('build-stamp-indicator').textContent = 'Build ' + BUILD_STAMP;
 
   /* ──────────────────────────────────────────
      CONSTANTES
