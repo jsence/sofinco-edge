@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Smoke test — toggle import Taux & Promos + parsing JSON
+ * Smoke test — import JSON groupé hétérogène (type par entrée)
  */
 import http from 'http';
 import fs from 'fs';
@@ -54,35 +54,45 @@ async function run () {
   });
   await page.click('#contrib-goto-json');
 
-  checks.push(['import mode tabs present', await page.evaluate(function () {
-    return !!document.getElementById('contrib-import-mode-actu') &&
-      !!document.getElementById('contrib-import-mode-taux');
+  checks.push(['no mode toggle', await page.evaluate(function () {
+    return document.getElementById('contrib-import-mode-actu') === null &&
+      document.getElementById('contrib-import-mode-taux') === null;
   })]);
 
-  await page.click('#contrib-import-mode-taux');
-  checks.push(['taux mode active', await page.evaluate(function () {
-    return document.getElementById('contrib-import-mode-taux').classList.contains('active');
-  })]);
-
-  const sampleJson = JSON.stringify({
-    promos: [{
+  const sampleJson = JSON.stringify([
+    {
+      type: 'actualite',
+      acteur: 'Cofidis',
+      produit: 'pb',
+      actualite_type: 'Produit',
+      titre: 'Test actu',
+      resume: 'Résumé',
+      source: 'https://example.com'
+    },
+    {
+      type: 'promo',
       produit_id: 'cr',
       acteur_id: 'cofidis',
       taux: '0 %',
       duree: '12 mois',
-      montant: '3 000 €',
-      date_fin: '31/12/2026',
-      canal: 'web',
-      lien: 'https://example.com'
-    }],
-    taux: [{
+      date_fin: '31/12/2026'
+    },
+    {
+      type: 'taux',
       acteur_id: 'cofidis',
       produit_nom: 'Test produit',
       categorie: 'financiere',
-      rows: [{ tranche: '', b1: 0.1, b1v: 0, b2: null, b2v: null, b3: null, b3v: null }],
-      commentaire: ''
-    }]
-  });
+      rows: [{ tranche: '', b1: 0.1, b2: null, b3: null }]
+    },
+    {
+      type: 'differenciateur',
+      produit_id: 'cr',
+      acteur_id: 'cofidis',
+      difference: 'Diff test',
+      pourquoi: 'Pourquoi',
+      conclusion: 'Conclusion'
+    }
+  ]);
 
   await page.evaluate(function (json) {
     document.getElementById('contrib-bulk-json').value = json;
@@ -93,36 +103,34 @@ async function run () {
     return !document.getElementById('contrib-bulk-review').classList.contains('contrib-step-hidden');
   });
 
-  checks.push(['subtabs visible after analyze', await page.evaluate(function () {
-    var el = document.getElementById('contrib-bulk-subtabs');
-    return el && !el.classList.contains('contrib-step-hidden');
+  checks.push(['four mixed rows parsed', await page.evaluate(function () {
+    return document.querySelectorAll('#contrib-bulk-table-wrap tbody tr').length === 4;
   })]);
 
-  checks.push(['promo row parsed', await page.evaluate(function () {
-    return document.querySelector('#contrib-bulk-table-wrap tbody tr') !== null;
+  checks.push(['type badges visible', await page.evaluate(function () {
+    var text = document.getElementById('contrib-bulk-table-wrap').textContent;
+    return text.indexOf('Actualité') >= 0 && text.indexOf('Promo') >= 0 &&
+      text.indexOf('Taux') >= 0 && text.indexOf('Différenciateur') >= 0;
   })]);
 
-  await page.click('#contrib-bulk-tab-taux');
-  await page.waitForFunction(function () {
-    var ths = document.querySelectorAll('#contrib-bulk-table-wrap th');
-    for (var i = 0; i < ths.length; i++) {
-      if (ths[i].textContent.indexOf('Produit nom') >= 0) return true;
-    }
-    return false;
-  }, { timeout: 5000 });
-
-  checks.push(['taux tab renders', await page.evaluate(function () {
-    var ths = document.querySelectorAll('#contrib-bulk-table-wrap th');
-    for (var i = 0; i < ths.length; i++) {
-      if (ths[i].textContent.indexOf('Produit nom') >= 0) return true;
-    }
-    return false;
+  checks.push(['unknown type rejected', await page.evaluate(function () {
+    document.getElementById('contrib-bulk-json').value = '[{"type":"inconnu"}]';
+    document.getElementById('contrib-bulk-parse-error').style.display = 'none';
+    document.getElementById('contrib-bulk-analyze').click();
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        resolve(
+          document.getElementById('contrib-bulk-parse-error').style.display === 'block' &&
+          document.getElementById('contrib-bulk-parse-error').textContent.indexOf('type manquant') >= 0
+        );
+      }, 50);
+    });
   })]);
 
   await browser.close();
   server.close();
 
-  console.log('Contributor Taux & Promos smoke test:\n');
+  console.log('Contributor mixed JSON import smoke test:\n');
   var allOk = true;
   checks.forEach(function (pair) {
     var ok = pair[1];
