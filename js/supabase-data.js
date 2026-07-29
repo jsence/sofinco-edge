@@ -243,8 +243,7 @@
       id: product.id,
       label: product.label,
       short_label: product.shortLabel,
-      a_onglet_taux: product.id === 'pb' || product.id === 'cr' || product.id === 'rac',
-      updated_at: product.updatedAt || new Date().toISOString().split('T')[0]
+      a_onglet_taux: product.id === 'pb' || product.id === 'cr' || product.id === 'rac'
     }, { onConflict: 'id' });
 
     /* Acteurs produit : ajouter / mettre à jour sans supprimer les absents de l'Excel */
@@ -387,6 +386,10 @@
       stats.actualites = actualiteRows.length;
     }
 
+    if (stats.changes > 0) {
+      await touchProduitUpdatedAt(sb, [product.id]);
+    }
+
     return { map: map, stats: stats };
   }
 
@@ -425,6 +428,9 @@
     if (rows.length) {
       var { error } = await sb.from('promos').insert(rows);
       if (error) throw new Error('promos: ' + error.message);
+    }
+    if (Object.keys(promosObj).length) {
+      await touchProduitUpdatedAt(sb, Object.keys(promosObj));
     }
     return map;
   }
@@ -661,6 +667,267 @@
     return { map: map, results: results };
   }
 
+  var TAUX_PRODUIT_IDS = ['pb', 'cr', 'rac'];
+
+  async function touchProduitUpdatedAt(sb, produitIds) {
+    var seen = {};
+    (produitIds || []).forEach(function (id) { if (id) seen[id] = true; });
+    var ids = Object.keys(seen);
+    if (!ids.length) return;
+    var now = new Date().toISOString();
+    for (var i = 0; i < ids.length; i++) {
+      var { error } = await sb.from('produits').update({ updated_at: now }).eq('id', ids[i]);
+      if (error) throw new Error('produits.updated_at: ' + error.message);
+    }
+  }
+
+  async function fetchActeurTauxProduitIds(sb, acteurIds) {
+    var map = {};
+    if (!acteurIds.length) return map;
+    var { data, error } = await sb.from('acteurs_produits')
+      .select('acteur_id, produit_id')
+      .in('acteur_id', acteurIds)
+      .in('produit_id', TAUX_PRODUIT_IDS);
+    if (error) throw new Error('acteurs_produits: ' + error.message);
+    (data || []).forEach(function (row) {
+      if (!map[row.acteur_id]) map[row.acteur_id] = [];
+      if (map[row.acteur_id].indexOf(row.produit_id) < 0) map[row.acteur_id].push(row.produit_id);
+    });
+    return map;
+  }
+
+  function resolveActeurId(entry, map) {
+    if (entry.acteur_id) return entry.acteur_id;
+    if (entry.acteur && map[entry.acteur]) return map[entry.acteur];
+    if (entry.acteur) return toActorId(entry.acteur);
+    return null;
+  }
+
+  function rowsJsonEqual(a, b) {
+    return JSON.stringify(a || []) === JSON.stringify(b || []);
+  }
+
+  function promoKey(produitId, acteurId) {
+    return produitId + '\0' + acteurId;
+  }
+
+  async function findExistingPromos(sb, promoEntries, idByNom) {
+    var map = Object.assign({}, idByNom || {});
+    var actorNames = [];
+    promoEntries.forEach(function (e) {
+      if (e.acteur) actorNames.push(e.acteur);
+    });
+    var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
+    if (uniqueNames.length) {
+      var merged = await ensureActors(sb, uniqueNames, {}, {});
+      Object.assign(map, merged);
+    }
+    var pairs = [];
+    promoEntries.forEach(function (e) {
+      var pid = e.produit_id;
+      var aid = resolveActeurId(e, map);
+      if (pid && aid) pairs.push({ produit_id: pid, acteur_id: aid, bulkIndex: e.bulkIndex });
+    });
+    if (!pairs.length) return [];
+
+    var produitIds = pairs.map(function (p) { return p.produit_id; });
+    var { data, error } = await sb.from('promos').select('*').in('produit_id', produitIds);
+    if (error) throw new Error('promos: ' + error.message);
+
+    var existingByKey = {};
+    (data || []).forEach(function (row) {
+      existingByKey[promoKey(row.produit_id, row.acteur_id)] = row;
+    });
+
+    var duplicates = [];
+    pairs.forEach(function (p) {
+      var key = promoKey(p.produit_id, p.acteur_id);
+      if (existingByKey[key]) {
+        duplicates.push({
+          bulkIndex: p.bulkIndex,
+          produit_id: p.produit_id,
+          acteur_id: p.acteur_id,
+          existing: existingByKey[key]
+        });
+      }
+    });
+    return duplicates;
+  }
+
+  async function publishContributionTauxPromosBulk(sb, payload, idByNom) {
+    var map = Object.assign({}, idByNom || {});
+    var promos = payload.promos || [];
+    var taux = payload.taux || [];
+    var replacePromoKeys = payload.replacePromoKeys || {};
+    var results = [];
+    var touchedProduits = {};
+    var importDate = new Date().toISOString().slice(0, 10);
+
+    var actorNames = [];
+    promos.forEach(function (e) {
+      if (e.acteur) actorNames.push(e.acteur);
+    });
+    taux.forEach(function (e) {
+      if (e.acteur) actorNames.push(e.acteur);
+    });
+    var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
+    if (uniqueNames.length) {
+      var merged = await ensureActors(sb, uniqueNames, {}, {});
+      Object.assign(map, merged);
+    }
+
+    var tauxActeurIds = [];
+    taux.forEach(function (e) {
+      var aid = resolveActeurId(e, map);
+      if (aid && tauxActeurIds.indexOf(aid) < 0) tauxActeurIds.push(aid);
+    });
+    var tauxProduitIdsByActeur = await fetchActeurTauxProduitIds(sb, tauxActeurIds);
+
+    var existingTauxByKey = {};
+    if (taux.length) {
+      var tauxActeurIdList = taux.map(function (e) { return resolveActeurId(e, map); }).filter(Boolean);
+      var uniqueTauxActeurs = tauxActeurIdList.filter(function (id, i, a) { return a.indexOf(id) === i; });
+      if (uniqueTauxActeurs.length) {
+        var { data: existingTaux, error: tauxFetchErr } = await sb.from('taux_cr')
+          .select('*')
+          .in('acteur_id', uniqueTauxActeurs);
+        if (tauxFetchErr) throw new Error('taux_cr: ' + tauxFetchErr.message);
+        (existingTaux || []).forEach(function (row) {
+          existingTauxByKey[row.acteur_id + '\0' + row.produit_nom] = row;
+        });
+      }
+    }
+
+    for (var pi = 0; pi < promos.length; pi++) {
+      var promo = promos[pi];
+      var bulkIndex = promo.bulkIndex;
+      try {
+        var produitId = promo.produit_id;
+        var acteurId = resolveActeurId(promo, map);
+        if (!produitId) throw new Error('produit_id requis.');
+        if (!acteurId) throw new Error('acteur_id requis.');
+
+        var pKey = promoKey(produitId, acteurId);
+        var shouldReplace = !!replacePromoKeys[pKey];
+
+        var { data: existingPromos, error: promoFetchErr } = await sb.from('promos')
+          .select('id')
+          .eq('produit_id', produitId)
+          .eq('acteur_id', acteurId);
+        if (promoFetchErr) throw new Error('promos: ' + promoFetchErr.message);
+
+        if (existingPromos && existingPromos.length && !shouldReplace) {
+          throw new Error('Promo existante — confirmez le remplacement avant publication.');
+        }
+
+        var oldPromo = existingPromos && existingPromos.length ? existingPromos[0] : null;
+        if (oldPromo) {
+          var { error: delErr } = await sb.from('promos').delete().eq('id', oldPromo.id);
+          if (delErr) throw new Error('promos: ' + delErr.message);
+        }
+
+        var promoRow = {
+          produit_id: produitId,
+          acteur_id: acteurId,
+          taux: promo.taux || null,
+          duree: promo.duree || null,
+          montant: promo.montant || null,
+          date_fin: promo.date_fin || null,
+          canal: promo.canal || null,
+          lien: promo.lien || null
+        };
+        var { error: insPromoErr } = await sb.from('promos').insert(promoRow);
+        if (insPromoErr) throw new Error('promos: ' + insPromoErr.message);
+
+        touchedProduits[produitId] = true;
+
+        var acteurNom = promo.acteur || null;
+        for (var nk in map) { if (map[nk] === acteurId) { acteurNom = nk; break; } }
+        var titrePromo = oldPromo
+          ? ('Mise à jour promo — ' + (acteurNom || acteurId))
+          : ('Nouvelle promo — ' + (acteurNom || acteurId));
+        var { error: actuPromoErr } = await sb.from('actualites').insert({
+          date: importDate,
+          acteur_id: acteurId,
+          type: 'Produit',
+          produit_id: produitId,
+          titre: titrePromo,
+          source: 'Import contributeur — Taux & Promos',
+          impact: null
+        });
+        if (actuPromoErr) throw new Error('actualites: ' + actuPromoErr.message);
+
+        results.push({ bulkIndex: bulkIndex, ok: true, kind: 'promo' });
+      } catch (e) {
+        results.push({ bulkIndex: bulkIndex, ok: false, kind: 'promo', error: e.message || String(e) });
+      }
+    }
+
+    for (var ti = 0; ti < taux.length; ti++) {
+      var tauxEntry = taux[ti];
+      var tBulkIndex = tauxEntry.bulkIndex;
+      try {
+        var tActeurId = resolveActeurId(tauxEntry, map);
+        var produitNom = String(tauxEntry.produit_nom || '').trim();
+        var categorie = String(tauxEntry.categorie || '').trim();
+        if (!tActeurId) throw new Error('acteur_id requis.');
+        if (!produitNom) throw new Error('produit_nom requis.');
+        if (categorie !== 'bancaire' && categorie !== 'financiere') {
+          throw new Error('categorie invalide (bancaire ou financiere).');
+        }
+        var rows = tauxEntry.rows;
+        if (!Array.isArray(rows)) throw new Error('rows doit être un tableau.');
+
+        var tKey = tActeurId + '\0' + produitNom;
+        var prev = existingTauxByKey[tKey];
+        var changed = !prev || !rowsJsonEqual(prev.rows, rows) ||
+          String(prev.commentaire || '') !== String(tauxEntry.commentaire || '') ||
+          prev.categorie !== categorie;
+
+        var tauxRow = {
+          acteur_id: tActeurId,
+          produit_nom: produitNom,
+          categorie: categorie,
+          rows: rows,
+          commentaire: tauxEntry.commentaire || null
+        };
+        var { error: upsertErr } = await sb.from('taux_cr')
+          .upsert(tauxRow, { onConflict: 'acteur_id,produit_nom' });
+        if (upsertErr) throw new Error('taux_cr: ' + upsertErr.message);
+
+        var produitIdsForTaux = tauxProduitIdsByActeur[tActeurId] || ['cr'];
+        produitIdsForTaux.forEach(function (pid) { touchedProduits[pid] = true; });
+
+        if (changed) {
+          var acteurLabel = tauxEntry.acteur || tActeurId;
+          for (var nk2 in map) { if (map[nk2] === tActeurId) { acteurLabel = nk2; break; } }
+          var titreTaux = prev
+            ? ('Changement de taux — ' + acteurLabel + ' / ' + produitNom)
+            : ('Nouveau taux — ' + acteurLabel + ' / ' + produitNom);
+          var produitIdForActu = produitIdsForTaux[0] || 'cr';
+          var { error: actuTauxErr } = await sb.from('actualites').insert({
+            date: importDate,
+            acteur_id: tActeurId,
+            type: 'Produit',
+            produit_id: produitIdForActu,
+            titre: titreTaux,
+            source: 'Import contributeur — Taux & Promos',
+            impact: null
+          });
+          if (actuTauxErr) throw new Error('actualites: ' + actuTauxErr.message);
+        }
+
+        existingTauxByKey[tKey] = Object.assign({}, tauxRow, { rows: rows });
+        results.push({ bulkIndex: tBulkIndex, ok: true, kind: 'taux' });
+      } catch (e) {
+        results.push({ bulkIndex: tBulkIndex, ok: false, kind: 'taux', error: e.message || String(e) });
+      }
+    }
+
+    await touchProduitUpdatedAt(sb, Object.keys(touchedProduits));
+    return { map: map, results: results };
+  }
+
   global.SofincoSupabase = {
     toActorId: toActorId,
     createClient: createClient,
@@ -672,6 +939,9 @@
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
     insertContributionTendance: insertContributionTendance,
-    publishContributionEntriesBulk: publishContributionEntriesBulk
+    publishContributionEntriesBulk: publishContributionEntriesBulk,
+    touchProduitUpdatedAt: touchProduitUpdatedAt,
+    findExistingPromos: findExistingPromos,
+    publishContributionTauxPromosBulk: publishContributionTauxPromosBulk
   };
 })(window);
