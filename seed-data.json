@@ -4,7 +4,7 @@
     "source": "seed-data.json (export de référence SofincoEdge)",
     "counts": {
       "acteurs": 24,
-      "produits": 5,
+      "produits": 9,
       "acteurs_produits": 35,
       "criteres": 132,
       "valeurs": 921,
@@ -225,6 +225,34 @@
       "a_onglet_taux": false,
       "updated_at": "2026-06-01",
       "excel_sheet": "CARTE"
+    },
+    {
+      "id": "digital",
+      "label": "Digital",
+      "short_label": "DIGITAL",
+      "a_onglet_taux": false,
+      "updated_at": null
+    },
+    {
+      "id": "sav",
+      "label": "SAV",
+      "short_label": "SAV",
+      "a_onglet_taux": false,
+      "updated_at": null
+    },
+    {
+      "id": "com",
+      "label": "Communication",
+      "short_label": "COM",
+      "a_onglet_taux": false,
+      "updated_at": null
+    },
+    {
+      "id": "distribution",
+      "label": "Modèle de distribution",
+      "short_label": "DISTRIB",
+      "a_onglet_taux": false,
+      "updated_at": null
     }
   ],
   "acteurs_produits": [

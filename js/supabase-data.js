@@ -3,7 +3,7 @@
   'use strict';
 
   var EXCEL_SHEETS = { pb: 'PB', cr: 'CR', nxcb: 'NxCB', rac: 'RAC', carte: 'CARTE' };
-  var PRODUCT_ORDER = ['pb', 'cr', 'nxcb', 'rac', 'carte'];
+  var PRODUCT_ORDER = ['pb', 'cr', 'nxcb', 'rac', 'carte', 'digital', 'sav', 'com', 'distribution'];
 
   function sortProducts (produits) {
     return produits.slice().sort(function (a, b) {
@@ -35,7 +35,7 @@
     return supabase.createClient(cfg.url, cfg.anonKey);
   }
 
-  function buildInMemoryData(produits, acteurs, acteursProduits, criteres, valeurs, promos, diffs, tendances, actualites, tauxCr, tauxMeta) {
+  function buildInMemoryData(produits, acteurs, acteursProduits, criteres, valeurs, promos, diffs, tendances, actualites, tauxCr, tauxMeta, indicateurs) {
     produits = sortProducts(produits);
     var nomById = {};
     var idByNom = {};
@@ -168,6 +168,23 @@
       }
     };
 
+    var indicateursData = (indicateurs || []).slice().sort(function (a, b) {
+      if (a.categorie !== b.categorie) return a.categorie.localeCompare(b.categorie, 'fr');
+      if (a.ordre !== b.ordre) return a.ordre - b.ordre;
+      return (a.libelle || '').localeCompare(b.libelle || '', 'fr');
+    }).map(function (row) {
+      return {
+        id: row.id,
+        categorie: row.categorie,
+        libelle: row.libelle,
+        periode: row.periode,
+        valeur: row.valeur,
+        evolution: row.evolution,
+        note: row.note,
+        ordre: row.ordre
+      };
+    });
+
     return {
       data: {
         produits: produitsData,
@@ -175,7 +192,8 @@
         differenciateurs: diffsObj,
         tendances: tendObj,
         taux: taux,
-        actualites: actualitesData
+        actualites: actualitesData,
+        indicateurs: indicateursData
       },
       groups: groups,
       domains: domains,
@@ -203,6 +221,14 @@
       if (r.error) throw new Error('Supabase (' + i + '): ' + r.error.message);
     });
 
+    var indicateurs = [];
+    var indicateursRes = await sb.from('indicateurs').select('*').order('ordre');
+    if (indicateursRes.error) {
+      console.warn('indicateurs:', indicateursRes.error.message);
+    } else {
+      indicateurs = indicateursRes.data || [];
+    }
+
     return buildInMemoryData(
       results[0].data || [],
       results[1].data || [],
@@ -214,7 +240,8 @@
       results[7].data || [],
       results[8].data || [],
       results[9].data || [],
-      results[10].data || null
+      results[10].data || null,
+      indicateurs
     );
   }
 

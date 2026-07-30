@@ -29,7 +29,7 @@ checks.forEach(function ([label, actual, expected]) {
 
 // Volumes de référence attendus dans seed-data.json
 const REF = {
-  produits: 5, criteres: 132, valeurs: 921, promos: 5,
+  produits: 9, criteres: 132, valeurs: 921, promos: 5,
   differenciateurs: 8, tendances: 3, actualites: 4, taux_cr: 18, acteurs: 24
 };
 console.log('\nVolumes de référence (seed-data.json) :');
