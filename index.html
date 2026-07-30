@@ -139,6 +139,13 @@
     .nav-item i { font-size: 18px; flex-shrink: 0; }
     .nav-item span { flex: 1; }
 
+    .sb-nav-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--muted);
+      padding: 14px 12px 6px; margin-top: 4px;
+    }
+    .sb-nav-sep { height: 1px; background: var(--border); margin: 8px 12px; }
+
     .nb {
       font-size: 10px; font-weight: 700;
       padding: 2px 7px; border-radius: 99px;
@@ -271,6 +278,7 @@
     .sc-nxcb  .shortcut-icon { background: rgba(225,45,45,0.12); color: var(--red); }
     .sc-rac   .shortcut-icon { background: rgba(245,158,11,0.12); color: var(--orange); }
     .sc-carte .shortcut-icon { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .sc-bench .shortcut-icon { background: rgba(107,114,128,0.1); color: var(--muted); }
 
     .impact-badge {
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
@@ -326,6 +334,7 @@
     .ic-nxcb { background: rgba(225,45,45,0.1); color: var(--red); }
     .ic-rac { background: rgba(245,158,11,0.1); color: var(--orange); }
     .ic-carte { background: rgba(124,58,237,0.1); color: var(--purple); }
+    .ic-bench { background: rgba(107,114,128,0.1); color: var(--muted); }
     .pc-title { font-size: 15px; font-weight: 600; }
     .pc-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
@@ -889,6 +898,15 @@
       border: 1px solid var(--border); background: var(--surface); color: var(--text);
       font-family: inherit; cursor: pointer;
     }
+
+    .indic-filter-group { display: flex; gap: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; flex-wrap: wrap; }
+    .indic-filter-btn {
+      padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      cursor: pointer; color: var(--muted); border: none; background: transparent;
+      font-family: inherit; transition: all 150ms; white-space: nowrap;
+    }
+    .indic-filter-btn:hover { color: var(--text); }
+    .indic-filter-btn.if-active { background: var(--surface); color: var(--text); box-shadow: var(--sh); }
     .actu-type-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; padding: 1px 6px; border-radius: 4px; }
     .at-produit  { background: rgba(79,216,216,0.12); color: var(--tq-ink); }
     .at-marketing{ background: rgba(124,58,237,0.12); color: var(--purple); }
@@ -1024,6 +1042,28 @@
       <span>Carte</span>
       <span class="nb nb-carte">Carte</span>
     </div>
+    <div class="sb-nav-sep"></div>
+    <div class="sb-nav-label">Benchmarks</div>
+    <div class="nav-item" data-nav="digital">
+      <i class="ti ti-device-mobile"></i>
+      <span>Digital</span>
+    </div>
+    <div class="nav-item" data-nav="sav">
+      <i class="ti ti-headset"></i>
+      <span>SAV</span>
+    </div>
+    <div class="nav-item" data-nav="com">
+      <i class="ti ti-speakerphone"></i>
+      <span>Communication</span>
+    </div>
+    <div class="nav-item" data-nav="distribution">
+      <i class="ti ti-truck-delivery"></i>
+      <span>Distribution</span>
+    </div>
+    <div class="nav-item" data-nav="indicateurs">
+      <i class="ti ti-chart-line"></i>
+      <span>Indicateurs marché</span>
+    </div>
     <div class="nav-item" data-nav="actus">
       <i class="ti ti-news"></i>
       <span>Actualités</span>
@@ -1060,6 +1100,7 @@
     <div id="view-home" class="view active"></div>
     <div id="view-product" class="view"></div>
     <div id="view-actus" class="view"></div>
+    <div id="view-indicateurs" class="view"></div>
   </div>
 </div>
 
@@ -1474,18 +1515,33 @@
   };
 
   var P_COLORS = { pb: 'var(--tq)', cr: 'var(--green)', nxcb: 'var(--red)', rac: 'var(--orange)', carte: 'var(--purple)' };
-  var P_ICONS  = { pb: 'ti-pig-money', cr: 'ti-refresh', nxcb: 'ti-credit-card', rac: 'ti-arrows-exchange', carte: 'ti-credit-card-pay' };
-  var P_IC_CLS = { pb: 'ic-pb', cr: 'ic-cr', nxcb: 'ic-nxcb', rac: 'ic-rac', carte: 'ic-carte' };
+  var P_ICONS  = {
+    pb: 'ti-pig-money', cr: 'ti-refresh', nxcb: 'ti-credit-card', rac: 'ti-arrows-exchange', carte: 'ti-credit-card-pay',
+    digital: 'ti-device-mobile', sav: 'ti-headset', com: 'ti-speakerphone', distribution: 'ti-truck-delivery'
+  };
+  var P_IC_CLS = {
+    pb: 'ic-pb', cr: 'ic-cr', nxcb: 'ic-nxcb', rac: 'ic-rac', carte: 'ic-carte',
+    digital: 'ic-bench', sav: 'ic-bench', com: 'ic-bench', distribution: 'ic-bench'
+  };
   var P_DOT    = { pb: 'd-pb', cr: 'd-cr', nxcb: 'd-nxcb', rac: 'd-rac', carte: 'd-carte' };
   var HOME_SHORTCUT_LINES = {
     pb: ['Prêt', 'Personnel'],
     cr: ['Crédit', 'renouvelable'],
     nxcb: ['Paiement', 'Fractionné'],
     rac: ['Rachat', 'de crédit'],
-    carte: ['Carte', '']
+    carte: ['Carte', ''],
+    digital: ['Digital', ''],
+    sav: ['SAV', ''],
+    com: ['Communication', ''],
+    distribution: ['Modèle de', 'distribution']
   };
+  var BENCHMARK_PRODUCT_IDS = ['digital', 'sav', 'com', 'distribution'];
+  var INDICATEUR_CATEGORIES = ['Production & PDM', 'Indicateurs consommation', 'Tendances conso'];
   var IMPACT_CLS = { 'à surveiller': 'impact-surveiller', 'menace directe': 'impact-menace', 'neutre': 'impact-neutre' };
-  var SHORTCUT_CLS = { pb: 'sc-pb', cr: 'sc-cr', nxcb: 'sc-nxcb', rac: 'sc-rac', carte: 'sc-carte' };
+  var SHORTCUT_CLS = {
+    pb: 'sc-pb', cr: 'sc-cr', nxcb: 'sc-nxcb', rac: 'sc-rac', carte: 'sc-carte',
+    digital: 'sc-bench', sav: 'sc-bench', com: 'sc-bench', distribution: 'sc-bench'
+  };
 
   /* ──────────────────────────────────────────
      DONNÉES
@@ -1496,7 +1552,8 @@
     differenciateurs: {},
     tendances: {},
     taux: {},
-    actualites: []
+    actualites: [],
+    indicateurs: []
   };
 
   function applyLoadedData (result) {
@@ -1511,6 +1568,7 @@
     DATA.tendances = result.data.tendances;
     DATA.taux = result.data.taux;
     DATA.actualites = result.data.actualites;
+    DATA.indicateurs = result.data.indicateurs || [];
     dataReady = true;
   }
 
@@ -1547,7 +1605,8 @@
     tab: 'tableau',
     compareActors: {},
     actuFiltersGlobal: { produit: 'all', acteur: 'all', type: 'all', periode: 'all' },
-    actuFiltersProd: {}
+    actuFiltersProd: {},
+    indicateurCategorie: 'all'
   };
 
   /* ──────────────────────────────────────────
@@ -1648,6 +1707,14 @@
       if (DATA.produits[i].id === id) return DATA.produits[i];
     }
     return null;
+  }
+
+  function isBenchmarkProduct (productId) {
+    return BENCHMARK_PRODUCT_IDS.indexOf(productId) >= 0;
+  }
+
+  function productHasActorFiche (productId) {
+    return !isBenchmarkProduct(productId);
   }
 
   function orderTableActors (sel) {
@@ -1948,12 +2015,20 @@
   ────────────────────────────────────────── */
   function renderNav () {
     document.querySelectorAll('[data-nav]').forEach(function (el) { el.classList.remove('active'); });
-    var key = state.view === 'home' ? 'home' : (state.view === 'actus' ? 'actus' : state.productId);
+    var key = 'home';
+    if (state.view === 'actus') key = 'actus';
+    else if (state.view === 'indicateurs') key = 'indicateurs';
+    else if (state.view === 'product') key = state.productId;
     var el = document.querySelector('[data-nav="' + key + '"]');
     if (el) el.classList.add('active');
 
     var p = state.productId ? productById(state.productId) : null;
-    $('topbar-title').textContent = state.view === 'home' ? '' : (state.view === 'actus' ? 'Actualités' : (p ? p.label : ''));
+    var title = '';
+    if (state.view === 'home') title = '';
+    else if (state.view === 'actus') title = 'Actualités';
+    else if (state.view === 'indicateurs') title = 'Indicateurs marché';
+    else title = p ? p.label : '';
+    $('topbar-title').textContent = title;
     renderTopbarMeta();
   }
 
@@ -2044,12 +2119,17 @@
     html += '</div></div>';
 
     /* Onglets */
-    var TABS = [
-      { id: 'tableau',          icon: 'ti-table',      label: 'Tableau' },
-      { id: 'differenciateurs', icon: 'ti-star',       label: 'Différenciateurs' }
-    ];
-    TABS.push({ id: 'promos', icon: 'ti-tag', label: 'Promos' });
-    TABS.push({ id: 'actualites', icon: 'ti-news', label: 'Actualités' });
+    var TABS;
+    if (isBenchmarkProduct(p.id)) {
+      TABS = [{ id: 'tableau', icon: 'ti-table', label: 'Tableau' }];
+    } else {
+      TABS = [
+        { id: 'tableau',          icon: 'ti-table',      label: 'Tableau' },
+        { id: 'differenciateurs', icon: 'ti-star',       label: 'Différenciateurs' }
+      ];
+      TABS.push({ id: 'promos', icon: 'ti-tag', label: 'Promos' });
+      TABS.push({ id: 'actualites', icon: 'ti-news', label: 'Actualités' });
+    }
 
     if (TABS.map(function (t) { return t.id; }).indexOf(state.tab) < 0) state.tab = 'tableau';
 
@@ -2078,6 +2158,7 @@
   function renderTableau (p) {
     var html = '';
     var actors = p.acteurs;
+    var showFiche = productHasActorFiche(p.id);
 
     /* Cards acteurs compactes */
     html += '<div class="actors-grid">';
@@ -2086,8 +2167,11 @@
       var domain  = DOMAINS[actor] || '';
       var siteUrl = domain ? 'https://www.' + domain : '#';
       var prodUrl = (PROD_URLS[p.id] && PROD_URLS[p.id][actor]) || siteUrl;
+      var cardClick = showFiche
+        ? ' onclick="openActorFiche(\'' + esc(p.id) + '\',\'' + esc(actor) + '\')"'
+        : '';
 
-      html += '<div class="actor-card stagger-item' + (isUs ? ' is-us' : '') + '" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms" onclick="openActorFiche(\'' + esc(p.id) + '\',\'' + esc(actor) + '\')">';
+      html += '<div class="actor-card stagger-item' + (isUs ? ' is-us' : '') + '" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms"' + cardClick + '>';
       html += '<div class="ac-top">';
       html += faviconImg(actor, 34);
       html += '<div style="min-width:0">';
@@ -2102,7 +2186,9 @@
       html += '<a href="' + esc(prodUrl) + '" target="_blank" rel="noopener" class="ac-link" onclick="event.stopPropagation()"><i class="ti ti-external-link"></i>Produit</a>';
       html += '</div>';
 
-      html += '<div class="ac-voir"><i class="ti ti-eye" style="font-size:11px"></i>Voir la fiche</div>';
+      if (showFiche) {
+        html += '<div class="ac-voir"><i class="ti ti-eye" style="font-size:11px"></i>Voir la fiche</div>';
+      }
       html += '</div>';
     });
     html += '</div>';
@@ -2667,6 +2753,55 @@
       state.actuFiltersProd[scope][field] = val;
     }
     render();
+  }
+
+  function setIndicateurCategorie (cat) {
+    state.indicateurCategorie = cat;
+    render();
+  }
+
+  function renderIndicateurs () {
+    var cat = state.indicateurCategorie || 'all';
+    var html = '';
+
+    html += '<div class="section-hd"><i class="ti ti-chart-line"></i> Indicateurs marché</div>';
+
+    html += '<div class="actu-filter-bar">';
+    html += '<span class="actu-filter-label">Catégorie</span>';
+    html += '<div class="indic-filter-group">';
+    html += '<button type="button" class="indic-filter-btn' + (cat === 'all' ? ' if-active' : '') + '" onclick="setIndicateurCategorie(\'all\')">Toutes</button>';
+    INDICATEUR_CATEGORIES.forEach(function (c) {
+      html += '<button type="button" class="indic-filter-btn' + (cat === c ? ' if-active' : '') + '" onclick="setIndicateurCategorie(\'' + esc(c).replace(/'/g, "\\'") + '\')">' + esc(c) + '</button>';
+    });
+    html += '</div></div>';
+
+    var rows = (DATA.indicateurs || []).filter(function (row) {
+      return cat === 'all' || row.categorie === cat;
+    });
+
+    if (!rows.length) {
+      html += '<div class="empty-state"><i class="ti ti-chart-off"></i>';
+      html += '<div>Aucun indicateur disponible</div>';
+      html += '<div class="text-sm mt-3">Les données seront affichées après import.</div></div>';
+      return html;
+    }
+
+    html += '<div class="tbl-wrap"><table>';
+    html += '<thead><tr>';
+    html += '<th>Catégorie</th><th>Indicateur</th><th>Période</th><th>Valeur</th><th>Évolution</th><th>Note</th>';
+    html += '</tr></thead><tbody>';
+    rows.forEach(function (row) {
+      html += '<tr>';
+      html += '<td>' + esc(row.categorie || '—') + '</td>';
+      html += '<td>' + esc(row.libelle || '—') + '</td>';
+      html += '<td>' + esc(row.periode || '—') + '</td>';
+      html += '<td>' + renderCell(row.valeur) + '</td>';
+      html += '<td>' + renderCell(row.evolution) + '</td>';
+      html += '<td>' + esc(row.note || '—') + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    return html;
   }
 
 
@@ -3512,6 +3647,8 @@ cb.checked = on;
         state.view = 'home'; state.productId = null;
       } else if (id === 'actus') {
         state.view = 'actus'; state.productId = null;
+      } else if (id === 'indicateurs') {
+        state.view = 'indicateurs'; state.productId = null;
       } else {
         state.view = 'product'; state.productId = id; state.tab = 'tableau';
       }
@@ -3543,14 +3680,17 @@ cb.checked = on;
   ────────────────────────────────────────── */
   function render () {
     renderNav();
-    var vh = $('view-home'), vp = $('view-product'), va = $('view-actus');
-    vh.classList.remove('active'); vp.classList.remove('active'); va.classList.remove('active');
+    var vh = $('view-home'), vp = $('view-product'), va = $('view-actus'), vi = $('view-indicateurs');
+    vh.classList.remove('active'); vp.classList.remove('active'); va.classList.remove('active'); vi.classList.remove('active');
     if (state.view === 'home') {
       vh.classList.add('active');
       renderHome();
     } else if (state.view === 'actus') {
       va.classList.add('active');
       va.innerHTML = renderActusGlobal();
+    } else if (state.view === 'indicateurs') {
+      vi.classList.add('active');
+      vi.innerHTML = renderIndicateurs();
     } else {
       vp.classList.add('active');
       renderProduct();
@@ -4602,6 +4742,7 @@ cb.checked = on;
   window.openExportModal  = openExportModal;
   window.openGeneralExportModal = openGeneralExportModal;
   window.setActuFilter    = setActuFilter;
+  window.setIndicateurCategorie = setIndicateurCategorie;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
 
