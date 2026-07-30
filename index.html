@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="js/supabase-data.js"></script>
@@ -497,19 +496,6 @@
     }
     .fiche-promo-rate { font-size: 28px; font-weight: 700; color: var(--tq-ink); line-height: 1; }
     .fiche-promo-detail { font-size: 12px; color: var(--muted); }
-    .fiche-taux {
-      background: rgba(79,216,216,0.06); border: 1px solid rgba(79,216,216,0.25);
-      border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 18px;
-    }
-    .fiche-taux-title {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.5px; color: var(--tq-ink); margin-bottom: 10px;
-    }
-    .fiche-taux-range {
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px;
-    }
-    .fiche-taux-na { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 
     /* ── TABLEAU : texte peut revenir à la ligne ── */
     .tbl-wrap td { white-space: normal; min-width: 90px; }
@@ -894,96 +880,6 @@
     .text-sm { font-size: 12px; }
     .fw-6 { font-weight: 600; }
     .bg-note { background: var(--bg); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--muted); }
-
-    /* ── TAUX DASHBOARD ───────────────────────── */
-    .usure-strip {
-      display: flex; gap: 12px; margin-bottom: 20px;
-      position: sticky; top: 54px; z-index: 50;
-    }
-    .usure-kpi {
-      flex: 1; background: var(--surface);
-      border: 1.5px solid var(--border); border-radius: var(--r);
-      padding: 18px 22px; box-shadow: var(--sh);
-      cursor: pointer; transition: border-color 200ms, background 200ms;
-    }
-    .usure-kpi:hover { border-color: #ef4444; background: #fff9f9; }
-    .usure-kpi.u-active { border-color: #ef4444; background: #fef2f2; }
-    .usure-kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 4px; }
-    .usure-kpi-rate { font-size: 28px; font-weight: 700; color: #ef4444; line-height: 1; }
-    .usure-kpi-sub { font-size: 11px; color: var(--muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
-    .usure-kpi-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: #fee2e2; color: #dc2626; }
-
-    .taux-filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .taux-filter-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); flex-shrink: 0; }
-    .taux-filter-group { display: flex; gap: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-    .taux-filter-btn {
-      padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 500;
-      cursor: pointer; color: var(--muted); border: none; background: transparent;
-      font-family: inherit; transition: all 150ms; white-space: nowrap;
-    }
-    .taux-filter-btn:hover { color: var(--text); }
-    .taux-filter-btn.tf-active { background: var(--surface); color: var(--text); box-shadow: var(--sh); }
-
-    .taux-grid { display: grid; grid-template-columns: 1fr 310px; gap: 16px; margin-bottom: 20px; }
-    .taux-chart-card, .taux-sim-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 26px; box-shadow: var(--sh);
-    }
-    .taux-card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-    .taux-card-title i { color: var(--tq-ink); font-size: 16px; }
-    .chart-wrap { position: relative; height: 360px; }
-
-    .sim-slider { width: 100%; accent-color: var(--tq); cursor: pointer; }
-    .sim-amount { font-size: 22px; font-weight: 700; color: var(--tq-ink); }
-    .sim-duree-row { display: flex; gap: 3px; }
-    .sim-duree-btn {
-      flex: 1; padding: 5px 4px; border-radius: 6px; font-size: 11px; font-weight: 600;
-      cursor: pointer; color: var(--muted); border: 1px solid var(--border); background: transparent;
-      font-family: inherit; text-align: center; transition: all 150ms;
-    }
-    .sim-duree-btn.sd-active { background: var(--tq); color: var(--navy); border-color: var(--tq); }
-    .sim-results { display: flex; flex-direction: column; gap: 5px; max-height: 230px; overflow-y: auto; margin-top: 10px; }
-    .sim-row {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 10px; border-radius: 7px; background: var(--bg);
-    }
-    .sim-row.sr-us { background: rgba(79,216,216,0.07); border: 1px solid rgba(79,216,216,0.2); }
-    .sim-row-name { flex: 1; font-size: 12px; font-weight: 500; }
-    .sim-row-mensualite { font-size: 13px; font-weight: 700; white-space: nowrap; }
-
-    .rate-val { padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; white-space: nowrap; display: inline-block; }
-    .r-green  { background: #dcfce7; color: #16a34a; }
-    .r-orange { background: rgba(245,158,11,0.14); color: #b45309; }
-    .r-red    { background: #fee2e2; color: #dc2626; }
-    .r-nil    { color: var(--border); }
-    .r-na     { background: #f3f4f6; color: var(--muted); font-size: 10px; }
-
-    .var-badge { display: inline-flex; align-items: center; gap: 2px; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; vertical-align: middle; }
-    .vb-up     { background: #fee2e2; color: #dc2626; }
-    .vb-down   { background: #dcfce7; color: #16a34a; }
-    .vb-stable { background: #f3f4f6; color: var(--muted); }
-
-    .upct-wrap { display: flex; align-items: center; gap: 6px; min-width: 80px; }
-    .upct-bar  { height: 5px; flex: 1; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .upct-fill { height: 100%; border-radius: 3px; transition: width 400ms ease; }
-    .upct-lbl  { font-size: 10px; font-weight: 700; white-space: nowrap; }
-    .upct-green  { color: #16a34a; }
-    .upct-orange { color: #b45309; }
-    .upct-red    { color: #dc2626; }
-
-    .us-row > td { background: rgba(79,216,216,0.03) !important; }
-    .us-row > td:first-child { border-left: 3px solid var(--tq) !important; }
-    .grp-sep > td {
-      background: #f8fafc; color: var(--muted); font-size: 10px;
-      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 6px 16px; border-top: 2px solid var(--border);
-    }
-    .grp-sep > td:first-child { border-left: none !important; border-right: 1px solid var(--border); }
-
-    @media (max-width: 960px) {
-      .taux-grid { grid-template-columns: 1fr; }
-      .usure-strip { position: static; flex-wrap: wrap; }
-    }
 
     /* ── ACTUALITÉS ───────────────────────────── */
     .actu-filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -1650,16 +1546,9 @@
     productId: null,
     tab: 'tableau',
     compareActors: {},
-    tauxBracket: 'b1',
-    tauxCat: 'all',
-    simMontant: 3000,
-    simDuree: 36,
     actuFiltersGlobal: { produit: 'all', acteur: 'all', type: 'all', periode: 'all' },
     actuFiltersProd: {}
   };
-
-  var tauxSort       = { col: 'b1', dir: -1 };
-  var _tauxChartInst = null;
 
   /* ──────────────────────────────────────────
      LOCALSTORAGE
@@ -2159,7 +2048,6 @@
       { id: 'tableau',          icon: 'ti-table',      label: 'Tableau' },
       { id: 'differenciateurs', icon: 'ti-star',       label: 'Différenciateurs' }
     ];
-    if (p.id === 'pb' || p.id === 'cr' || p.id === 'rac') TABS.push({ id: 'taux', icon: 'ti-chart-bar', label: 'Taux' });
     TABS.push({ id: 'promos', icon: 'ti-tag', label: 'Promos' });
     TABS.push({ id: 'actualites', icon: 'ti-news', label: 'Actualités' });
 
@@ -2178,7 +2066,6 @@
     if      (state.tab === 'tableau')          html += renderTableau(p);
     else if (state.tab === 'differenciateurs') html += renderDifferenciateurs(p);
     else if (state.tab === 'promos')           html += renderPromos(p);
-    else if (state.tab === 'taux')             html += renderTaux(p);
     else if (state.tab === 'actualites')       html += renderActusProduct(p);
     html += '</div>';
 
@@ -2782,382 +2669,6 @@
     render();
   }
 
-  /* ──────────────────────────────────────────
-     RENDER — TAUX (CR uniquement)
-  ────────────────────────────────────────── */
-  function getRepRate (actor, bk) {
-    if (!bk) return null;
-    for (var i = 0; i < actor.rows.length; i++) {
-      var v = actor.rows[i][bk];
-      if (v !== null && v !== undefined) return v;
-    }
-    return null;
-  }
-
-  function rateColorCls (rate, usure) {
-    if (rate === null || rate === undefined || !usure) return 'r-nil';
-    var p = rate / usure;
-    if (p >= 0.93) return 'r-red';
-    if (p >= 0.78) return 'r-orange';
-    return 'r-green';
-  }
-
-  function renderRateCell (rate, variation, usure) {
-    var h = '<td style="white-space:nowrap">';
-    if (rate === null || rate === undefined) {
-      h += '<span class="cv-dash">—</span>';
-    } else {
-      h += '<span class="rate-val ' + rateColorCls(rate, usure) + '">' + (rate * 100).toFixed(2) + ' %</span>';
-      if (variation !== null && variation !== undefined) {
-        if (variation > 0.00001)       h += '&nbsp;<span class="var-badge vb-up">↑ +' + (variation * 100).toFixed(2) + ' pts</span>';
-        else if (variation < -0.00001) h += '&nbsp;<span class="var-badge vb-down">↓ ' + (variation * 100).toFixed(2) + ' pts</span>';
-        else                           h += '&nbsp;<span class="var-badge vb-stable">=</span>';
-      }
-    }
-    return h + '</td>';
-  }
-
-  function renderUpctCell (rate, usure) {
-    var h = '<td>';
-    if (rate === null || rate === undefined || !usure) {
-      h += '<span class="cv-dash">—</span>';
-    } else {
-      var pct  = Math.min(1, rate / usure);
-      var pctD = (pct * 100).toFixed(0);
-      var fill = pct >= 0.93 ? '#ef4444' : (pct >= 0.78 ? '#f59e0b' : '#22c55e');
-      var lCls = pct >= 0.93 ? 'upct-red' : (pct >= 0.78 ? 'upct-orange' : 'upct-green');
-      h += '<div class="upct-wrap">';
-      h += '<div class="upct-bar"><div class="upct-fill" style="width:' + (pct * 100).toFixed(1) + '%;background:' + fill + '"></div></div>';
-      h += '<span class="upct-lbl ' + lCls + '">' + pctD + ' %</span>';
-      h += '</div>';
-    }
-    return h + '</td>';
-  }
-
-  function renderSimRows (actors, bk, usureArr, montant, duree) {
-    var usureMap = {};
-    usureArr.forEach(function (u) { usureMap[u.id] = u.taux; });
-    var actualBk = bk;
-    if (montant <= 3000) actualBk = 'b1';
-    else if (montant <= 6000) actualBk = 'b2';
-    else actualBk = 'b3';
-    var usure = usureMap[actualBk];
-    var results = [];
-    actors.forEach(function (actor) {
-      var rate = getRepRate(actor, actualBk);
-      if (rate === null) return;
-      var r = rate / 12;
-      var mens = r < 0.0001 ? montant / duree : montant * r / (1 - Math.pow(1 + r, -duree));
-      results.push({ nom: actor.nom, rate: rate, mens: mens, isUs: actor.isUs });
-    });
-    results.sort(function (a, b) { return a.mens - b.mens; });
-    if (!results.length) return '<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Aucun taux disponible pour cette tranche.</div>';
-    return results.map(function (r) {
-      var cls = rateColorCls(r.rate, usure);
-      return '<div class="sim-row' + (r.isUs ? ' sr-us' : '') + '">' +
-        '<div class="sim-row-name">' + (r.isUs ? '<strong>' : '') + esc(r.nom) + (r.isUs ? '</strong>' : '') + '</div>' +
-        '<span class="rate-val ' + cls + '" style="font-size:10px">' + (r.rate * 100).toFixed(2) + '%</span>' +
-        '<div class="sim-row-mensualite">' + r.mens.toFixed(2) + ' €/m</div>' +
-        '</div>';
-    }).join('');
-  }
-
-  function renderTaux (p) {
-    var d = DATA.taux && DATA.taux[p.id];
-    if (!d) return '<div class="empty-state"><i class="ti ti-chart-off"></i><div>Aucune donnée de taux disponible pour ' + esc(p.label) + ' pour le moment.</div></div>';
-
-    var bk  = state.tauxBracket || 'b1';
-    var cat = state.tauxCat     || 'all';
-    var usureMap = {};
-    d.usure.forEach(function (u) { usureMap[u.id] = u; });
-    var selUsure = usureMap[bk];
-
-    var actors = d.actors.filter(function (a) { return cat === 'all' || a.cat === cat; });
-
-    var html = '';
-
-    /* ── Bande taux d'usure ─ */
-    html += '<div class="usure-strip">';
-    d.usure.forEach(function (u) {
-      var isActive = bk === u.id;
-      html += '<div class="usure-kpi' + (isActive ? ' u-active' : '') + '" onclick="switchTauxBracket(\'' + u.id + '\')">';
-      html += '<div class="usure-kpi-label">Taux d\'usure &nbsp;·&nbsp; ' + esc(u.label) + '</div>';
-      html += '<div class="usure-kpi-rate">' + (u.taux * 100).toFixed(2) + ' %</div>';
-      html += '<div class="usure-kpi-sub"><span class="usure-kpi-badge">Plafond légal</span>Mai 2026' + (isActive ? ' &nbsp;·&nbsp; <strong>Sélectionné</strong>' : '') + '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-
-    /* ── Barre de filtres ─ */
-    html += '<div class="taux-filter-bar">';
-    html += '<span class="taux-filter-label">Tranche</span>';
-    html += '<div class="taux-filter-group">';
-    [['b1','0 – 3 000 €'], ['b2','3 000 – 6 000 €'], ['b3','6 000 € +']].forEach(function (br) {
-      html += '<button class="taux-filter-btn' + (bk === br[0] ? ' tf-active' : '') + '" onclick="switchTauxBracket(\'' + br[0] + '\')">' + br[1] + '</button>';
-    });
-    html += '</div>';
-    html += '<span class="taux-filter-label" style="margin-left:8px">Type</span>';
-    html += '<div class="taux-filter-group">';
-    [['all','Tous'], ['bancaire','Bancaires'], ['financiere','Financières']].forEach(function (c) {
-      html += '<button class="taux-filter-btn' + (cat === c[0] ? ' tf-active' : '') + '" onclick="switchTauxCat(\'' + c[0] + '\')">' + c[1] + '</button>';
-    });
-    html += '</div>';
-    html += '<div style="margin-left:auto">';
-    html += '<button class="btn btn-secondary btn-sm" onclick="exportTauxXlsx()"><i class="ti ti-download"></i> Export Excel</button>';
-    html += '</div>';
-    html += '</div>';
-
-    /* ── Grille 2 colonnes : graphique + simulateur ─ */
-    html += '<div class="taux-grid">';
-
-    /* Graphique */
-    html += '<div class="taux-chart-card">';
-    html += '<div class="taux-card-title"><i class="ti ti-chart-bar"></i>Benchmark taux — ' + esc(selUsure ? selUsure.label : '') + '</div>';
-    if (selUsure) {
-      html += '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#22c55e;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Marge confortable (&lt;78 % usure)</span></div>';
-      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Vigilance (78-93 %)</span></div>';
-      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Proche plafond (&gt;93 %)</span></div>';
-      html += '<div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#4FD8D8;border-radius:3px"></span><span style="font-size:11px;color:var(--muted)">Sofinco</span></div>';
-      html += '</div>';
-    }
-    html += '<div class="chart-wrap"><canvas id="taux-bar-chart"></canvas></div>';
-    html += '</div>';
-
-    /* Simulateur */
-    var simM = state.simMontant || 3000;
-    var simD = state.simDuree   || 36;
-    html += '<div class="taux-sim-card">';
-    html += '<div class="taux-card-title"><i class="ti ti-calculator"></i>Simulateur mensualité</div>';
-    html += '<div style="margin-bottom:10px">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
-    html += '<span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Montant</span>';
-    html += '<span class="sim-amount" id="sim-montant-lbl">' + simM.toLocaleString('fr-FR') + ' €</span>';
-    html += '</div>';
-    html += '<input type="range" class="sim-slider" id="sim-montant" min="500" max="10000" step="100" value="' + simM + '" oninput="simUpdate()">';
-    html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>500 €</span><span>|&nbsp;3 000 €&nbsp;|</span><span>6 000 €</span><span>10 000 €</span></div>';
-    html += '</div>';
-    html += '<div style="margin-bottom:12px">';
-    html += '<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Durée</div>';
-    html += '<div class="sim-duree-row">';
-    [12, 24, 36, 48, 60].forEach(function (n) {
-      html += '<button class="sim-duree-btn' + (simD === n ? ' sd-active' : '') + '" onclick="switchSimDuree(' + n + ')">' + n + 'm</button>';
-    });
-    html += '</div>';
-    html += '</div>';
-    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px">Mensualités estimées</div>';
-    html += '<div class="sim-results" id="sim-results">';
-    html += renderSimRows(actors, bk, d.usure, simM, simD);
-    html += '</div>';
-    html += '<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.4">Calcul indicatif par amortissement constant. Hors assurance et frais annexes.</div>';
-    html += '</div>';
-
-    html += '</div>'; /* fin taux-grid */
-
-    /* ── Tableau détaillé ─ */
-    html += '<div class="section-hd" style="margin-bottom:12px"><i class="ti ti-table"></i>Détail par établissement &nbsp;<span style="font-size:11px;font-weight:400;color:var(--muted)">— cliquer sur un en-tête pour trier</span></div>';
-
-    var usB1 = usureMap.b1 ? usureMap.b1.taux : null;
-    var usB2 = usureMap.b2 ? usureMap.b2.taux : null;
-    var usB3 = usureMap.b3 ? usureMap.b3.taux : null;
-
-    /* Tri acteurs — catégories toujours regroupées, tri secondaire par colonne */
-    var sorted = actors.slice().sort(function (a, b) {
-      /* 1. Bancaires avant sociétés financières */
-      if (a.cat !== b.cat) return a.cat === 'bancaire' ? -1 : 1;
-      /* 2. Sofinco toujours en bas de son groupe */
-      if (a.isUs !== b.isUs) return a.isUs ? 1 : -1;
-      /* 3. Tri selon la colonne choisie */
-      if (tauxSort.col === 'nom') return tauxSort.dir * a.nom.localeCompare(b.nom, 'fr');
-      var ra = getRepRate(a, tauxSort.col);
-      var rb = getRepRate(b, tauxSort.col);
-      var va = ra !== null ? ra : (tauxSort.dir > 0 ? 999 : -1);
-      var vb = rb !== null ? rb : (tauxSort.dir > 0 ? 999 : -1);
-      return tauxSort.dir * (va - vb);
-    });
-
-    function thSort (col, lbl) {
-      var arr = tauxSort.col === col ? (tauxSort.dir > 0 ? ' ↑' : ' ↓') : '';
-      return '<th style="cursor:pointer;white-space:nowrap" onclick="sortTaux(\'' + col + '\')">' + lbl + '<span style="color:var(--tq-ink);font-size:10px">' + arr + '</span></th>';
-    }
-
-    html += '<div class="tbl-wrap"><table>';
-    html += '<thead><tr>';
-    html += thSort('nom', 'Établissement');
-    html += '<th>Produit</th><th>Sous-tranche</th>';
-    html += thSort('b1', '0 – 3 000 €');
-    html += '<th style="white-space:nowrap">% plafond</th>';
-    html += thSort('b2', '3 000 – 6 000 €');
-    html += '<th style="white-space:nowrap">% plafond</th>';
-    html += thSort('b3', '&gt; 6 000 €');
-    html += '<th style="white-space:nowrap">% plafond</th>';
-    html += '<th>Note</th>';
-    html += '</tr></thead><tbody>';
-
-    var prevCat = null;
-    sorted.forEach(function (actor) {
-      if (actor.cat !== prevCat) {
-        prevCat = actor.cat;
-        var lbl = actor.cat === 'bancaire' ? 'Établissements bancaires' : 'Sociétés financières';
-        html += '<tr class="grp-sep"><td colspan="10">' + lbl + '</td></tr>';
-      }
-      var isUs = actor.isUs;
-      var rc   = actor.rows.length;
-      actor.rows.forEach(function (row, ri) {
-        html += '<tr' + (isUs ? ' class="us-row"' : '') + '>';
-        if (ri === 0) {
-          html += '<td rowspan="' + rc + '" style="font-weight:600;vertical-align:middle">';
-          html += esc(actor.nom);
-          if (isUs) html += '&nbsp;<span class="badge b-tq" style="font-size:9px">Nous</span>';
-          html += '</td>';
-          html += '<td rowspan="' + rc + '" style="font-size:12px;color:var(--muted);vertical-align:middle">' + esc(actor.produit) + '</td>';
-        }
-        html += '<td style="font-size:12px;color:var(--muted)">' + esc(row.tranche || '—') + '</td>';
-        html += renderRateCell(row.b1, row.b1v, usB1);
-        html += renderUpctCell(row.b1, usB1);
-        html += renderRateCell(row.b2, row.b2v, usB2);
-        html += renderUpctCell(row.b2, usB2);
-        html += renderRateCell(row.b3, row.b3v, usB3);
-        html += renderUpctCell(row.b3, usB3);
-        if (ri === 0) {
-          html += '<td rowspan="' + rc + '" style="font-size:11px;color:var(--muted);vertical-align:middle;max-width:180px;white-space:normal">' + esc(actor.comment || '') + '</td>';
-        }
-        html += '</tr>';
-      });
-    });
-
-    html += '</tbody></table></div>';
-    html += '<div class="bg-note mt-3">Source : Observatoire de la concurrence (Banque de France) — taux standards mai 2026. Taux d\'usure : plafond légal au-delà duquel tout prêt est interdit. NA = non applicable.</div>';
-
-    setTimeout(function () { initTauxChart(actors, bk, d.usure); }, 0);
-    return html;
-  }
-
-  /* ──────────────────────────────────────────
-     CHART TAUX (Chart.js)
-  ────────────────────────────────────────── */
-  function initTauxChart (actors, bk, usureArr) {
-    var canvas = document.getElementById('taux-bar-chart');
-    if (!canvas || typeof Chart === 'undefined') return;
-    if (_tauxChartInst) { _tauxChartInst.destroy(); _tauxChartInst = null; }
-
-    var usureMap = {};
-    usureArr.forEach(function (u) { usureMap[u.id] = u.taux; });
-    var usureTaux = usureMap[bk];
-
-    /* Un point par acteur (taux représentatif) */
-    var points = [];
-    actors.forEach(function (actor) {
-      var rate = getRepRate(actor, bk);
-      if (rate !== null) {
-        points.push({ nom: actor.nom + (actor.rows.length > 1 ? ' *' : ''), rate: rate, isUs: actor.isUs });
-      }
-    });
-    points.sort(function (a, b) { return b.rate - a.rate; });
-
-    var labels = points.map(function (d) { return d.nom; });
-    var rates  = points.map(function (d) { return +(d.rate * 100).toFixed(2); });
-    var bgColors = points.map(function (d) {
-      if (d.isUs) return 'rgba(14,140,151,0.82)';
-      if (!usureTaux) return 'rgba(107,114,128,0.65)';
-      var p = d.rate / usureTaux;
-      return p >= 0.93 ? 'rgba(239,68,68,0.75)' : p >= 0.78 ? 'rgba(245,158,11,0.75)' : 'rgba(34,197,94,0.75)';
-    });
-
-    var xMax = usureTaux ? Math.ceil(usureTaux * 100 * 1.06 * 2) / 2 : 26;
-
-    /* Plugin inline pour tracer la ligne d'usure */
-    var usureLinePlugin = {
-      id: 'usureLine',
-      afterDraw: function (chart) {
-        if (!usureTaux) return;
-        var xAxis = chart.scales.x;
-        var yAxis = chart.scales.y;
-        var ctx   = chart.ctx;
-        var xPos  = xAxis.getPixelForValue(usureTaux * 100);
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(xPos, yAxis.top);
-        ctx.lineTo(xPos, yAxis.bottom);
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth   = 2;
-        ctx.setLineDash([6, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle  = '#ef4444';
-        ctx.font       = 'bold 10px Inter, sans-serif';
-        ctx.textAlign  = 'left';
-        ctx.fillText('Plafond ' + (usureTaux * 100).toFixed(2) + '%', xPos + 4, yAxis.top + 14);
-        ctx.restore();
-      }
-    };
-
-    _tauxChartInst = new Chart(canvas, {
-      type: 'bar',
-      data: { labels: labels, datasets: [{ label: 'Taux mai 2026', data: rates, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false }] },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function (ctx) { return ' ' + ctx.raw + ' %'; },
-              afterLabel: function (ctx) {
-                if (!usureTaux) return '';
-                return ' (' + (ctx.raw / (usureTaux * 100) * 100).toFixed(0) + ' % du plafond)';
-              }
-            }
-          }
-        },
-        scales: {
-          x: { min: 0, max: xMax,
-               ticks: { callback: function (v) { return v + '%'; }, font: { size: 11 } },
-               grid: { color: 'rgba(0,0,0,0.05)' } },
-          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
-        }
-      },
-      plugins: [usureLinePlugin]
-    });
-  }
-
-  /* ──────────────────────────────────────────
-     TAUX — CONTRÔLES INTERACTIFS
-  ────────────────────────────────────────── */
-  function switchTauxBracket (bk) {
-    state.tauxBracket = bk;
-    renderProduct();
-  }
-
-  function switchTauxCat (cat) {
-    state.tauxCat = cat;
-    renderProduct();
-  }
-
-  function sortTaux (col) {
-    tauxSort.dir = tauxSort.col === col ? -tauxSort.dir : (col === 'nom' ? 1 : -1);
-    tauxSort.col = col;
-    renderProduct();
-  }
-
-  function simUpdate () {
-    var slider = document.getElementById('sim-montant');
-    if (!slider) return;
-    state.simMontant = parseInt(slider.value, 10);
-    var lbl = document.getElementById('sim-montant-lbl');
-    if (lbl) lbl.textContent = state.simMontant.toLocaleString('fr-FR') + ' €';
-    var d = DATA.taux && DATA.taux.cr;
-    if (!d) return;
-    var actors = d.actors.filter(function (a) { return state.tauxCat === 'all' || a.cat === state.tauxCat; });
-    var res = document.getElementById('sim-results');
-    if (res) res.innerHTML = renderSimRows(actors, state.tauxBracket, d.usure, state.simMontant, state.simDuree || 36);
-  }
-
-  function switchSimDuree (n) {
-    state.simDuree = n;
-    renderProduct();
-  }
 
   /* ──────────────────────────────────────────
      EXPORT PRODUIT (Excel / Word)
@@ -3171,8 +2682,7 @@
     { id: 'comparaison', label: 'Comparaison' },
     { id: 'differenciateurs', label: 'Différenciateurs' },
     { id: 'promos', label: 'Promos' },
-    { id: 'actualites', label: 'Actualités' },
-    { id: 'taux', label: 'Taux', tauxOnly: true }
+    { id: 'actualites', label: 'Actualités' }
   ];
 
   var XS = {
@@ -3200,7 +2710,6 @@
       { id: 'tableau', label: 'Tableau' },
       { id: 'differenciateurs', label: 'Différenciateurs' }
     ];
-    if (productHasTauxTab(p.id)) tabs.push({ id: 'taux', label: 'Taux' });
     tabs.push({ id: 'promos', label: 'Promos' });
     tabs.push({ id: 'actualites', label: 'Actualités' });
     return tabs;
@@ -3212,16 +2721,6 @@
 
   function getProductActusExport (p) {
     return filterActus(actuList(), { produit: p.id, acteur: 'all', type: 'all', periode: 'all' });
-  }
-
-  function fmtRateExport (rate) {
-    if (rate === null || rate === undefined) return '—';
-    return (rate * 100).toFixed(2).replace('.', ',') + ' %';
-  }
-
-  function fmtUpctExport (rate, usure) {
-    if (rate === null || rate === undefined || !usure) return '—';
-    return Math.min(100, Math.round(rate / usure * 100)) + ' %';
   }
 
   function wsMaxRow (ws) {
@@ -3304,54 +2803,6 @@
     return rows;
   }
 
-  function buildTauxExportRows (p) {
-    var d = DATA.taux && DATA.taux[p.id];
-    if (!d || !d.actors || !d.actors.length) return [['Aucune donnée disponible']];
-
-    var usureMap = {};
-    (d.usure || []).forEach(function (u) { usureMap[u.id] = u.taux; });
-    var usB1 = usureMap.b1 || null;
-    var usB2 = usureMap.b2 || null;
-    var usB3 = usureMap.b3 || null;
-
-    var rows = [];
-    rows.push(['Benchmark taux — ' + p.label, '', '', '', 'Source : Observatoire de la concurrence', '', '', '', '', '']);
-    rows.push([]);
-    rows.push(['Établissement', 'Produit', 'Sous-tranche',
-      '0 – 3 000 €', '% plafond',
-      '3 000 – 6 000 €', '% plafond',
-      '> 6 000 €', '% plafond', 'Note']);
-
-    rows.push(['TAUX D\'USURE', 'Banque de France', '',
-      usB1 != null ? fmtRateExport(usB1) : '—', '100 %',
-      usB2 != null ? fmtRateExport(usB2) : '—', '100 %',
-      usB3 != null ? fmtRateExport(usB3) : '—', '100 %', '']);
-
-    var sorted = d.actors.slice().sort(function (a, b) {
-      if (a.cat !== b.cat) return a.cat === 'bancaire' ? -1 : 1;
-      if (a.isUs !== b.isUs) return a.isUs ? 1 : -1;
-      return a.nom.localeCompare(b.nom, 'fr');
-    });
-
-    sorted.forEach(function (actor) {
-      actor.rows.forEach(function (row, ri) {
-        rows.push([
-          ri === 0 ? actor.nom : '',
-          ri === 0 ? (actor.produit || '') : '',
-          row.tranche || '—',
-          fmtRateExport(row.b1),
-          fmtUpctExport(row.b1, usB1),
-          fmtRateExport(row.b2),
-          fmtUpctExport(row.b2, usB2),
-          fmtRateExport(row.b3),
-          fmtUpctExport(row.b3, usB3),
-          ri === 0 ? (actor.comment || '') : ''
-        ]);
-      });
-    });
-    return rows;
-  }
-
   function buildPromosExportRows (p) {
     var promos = DATA.promos[p.id] || [];
     if (!promos.length) return [['Aucune donnée disponible']];
@@ -3380,16 +2831,11 @@
     if (sectionId === 'tableau') return buildTableauExportRows(p);
     if (sectionId === 'comparaison') return buildComparaisonExportRows(p);
     if (sectionId === 'differenciateurs') return { rows: buildDiffExportRows(p), meta: null };
-    if (sectionId === 'taux') return { rows: buildTauxExportRows(p), meta: null };
     if (sectionId === 'promos') return { rows: buildPromosExportRows(p), meta: null };
     if (sectionId === 'actualites') return { rows: buildActusExportRows(p), meta: null };
     return { rows: [['Section inconnue']], meta: null };
   }
 
-  function sectionIsAvailableForProduct (sectionId, productId) {
-    if (sectionId === 'taux') return productHasTauxTab(productId);
-    return true;
-  }
 
   function buildActusExportRows (p) {
     var items = getProductActusExport(p);
@@ -3422,8 +2868,7 @@
     var sheetNames = {
       tableau: 'Tableau',
       differenciateurs: 'Différenciateurs',
-      taux: 'Taux',
-      promos: 'Promos',
+promos: 'Promos',
       actualites: 'Actualités'
     };
 
@@ -3434,8 +2879,6 @@
         ws = rowsToStyledSheet(tb.rows, tb.meta);
       } else if (tabId === 'differenciateurs') {
         ws = rowsToStyledSheet(buildDiffExportRows(p));
-      } else if (tabId === 'taux') {
-        ws = rowsToStyledSheet(buildTauxExportRows(p));
       } else if (tabId === 'promos') {
         ws = rowsToStyledSheet(buildPromosExportRows(p));
       } else if (tabId === 'actualites') {
@@ -3521,8 +2964,7 @@
     var headings = {
       tableau: 'Tableau',
       differenciateurs: 'Différenciateurs',
-      taux: 'Taux',
-      promos: 'Promos',
+promos: 'Promos',
       actualites: 'Actualités'
     };
 
@@ -3537,8 +2979,6 @@
         }));
       } else if (tabId === 'differenciateurs') {
         sections.push(wordTableFromRows(buildDiffExportRows(p)));
-      } else if (tabId === 'taux') {
-        sections.push(wordTableFromRows(buildTauxExportRows(p)));
       } else if (tabId === 'promos') {
         sections.push(wordTableFromRows(buildPromosExportRows(p)));
       } else if (tabId === 'actualites') {
@@ -3610,8 +3050,7 @@
     comparaison: 'Comparaison',
     differenciateurs: 'Différenciateurs',
     promos: 'Promos',
-    actualites: 'Actualités',
-    taux: 'Taux'
+    actualites: 'Actualités'
   };
 
   var EXPORT_SHEET_SHORT = {
@@ -3619,8 +3058,7 @@
     comparaison: 'Compar',
     differenciateurs: 'Diff',
     promos: 'Promos',
-    actualites: 'Actus',
-    taux: 'Taux'
+    actualites: 'Actus'
   };
 
   function generalExportFilename (ext) {
@@ -3681,18 +3119,6 @@
     return out;
   }
 
-  function selectedProductsIncludeTaux () {
-    return getSelectedGeneralExportProducts().some(function (id) { return productHasTauxTab(id); });
-  }
-
-  function syncGeneralExportTauxOption () {
-    var tauxItem = document.querySelector('#export-general-sections [data-section-taux="1"]');
-    if (!tauxItem) return;
-    var show = selectedProductsIncludeTaux();
-    tauxItem.style.display = show ? '' : 'none';
-    var tauxCb = tauxItem.querySelector('input[data-section="taux"]');
-    if (tauxCb && !show) tauxCb.checked = false;
-  }
 
   function updateGeneralExportConfirmBtn () {
     var btn = $('export-general-confirm');
@@ -3722,7 +3148,7 @@
     var secList = $('export-general-sections');
     var secHtml = '<label class="export-check-item"><input type="checkbox" id="export-general-all-sections" checked><span>Toutes les sections</span></label>';
     GENERAL_EXPORT_SECTIONS.forEach(function (s) {
-      secHtml += '<label class="export-check-item"' + (s.tauxOnly ? ' data-section-taux="1"' : '') + '>';
+      secHtml += '<label class="export-check-item"' + '>';
       secHtml += '<input type="checkbox" data-section="' + s.id + '" checked>';
       secHtml += '<span>' + esc(s.label) + '</span></label>';
     });
@@ -3732,7 +3158,6 @@
     allProdCb.addEventListener('change', function () {
       var on = allProdCb.checked;
       prodList.querySelectorAll('input[data-product]').forEach(function (cb) { cb.checked = on; });
-      syncGeneralExportTauxOption();
       updateGeneralExportConfirmBtn();
     });
     bindGeneralExportCheckboxes(prodList, function (e) {
@@ -3740,7 +3165,6 @@
       var boxes = prodList.querySelectorAll('input[data-product]');
       var allOn = Array.prototype.every.call(boxes, function (b) { return b.checked; });
       allProdCb.checked = allOn;
-      syncGeneralExportTauxOption();
       updateGeneralExportConfirmBtn();
     });
 
@@ -3748,17 +3172,14 @@
     allSecCb.addEventListener('change', function () {
       var on = allSecCb.checked;
       secList.querySelectorAll('input[data-section]').forEach(function (cb) {
-        if (cb.closest('.export-check-item').style.display === 'none') return;
-        cb.checked = on;
+cb.checked = on;
       });
       updateGeneralExportConfirmBtn();
     });
     bindGeneralExportCheckboxes(secList, function (e) {
       if (e.target.id === 'export-general-all-sections') return;
-      var boxes = Array.prototype.filter.call(secList.querySelectorAll('input[data-section]'), function (cb) {
-        return cb.closest('.export-check-item').style.display !== 'none';
-      });
-      var allOn = boxes.length && boxes.every(function (b) { return b.checked; });
+      var boxes = secList.querySelectorAll('input[data-section]');
+      var allOn = Array.prototype.every.call(boxes, function (b) { return b.checked; });
       allSecCb.checked = allOn;
       updateGeneralExportConfirmBtn();
     });
@@ -3772,7 +3193,6 @@
       };
     });
 
-    syncGeneralExportTauxOption();
     updateGeneralExportConfirmBtn();
   }
 
@@ -3803,7 +3223,6 @@
     var plan = [];
     productIds.forEach(function (pid) {
       sectionIds.forEach(function (sid) {
-        if (!sectionIsAvailableForProduct(sid, pid)) return;
         var p = productById(pid);
         if (p) plan.push({ product: p, sectionId: sid });
       });
@@ -3930,17 +3349,6 @@
     }
   }
 
-  /* ──────────────────────────────────────────
-     EXPORT EXCEL TAUX (onglet Taux CR — raccourci)
-  ────────────────────────────────────────── */
-  function exportTauxXlsx () {
-    var p = productById('cr');
-    if (!p || !DATA.taux || !DATA.taux.cr) return;
-    var wb = XLSX.utils.book_new();
-    var ws = rowsToStyledSheet(buildTauxExportRows(p));
-    XLSX.utils.book_append_sheet(wb, ws, 'Taux CR');
-    XLSX.writeFile(wb, 'benchmark-taux-cr-' + (DATA.taux.cr.updatedAt || today()) + '.xlsx');
-  }
 
   /* ──────────────────────────────────────────
      MODALE DÉTAIL LIGNE
@@ -4011,77 +3419,6 @@
     ]
   };
 
-  function productHasTauxTab (productId) {
-    return productId === 'pb' || productId === 'cr' || productId === 'rac';
-  }
-
-  function findTauxActor (productId, actorName) {
-    var d = DATA.taux && DATA.taux[productId];
-    if (!d || !d.actors) return null;
-    for (var i = 0; i < d.actors.length; i++) {
-      var a = d.actors[i];
-      if (a.nom === actorName) return a;
-      var first = a.nom.split(/\s*[\/]\s*/)[0].trim();
-      if (first === actorName || a.nom.indexOf(actorName) === 0) return a;
-    }
-    return null;
-  }
-
-  function getActorRateRange (tauxActor) {
-    var rates = [];
-    tauxActor.rows.forEach(function (row) {
-      ['b1', 'b2', 'b3'].forEach(function (bk) {
-        var v = row[bk];
-        if (v !== null && v !== undefined) rates.push(v);
-      });
-    });
-    if (!rates.length) return null;
-    return { min: Math.min.apply(null, rates), max: Math.max.apply(null, rates) };
-  }
-
-  function fmtPctRate (rate) {
-    return (rate * 100).toFixed(2).replace('.', ',') + ' %';
-  }
-
-  function renderFicheTauxBlock (productId, actor) {
-    if (!productHasTauxTab(productId)) {
-      return '<div class="fiche-taux-na">Taux non applicable pour ce produit</div>';
-    }
-    var tauxActor = findTauxActor(productId, actor);
-    var range = tauxActor ? getActorRateRange(tauxActor) : null;
-    if (!range) {
-      return '<div class="fiche-taux-na">Taux non applicable pour ce produit</div>';
-    }
-    var html = '<div class="fiche-taux">';
-    html += '<div class="fiche-taux-title">Fourchette de taux</div>';
-    html += '<div class="fiche-taux-range">';
-    if (range.min === range.max) {
-      html += '<span class="rate-val r-green">' + fmtPctRate(range.min) + '</span>';
-    } else {
-      html += 'À partir de <span class="rate-val r-green">' + fmtPctRate(range.min) + '</span>';
-      html += ' jusqu\'à <span class="rate-val r-orange">' + fmtPctRate(range.max) + '</span>';
-    }
-    html += '</div>';
-    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="goToTauxFromFiche(\'' + esc(productId) + '\')">';
-    html += '<i class="ti ti-chart-bar"></i> Voir le détail des taux</button>';
-    html += '</div>';
-    return html;
-  }
-
-  function goToTauxFromFiche (productId) {
-    $('modal-detail').classList.remove('show');
-    if (state.view === 'product' && state.productId === productId) {
-      switchTab('taux');
-      return;
-    }
-    fade(function () {
-      state.view = 'product';
-      state.productId = productId;
-      state.tab = 'taux';
-      render();
-    });
-  }
-
   function openActorFiche (productId, actor) {
     var p = productById(productId);
     if (!p) return;
@@ -4140,9 +3477,6 @@
       if (promo.dateFin) html += '<div><span class="badge b-date" style="font-size:10px"><i class="ti ti-calendar" style="font-size:10px"></i> Fin : ' + esc(promo.dateFin) + '</span></div>';
       html += '</div></div>';
     }
-
-    /* Fourchette de taux */
-    html += renderFicheTauxBlock(productId, actor);
 
     /* Sections de critères */
     var sections = FICHE_SECTIONS[productId] || [];
@@ -5265,13 +4599,6 @@
   window.toggleCompare     = toggleCompare;
   window.openDetail        = openDetail;
   window.openActorFiche    = openActorFiche;
-  window.goToTauxFromFiche = goToTauxFromFiche;
-  window.switchTauxBracket = switchTauxBracket;
-  window.switchTauxCat     = switchTauxCat;
-  window.sortTaux          = sortTaux;
-  window.simUpdate         = simUpdate;
-  window.switchSimDuree    = switchSimDuree;
-  window.exportTauxXlsx   = exportTauxXlsx;
   window.openExportModal  = openExportModal;
   window.openGeneralExportModal = openGeneralExportModal;
   window.setActuFilter    = setActuFilter;
