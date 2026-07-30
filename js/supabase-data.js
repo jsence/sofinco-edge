@@ -677,8 +677,6 @@
     return { map: map, results: results };
   }
 
-  var TAUX_PRODUIT_IDS = ['pb', 'cr', 'rac'];
-
   async function touchProduitUpdatedAt(sb, produitIds) {
     var seen = {};
     (produitIds || []).forEach(function (id) { if (id) seen[id] = true; });
@@ -691,30 +689,11 @@
     }
   }
 
-  async function fetchActeurTauxProduitIds(sb, acteurIds) {
-    var map = {};
-    if (!acteurIds.length) return map;
-    var { data, error } = await sb.from('acteurs_produits')
-      .select('acteur_id, produit_id')
-      .in('acteur_id', acteurIds)
-      .in('produit_id', TAUX_PRODUIT_IDS);
-    if (error) throw new Error('acteurs_produits: ' + error.message);
-    (data || []).forEach(function (row) {
-      if (!map[row.acteur_id]) map[row.acteur_id] = [];
-      if (map[row.acteur_id].indexOf(row.produit_id) < 0) map[row.acteur_id].push(row.produit_id);
-    });
-    return map;
-  }
-
   function resolveActeurId(entry, map) {
     if (entry.acteur_id) return entry.acteur_id;
     if (entry.acteur && map[entry.acteur]) return map[entry.acteur];
     if (entry.acteur) return toActorId(entry.acteur);
     return null;
-  }
-
-  function rowsJsonEqual(a, b) {
-    return JSON.stringify(a || []) === JSON.stringify(b || []);
   }
 
   function promoKey(produitId, acteurId) {
@@ -764,10 +743,9 @@
     return duplicates;
   }
 
-  async function publishContributionTauxPromosBulk(sb, payload, idByNom) {
+  async function publishContributionPromosBulk(sb, payload, idByNom) {
     var map = Object.assign({}, idByNom || {});
     var promos = payload.promos || [];
-    var taux = payload.taux || [];
     var replacePromoKeys = payload.replacePromoKeys || {};
     var results = [];
     var touchedProduits = {};
@@ -777,35 +755,10 @@
     promos.forEach(function (e) {
       if (e.acteur) actorNames.push(e.acteur);
     });
-    taux.forEach(function (e) {
-      if (e.acteur) actorNames.push(e.acteur);
-    });
     var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
     if (uniqueNames.length) {
       var merged = await ensureActors(sb, uniqueNames, {}, {});
       Object.assign(map, merged);
-    }
-
-    var tauxActeurIds = [];
-    taux.forEach(function (e) {
-      var aid = resolveActeurId(e, map);
-      if (aid && tauxActeurIds.indexOf(aid) < 0) tauxActeurIds.push(aid);
-    });
-    var tauxProduitIdsByActeur = await fetchActeurTauxProduitIds(sb, tauxActeurIds);
-
-    var existingTauxByKey = {};
-    if (taux.length) {
-      var tauxActeurIdList = taux.map(function (e) { return resolveActeurId(e, map); }).filter(Boolean);
-      var uniqueTauxActeurs = tauxActeurIdList.filter(function (id, i, a) { return a.indexOf(id) === i; });
-      if (uniqueTauxActeurs.length) {
-        var { data: existingTaux, error: tauxFetchErr } = await sb.from('taux_cr')
-          .select('*')
-          .in('acteur_id', uniqueTauxActeurs);
-        if (tauxFetchErr) throw new Error('taux_cr: ' + tauxFetchErr.message);
-        (existingTaux || []).forEach(function (row) {
-          existingTauxByKey[row.acteur_id + '\0' + row.produit_nom] = row;
-        });
-      }
     }
 
     for (var pi = 0; pi < promos.length; pi++) {
@@ -862,7 +815,7 @@
           type: 'Produit',
           produit_id: produitId,
           titre: titrePromo,
-          source: 'Import contributeur — Taux & Promos',
+          source: 'Import contributeur — Promos',
           impact: null
         });
         if (actuPromoErr) throw new Error('actualites: ' + actuPromoErr.message);
@@ -870,67 +823,6 @@
         results.push({ bulkIndex: bulkIndex, ok: true, kind: 'promo' });
       } catch (e) {
         results.push({ bulkIndex: bulkIndex, ok: false, kind: 'promo', error: e.message || String(e) });
-      }
-    }
-
-    for (var ti = 0; ti < taux.length; ti++) {
-      var tauxEntry = taux[ti];
-      var tBulkIndex = tauxEntry.bulkIndex;
-      try {
-        var tActeurId = resolveActeurId(tauxEntry, map);
-        var produitNom = String(tauxEntry.produit_nom || '').trim();
-        var categorie = String(tauxEntry.categorie || '').trim();
-        if (!tActeurId) throw new Error('acteur_id requis.');
-        if (!produitNom) throw new Error('produit_nom requis.');
-        if (categorie !== 'bancaire' && categorie !== 'financiere') {
-          throw new Error('categorie invalide (bancaire ou financiere).');
-        }
-        var rows = tauxEntry.rows;
-        if (!Array.isArray(rows)) throw new Error('rows doit être un tableau.');
-
-        var tKey = tActeurId + '\0' + produitNom;
-        var prev = existingTauxByKey[tKey];
-        var changed = !prev || !rowsJsonEqual(prev.rows, rows) ||
-          String(prev.commentaire || '') !== String(tauxEntry.commentaire || '') ||
-          prev.categorie !== categorie;
-
-        var tauxRow = {
-          acteur_id: tActeurId,
-          produit_nom: produitNom,
-          categorie: categorie,
-          rows: rows,
-          commentaire: tauxEntry.commentaire || null
-        };
-        var { error: upsertErr } = await sb.from('taux_cr')
-          .upsert(tauxRow, { onConflict: 'acteur_id,produit_nom' });
-        if (upsertErr) throw new Error('taux_cr: ' + upsertErr.message);
-
-        var produitIdsForTaux = tauxProduitIdsByActeur[tActeurId] || ['cr'];
-        produitIdsForTaux.forEach(function (pid) { touchedProduits[pid] = true; });
-
-        if (changed) {
-          var acteurLabel = tauxEntry.acteur || tActeurId;
-          for (var nk2 in map) { if (map[nk2] === tActeurId) { acteurLabel = nk2; break; } }
-          var titreTaux = prev
-            ? ('Changement de taux — ' + acteurLabel + ' / ' + produitNom)
-            : ('Nouveau taux — ' + acteurLabel + ' / ' + produitNom);
-          var produitIdForActu = produitIdsForTaux[0] || 'cr';
-          var { error: actuTauxErr } = await sb.from('actualites').insert({
-            date: importDate,
-            acteur_id: tActeurId,
-            type: 'Produit',
-            produit_id: produitIdForActu,
-            titre: titreTaux,
-            source: 'Import contributeur — Taux & Promos',
-            impact: null
-          });
-          if (actuTauxErr) throw new Error('actualites: ' + actuTauxErr.message);
-        }
-
-        existingTauxByKey[tKey] = Object.assign({}, tauxRow, { rows: rows });
-        results.push({ bulkIndex: tBulkIndex, ok: true, kind: 'taux' });
-      } catch (e) {
-        results.push({ bulkIndex: tBulkIndex, ok: false, kind: 'taux', error: e.message || String(e) });
       }
     }
 
@@ -952,6 +844,6 @@
     publishContributionEntriesBulk: publishContributionEntriesBulk,
     touchProduitUpdatedAt: touchProduitUpdatedAt,
     findExistingPromos: findExistingPromos,
-    publishContributionTauxPromosBulk: publishContributionTauxPromosBulk
+    publishContributionPromosBulk: publishContributionPromosBulk
   };
 })(window);

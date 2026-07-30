@@ -1310,7 +1310,7 @@
         <button type="button" class="contrib-manual-link" id="contrib-goto-manual"><i class="ti ti-plus"></i> Ajouter une entrée manuellement</button>
 
         <div class="section-hd"><i class="ti ti-file-import"></i> Import groupé</div>
-        <p class="text-muted text-sm" style="margin-bottom:16px">Collez ou téléversez un tableau JSON hétérogène — chaque entrée précise son type (<code>actualite</code>, <code>promo</code>, <code>taux</code>, <code>differenciateur</code>).</p>
+        <p class="text-muted text-sm" style="margin-bottom:16px">Collez ou téléversez un tableau JSON hétérogène — chaque entrée précise son type (<code>actualite</code>, <code>promo</code>, <code>differenciateur</code>).</p>
 
         <div class="contrib-json-drop" id="contrib-bulk-drop-zone">
           <div class="contrib-json-empty" id="contrib-bulk-json-empty">
@@ -4233,7 +4233,7 @@
   var contribBulkNextId = 1;
   var contribBulkReplacePromoKeys = {};
 
-  var BULK_ENTRY_TYPES = { actualite: true, promo: true, taux: true, differenciateur: true };
+  var BULK_ENTRY_TYPES = { actualite: true, promo: true, differenciateur: true };
 
   var CONTRIB_PRODUIT_MAP = {
     'prêt personnel': 'pb', 'pret personnel': 'pb', 'pp': 'pb', 'pb': 'pb',
@@ -4264,7 +4264,7 @@
     }).join('');
   }
 
-  var CONTRIB_BULK_PLACEHOLDER = '[{"type":"actualite","acteur":"Cofidis","produit":"pb","actualite_type":"Produit","titre":"...","resume":"...","source":"https://..."},\n {"type":"promo","produit_id":"cr","acteur_id":"cofidis","taux":"0%","duree":"12 mois","date_fin":"31/12/2026"},\n {"type":"taux","acteur_id":"cofidis","produit_nom":"Crédit renouvelable","categorie":"financiere","rows":[{"tranche":"","b1":0.15,"b2":0.12,"b3":0.09}]},\n {"type":"differenciateur","produit_id":"cr","acteur_id":"cofidis","difference":"...","pourquoi":"...","conclusion":"..."}]';
+  var CONTRIB_BULK_PLACEHOLDER = '[{"type":"actualite","acteur":"Cofidis","produit":"pb","actualite_type":"Produit","titre":"...","resume":"...","source":"https://..."},\n {"type":"promo","produit_id":"cr","acteur_id":"cofidis","taux":"0%","duree":"12 mois","date_fin":"31/12/2026"},\n {"type":"differenciateur","produit_id":"cr","acteur_id":"cofidis","difference":"...","pourquoi":"...","conclusion":"..."}]';
 
   function syncContribBulkPlaceholder () {
     var ta = $('contrib-bulk-json');
@@ -4572,30 +4572,6 @@
     };
   }
 
-  function normalizeBulkTauxFromJson (obj, lineNum) {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-      throw new Error('Ligne ' + lineNum + ' : objet JSON attendu.');
-    }
-    var rowsVal = obj.rows;
-    var rowsStr = '';
-    if (Array.isArray(rowsVal)) rowsStr = JSON.stringify(rowsVal);
-    else if (rowsVal != null) rowsStr = String(rowsVal);
-    return {
-      id: contribBulkNextId++,
-      entryType: 'taux',
-      selected: true,
-      publishError: '',
-      fields: {
-        acteur_id: String(obj.acteur_id || '').trim(),
-        acteur: String(obj.acteur || '').trim(),
-        produit_nom: String(obj.produit_nom || '').trim(),
-        categorie: String(obj.categorie || '').trim().toLowerCase(),
-        rows: rowsStr,
-        commentaire: obj.commentaire != null ? String(obj.commentaire) : ''
-      }
-    };
-  }
-
   function normalizeBulkDifferenciateurFromJson (obj, lineNum) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
       throw new Error('Ligne ' + lineNum + ' : objet JSON attendu.');
@@ -4636,7 +4612,6 @@
 
   function validateBulkRowByEntryType (row) {
     if (row.entryType === 'promo') return validateBulkPromoRow(row);
-    if (row.entryType === 'taux') return validateBulkTauxRow(row);
     if (row.entryType === 'differenciateur') return validateBulkDifferenciateurRow(row);
     return validateBulkRow(row);
   }
@@ -4664,7 +4639,6 @@
       var row;
       if (entryType === 'actualite') row = normalizeBulkActualiteFromJson(obj, i + 1);
       else if (entryType === 'promo') row = normalizeBulkPromoFromJson(obj, i + 1);
-      else if (entryType === 'taux') row = normalizeBulkTauxFromJson(obj, i + 1);
       else row = normalizeBulkDifferenciateurFromJson(obj, i + 1);
       rows.push(validateBulkRowByEntryType(row));
     }
@@ -4686,29 +4660,6 @@
     return row;
   }
 
-  function validateBulkTauxRow (row) {
-    var errors = {};
-    var f = row.fields;
-    if (!f.acteur_id && !f.acteur) errors.acteur_id = true;
-    if (!f.produit_nom) errors.produit_nom = true;
-    if (f.categorie !== 'bancaire' && f.categorie !== 'financiere') errors.categorie = true;
-    if (!f.rows) {
-      errors.rows = true;
-    } else {
-      try {
-        var parsed = JSON.parse(f.rows);
-        if (!Array.isArray(parsed)) errors.rows = true;
-        else row.parsedRows = parsed;
-      } catch (e) {
-        errors.rows = true;
-      }
-    }
-    row.errors = errors;
-    row.valid = Object.keys(errors).length === 0;
-    if (!row.valid) row.selected = false;
-    return row;
-  }
-
   function buildBulkPromoPayload (row) {
     var f = row.fields;
     return {
@@ -4722,19 +4673,6 @@
       date_fin: f.date_fin || null,
       canal: f.canal || null,
       lien: f.lien || null
-    };
-  }
-
-  function buildBulkTauxPayload (row) {
-    var f = row.fields;
-    return {
-      bulkIndex: row.id,
-      acteur_id: f.acteur_id || null,
-      acteur: f.acteur || null,
-      produit_nom: f.produit_nom,
-      categorie: f.categorie,
-      rows: row.parsedRows || JSON.parse(f.rows),
-      commentaire: f.commentaire || null
     };
   }
 
@@ -4764,7 +4702,6 @@
   function bulkEntryTypeBadge (entryType) {
     if (entryType === 'actualite') return '<span class="badge b-tq">Actualité</span>';
     if (entryType === 'promo') return '<span class="badge b-green">Promo</span>';
-    if (entryType === 'taux') return '<span class="badge b-gray">Taux</span>';
     if (entryType === 'differenciateur') return '<span class="badge b-tq" style="background:var(--navy);color:#fff">Différenciateur</span>';
     return '<span class="badge b-gray">' + esc(entryType) + '</span>';
   }
@@ -4795,14 +4732,6 @@
       html += bulkFieldCell(row, 'date_fin', 'Date fin');
       html += bulkFieldCell(row, 'canal', 'Canal');
       html += bulkFieldCell(row, 'lien', 'Lien', true);
-    } else if (row.entryType === 'taux') {
-      html += bulkFieldCell(row, 'acteur_id', 'Acteur ID');
-      html += bulkFieldCell(row, 'acteur', 'Acteur');
-      html += bulkFieldCell(row, 'produit_nom', 'Produit nom', true);
-      html += bulkFieldCell(row, 'categorie', 'Catégorie');
-      html += '<div class="bulk-row-field bulk-row-field-wide' + (row.errors && row.errors.rows ? ' contrib-bulk-cell-error' : '') + '"><label>Rows (JSON)</label>' +
-        '<input type="text" class="contrib-bulk-input contrib-bulk-rows-json" data-row-id="' + row.id + '" data-field="rows" value="' + esc(f.rows || '') + '"></div>';
-      html += bulkFieldCell(row, 'commentaire', 'Commentaire', true);
     } else if (row.entryType === 'differenciateur') {
       html += bulkFieldCell(row, 'produit_id', 'Produit');
       html += bulkFieldCell(row, 'acteur_id', 'Acteur ID');
@@ -4965,7 +4894,6 @@
 
     var actualiteRows = selected.filter(function (r) { return r.entryType === 'actualite'; });
     var promoRows = selected.filter(function (r) { return r.entryType === 'promo'; });
-    var tauxRows = selected.filter(function (r) { return r.entryType === 'taux'; });
     var diffRows = selected.filter(function (r) { return r.entryType === 'differenciateur'; });
 
     var promoPayloads = promoRows.map(buildBulkPromoPayload);
@@ -5001,14 +4929,13 @@
         allResults = allResults.concat(actuRes.results);
       }
 
-      if (promoRows.length || tauxRows.length) {
-        var tpRes = await SofincoSupabase.publishContributionTauxPromosBulk(sbClient, {
+      if (promoRows.length) {
+        var promoRes = await SofincoSupabase.publishContributionPromosBulk(sbClient, {
           promos: promoPayloads,
-          taux: tauxRows.map(buildBulkTauxPayload),
           replacePromoKeys: replaceKeys
         }, actorIdByNom);
-        Object.assign(actorIdByNom, tpRes.map);
-        allResults = allResults.concat(tpRes.results);
+        Object.assign(actorIdByNom, promoRes.map);
+        allResults = allResults.concat(promoRes.results);
       }
 
       for (var di = 0; di < diffRows.length; di++) {

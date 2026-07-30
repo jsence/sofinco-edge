@@ -54,11 +54,6 @@ async function run () {
   });
   await page.click('#contrib-goto-json');
 
-  checks.push(['no mode toggle', await page.evaluate(function () {
-    return document.getElementById('contrib-import-mode-actu') === null &&
-      document.getElementById('contrib-import-mode-taux') === null;
-  })]);
-
   const sampleJson = JSON.stringify([
     {
       type: 'actualite',
@@ -76,13 +71,6 @@ async function run () {
       taux: '0 %',
       duree: '12 mois',
       date_fin: '31/12/2026'
-    },
-    {
-      type: 'taux',
-      acteur_id: 'cofidis',
-      produit_nom: 'Test produit',
-      categorie: 'financiere',
-      rows: [{ tranche: '', b1: 0.1, b2: null, b3: null }]
     },
     {
       type: 'differenciateur',
@@ -103,18 +91,18 @@ async function run () {
     return !document.getElementById('contrib-bulk-review').classList.contains('contrib-step-hidden');
   });
 
-  checks.push(['four mixed rows parsed', await page.evaluate(function () {
-    return document.querySelectorAll('#contrib-bulk-table-wrap tbody tr').length === 4;
+  checks.push(['three mixed rows parsed', await page.evaluate(function () {
+    return document.querySelectorAll('#contrib-bulk-table-wrap tbody tr').length === 3;
   })]);
 
   checks.push(['type badges visible', await page.evaluate(function () {
     var text = document.getElementById('contrib-bulk-table-wrap').textContent;
     return text.indexOf('Actualité') >= 0 && text.indexOf('Promo') >= 0 &&
-      text.indexOf('Taux') >= 0 && text.indexOf('Différenciateur') >= 0;
+      text.indexOf('Différenciateur') >= 0;
   })]);
 
-  checks.push(['unknown type rejected', await page.evaluate(function () {
-    document.getElementById('contrib-bulk-json').value = '[{"type":"inconnu"}]';
+  checks.push(['taux type rejected', await page.evaluate(function () {
+    document.getElementById('contrib-bulk-json').value = '[{"type":"taux","acteur_id":"cofidis"}]';
     document.getElementById('contrib-bulk-parse-error').style.display = 'none';
     document.getElementById('contrib-bulk-analyze').click();
     return new Promise(function (resolve) {
