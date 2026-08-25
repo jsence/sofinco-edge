@@ -6133,7 +6133,8 @@
         "cofidis",
         "oney"
       ],
-      "status": "genere"
+      "status": "genere",
+      "portee": "produit"
     },
     {
       "produit_id": "pb",
@@ -6143,7 +6144,8 @@
         "younited",
         "cofidis"
       ],
-      "status": "genere"
+      "status": "genere",
+      "portee": "produit"
     },
     {
       "produit_id": "pb",
@@ -6154,7 +6156,8 @@
         "franfinance",
         "cetelem"
       ],
-      "status": "genere"
+      "status": "genere",
+      "portee": "produit"
     }
   ],
   "actualites": [

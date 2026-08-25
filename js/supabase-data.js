@@ -35,7 +35,7 @@
     return supabase.createClient(cfg.url, cfg.anonKey);
   }
 
-  function buildInMemoryData(produits, acteurs, acteursProduits, criteres, valeurs, promos, diffs, tendances, actualites, tauxCr, tauxMeta, indicateurs) {
+  function buildInMemoryData(produits, acteurs, acteursProduits, criteres, valeurs, promos, diffs, tendances, actualites, tauxCr, tauxMeta, indicateurs, texteLibreRows) {
     produits = sortProducts(produits);
     var nomById = {};
     var idByNom = {};
@@ -128,7 +128,8 @@
         titre: t.titre,
         description: t.description,
         acteurs: (t.acteurs_concernes || []).map(function (id) { return nomById[id]; }).filter(Boolean),
-        status: t.status || undefined
+        status: t.status || undefined,
+        portee: t.portee || 'produit'
       });
     });
 
@@ -185,6 +186,15 @@
       };
     });
 
+    var texteLibreObj = {};
+    (texteLibreRows || []).forEach(function (row) {
+      texteLibreObj[row.produit_id] = {
+        titre: row.titre || '',
+        contenu: row.contenu || '',
+        updatedAt: row.updated_at || null
+      };
+    });
+
     return {
       data: {
         produits: produitsData,
@@ -193,7 +203,8 @@
         tendances: tendObj,
         taux: taux,
         actualites: actualitesData,
-        indicateurs: indicateursData
+        indicateurs: indicateursData,
+        texteLibre: texteLibreObj
       },
       groups: groups,
       domains: domains,
@@ -229,6 +240,14 @@
       indicateurs = indicateursRes.data || [];
     }
 
+    var texteLibreRows = [];
+    var texteRes = await sb.from('produits_texte_libre').select('*');
+    if (texteRes.error) {
+      console.warn('produits_texte_libre:', texteRes.error.message);
+    } else {
+      texteLibreRows = texteRes.data || [];
+    }
+
     return buildInMemoryData(
       results[0].data || [],
       results[1].data || [],
@@ -241,7 +260,8 @@
       results[8].data || [],
       results[9].data || [],
       results[10].data || null,
-      indicateurs
+      indicateurs,
+      texteLibreRows
     );
   }
 
@@ -623,7 +643,8 @@
       titre: titre,
       description: description,
       acteurs_concernes: acteurIds,
-      status: 'valide'
+      status: 'valide',
+      portee: payload.portee === 'benchmark' ? 'benchmark' : 'produit'
     };
     var { data, error } = await sb.from('tendances').insert(row).select('*').single();
     if (error) throw new Error('tendances: ' + error.message);
@@ -857,6 +878,38 @@
     return { map: map, results: results };
   }
 
+  async function syncTauxCrFromImport(sb, entries, idByNom, groups, domains) {
+    if (!entries || !entries.length) return { map: idByNom || {}, count: 0 };
+    var map = Object.assign({}, idByNom || {});
+    var actorNames = entries.map(function (e) { return e.actor; }).filter(Boolean);
+    var unique = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
+    if (unique.length) {
+      var merged = await ensureActors(sb, unique, groups, domains);
+      Object.assign(map, merged);
+    }
+
+    var rows = [];
+    entries.forEach(function (entry) {
+      var acteurId = map[entry.actor] || toActorId(entry.actor);
+      if (!acteurId) return;
+      rows.push({
+        acteur_id: acteurId,
+        produit_nom: String(entry.produit_nom || '').trim(),
+        categorie: entry.categorie === 'bancaire' ? 'bancaire' : 'financiere',
+        rows: entry.rows || [],
+        commentaire: entry.commentaire || null
+      });
+    });
+
+    if (!rows.length) return { map: map, count: 0 };
+
+    var { error } = await sb.from('taux_cr').upsert(rows, { onConflict: 'acteur_id,produit_nom' });
+    if (error) throw new Error('taux_cr: ' + error.message);
+
+    await touchProduitUpdatedAt(sb, ['pb', 'cr', 'rac']);
+    return { map: map, count: rows.length };
+  }
+
   global.SofincoSupabase = {
     toActorId: toActorId,
     createClient: createClient,
@@ -865,6 +918,7 @@
     syncPromosToSupabase: syncPromosToSupabase,
     syncDifferenciateursToSupabase: syncDifferenciateursToSupabase,
     syncAllFromImport: syncAllFromImport,
+    syncTauxCrFromImport: syncTauxCrFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
     insertContributionTendance: insertContributionTendance,
