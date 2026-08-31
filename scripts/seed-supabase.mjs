@@ -126,6 +126,17 @@ async function main() {
 
   await upsert('taux_cr_meta', [seed.taux_cr_meta], 'id');
 
+  if (seed.produits_texte_libre && seed.produits_texte_libre.length) {
+    await upsert('produits_texte_libre', seed.produits_texte_libre.map(function (row) {
+      return {
+        produit_id: row.produit_id,
+        titre: row.titre || '',
+        contenu: row.contenu || '',
+        updated_at: row.updated_at || null
+      };
+    }), 'produit_id');
+  }
+
   console.log('\nSeed complete.');
   console.log(JSON.stringify(seed.meta.counts, null, 2));
 }

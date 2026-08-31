@@ -2315,11 +2315,19 @@
      RENDER — TABLEAU
   ────────────────────────────────────────── */
   function renderTexteLibreBlock (p) {
+    if (p.id !== 'digital') return '';
     var bloc = DATA.texteLibre && DATA.texteLibre[p.id];
-    if (!bloc || (!bloc.titre && !bloc.contenu)) return '';
-    var html = '<div class="tendances-section" style="margin-top:24px">';
-    html += '<div class="tendances-hd"><i class="ti ti-notes"></i> ' + esc(bloc.titre || 'Data et Innovations') + '</div>';
-    html += '<div class="tendance-desc" style="white-space:pre-wrap;line-height:1.6">' + esc(bloc.contenu || '') + '</div>';
+    var titre = (bloc && bloc.titre) ? bloc.titre : 'Data et Innovations';
+    var contenu = bloc && bloc.contenu ? String(bloc.contenu).trim() : '';
+    var html = '<div class="tendances-section" style="margin-top:24px" data-testid="digital-texte-libre">';
+    html += '<div class="tendances-hd"><i class="ti ti-notes"></i> ' + esc(titre) + '</div>';
+    if (contenu) {
+      html += '<div class="tendance-desc" style="white-space:pre-wrap;line-height:1.6">' + esc(contenu) + '</div>';
+    } else {
+      html += '<div class="empty-state" style="padding:24px 16px"><i class="ti ti-notes"></i>';
+      html += '<div>Aucun contenu disponible</div>';
+      html += '<div class="text-sm mt-3">Le texte libre sera affiché ici après saisie en base.</div></div>';
+    }
     html += '</div>';
     return html;
   }
