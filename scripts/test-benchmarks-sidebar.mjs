@@ -84,6 +84,15 @@ async function run () {
     return document.querySelectorAll('.ac-voir').length === 0;
   })]);
 
+  checks.push(['digital texte libre block', await page.evaluate(async function () {
+    window.navigate('digital');
+    await new Promise(function (r) { setTimeout(r, 400); });
+    var block = document.querySelector('[data-testid="digital-texte-libre"]');
+    if (!block) return false;
+    var hd = block.querySelector('.tendances-hd');
+    return hd && hd.textContent.indexOf('Data et Innovations') >= 0;
+  })]);
+
   checks.push(['indicateurs view', await page.evaluate(async function () {
     window.navigate('indicateurs');
     await new Promise(function (r) { setTimeout(r, 400); });

@@ -12,7 +12,8 @@
       "differenciateurs": 8,
       "tendances": 3,
       "actualites": 4,
-      "taux_cr": 18
+      "taux_cr": 18,
+      "produits_texte_libre": 1
     }
   },
   "acteurs": [
@@ -6687,5 +6688,13 @@
       "Klarna": "https://www.klarna.com",
       "Boursobank": "https://www.boursobank.com/cartes-bancaires"
     }
-  }
+  },
+  "produits_texte_libre": [
+    {
+      "produit_id": "digital",
+      "titre": "Data et Innovations",
+      "contenu": "Synthèse des initiatives data et innovation observées chez les acteurs du benchmark Digital : parcours 100 % en ligne, scoring alternatif, personnalisation de l'offre et automatisation du parcours client.",
+      "updated_at": "2026-08-25"
+    }
+  ]
 }
