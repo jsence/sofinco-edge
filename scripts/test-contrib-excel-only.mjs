@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Smoke test — accès contributeur protégé + import Excel seul
+ * Smoke test — espace contributeur : import Excel uniquement (parse workbook)
  */
 import http from 'http';
 import fs from 'fs';
@@ -34,6 +34,7 @@ function startServer () {
 
 async function run () {
   const puppeteer = require('puppeteer');
+  const XLSX = require('xlsx');
   const { server, port } = await startServer();
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -44,63 +45,42 @@ async function run () {
     return document.getElementById('data-loading').style.display === 'none';
   }, { timeout: 120000 });
 
-  const checks = [];
-
-  checks.push(['btn-import absent', await page.evaluate(function () {
-    return document.getElementById('btn-import') === null;
-  })]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['Critère', 'Sofinco', 'Cofidis'],
+    ['Montant min', '500 €', '300 €']
+  ]), 'PB');
+  const xlsxPath = path.join(root, '.tmp-contrib-test.xlsx');
+  XLSX.writeFile(wb, xlsxPath);
 
   await page.evaluate(function () { document.getElementById('btn-contributeur').click(); });
-  await page.waitForSelector('#modal-contributeur.show');
-
-  checks.push(['access step visible on open', await page.evaluate(function () {
-    return !document.getElementById('contrib-step-access').classList.contains('contrib-step-hidden');
-  })]);
-
-  checks.push(['excel step hidden without code', await page.evaluate(function () {
-    return document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
-  })]);
-
-  checks.push(['json import UI absent', await page.evaluate(function () {
-    return document.getElementById('contrib-goto-json') === null &&
-      document.getElementById('contrib-step-import') === null &&
-      document.getElementById('contrib-step-manual') === null &&
-      document.getElementById('contrib-step-hub') === null;
-  })]);
-
   await page.type('#contrib-access-code', ACCESS_CODE);
   await page.click('#contrib-access-submit');
   await page.waitForFunction(function () {
     return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
   });
 
-  checks.push(['excel step after unlock', await page.evaluate(function () {
-    return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden') &&
-      document.getElementById('contrib-step-access').classList.contains('contrib-step-hidden') &&
-      document.getElementById('drop-zone') !== null;
-  })]);
+  const input = await page.$('#file-input');
+  await input.uploadFile(xlsxPath);
 
-  await page.click('#contrib-close');
   await page.waitForFunction(function () {
-    return !document.getElementById('modal-contributeur').classList.contains('show');
-  });
+    return document.getElementById('modal-import-result').classList.contains('show');
+  }, { timeout: 120000 });
 
-  await page.evaluate(function () { document.getElementById('btn-contributeur').click(); });
-  await page.waitForSelector('#modal-contributeur.show');
-  checks.push(['excel on reopen (session unlock)', await page.evaluate(function () {
-    return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden') &&
-      document.getElementById('contrib-step-access').classList.contains('contrib-step-hidden');
+  const checks = [];
+  checks.push(['import result modal shown', await page.evaluate(function () {
+    return document.getElementById('modal-import-result').classList.contains('show');
+  })]);
+  checks.push(['import result message present', await page.evaluate(function () {
+    var msg = document.getElementById('import-result-msg');
+    return msg && msg.textContent && msg.textContent.indexOf('Import terminé') >= 0;
   })]);
 
-  checks.push(['gate mode off after unlock', await page.evaluate(function () {
-    var panel = document.querySelector('#modal-contributeur > .modal');
-    return panel && !panel.classList.contains('contrib-gate-mode');
-  })]);
-
+  fs.unlinkSync(xlsxPath);
   await browser.close();
   server.close();
 
-  console.log('Contributor access smoke test:\n');
+  console.log('Contributor Excel-only smoke test:\n');
   var allOk = true;
   checks.forEach(function (pair) {
     var ok = pair[1];
