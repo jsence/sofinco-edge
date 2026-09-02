@@ -126,10 +126,30 @@ async function run () {
       !document.querySelector('[data-nav="indicateurs"]');
   })]);
 
-  checks.push(['categories label present', await page.evaluate(function () {
+  checks.push(['actualites section label', await page.evaluate(function () {
     return Array.from(document.querySelectorAll('.sb-nav-label')).some(function (el) {
-      return el.textContent.trim() === 'Catégories';
+      return el.textContent.trim() === 'Actualités';
     });
+  })]);
+
+  checks.push(['offres section label', await page.evaluate(function () {
+    return Array.from(document.querySelectorAll('.sb-nav-label')).some(function (el) {
+      return el.textContent.trim() === 'Offres';
+    });
+  })]);
+
+  checks.push(['category icons neutral background', await page.evaluate(function () {
+    var ic = document.querySelector('[data-nav="produit_tarification"] .nav-ic-cat');
+    if (!ic) return false;
+    var bg = window.getComputedStyle(ic).backgroundColor;
+    return bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+  })]);
+
+  checks.push(['offer icons colored background', await page.evaluate(function () {
+    var ic = document.querySelector('[data-nav="pb"] .nav-ic-pb');
+    if (!ic) return false;
+    var bg = window.getComputedStyle(ic).backgroundColor;
+    return bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
   })]);
 
   checks.push(['category page has 3 tabs', await page.evaluate(async function () {

@@ -137,8 +137,21 @@
     }
     .nav-item:hover { background: var(--bg); color: var(--text); }
     .nav-item.active { background: var(--tq-light); color: var(--tq-ink); }
-    .nav-item i { font-size: 18px; flex-shrink: 0; }
-    .nav-item span { flex: 1; }
+    .nav-item > i { font-size: 18px; flex-shrink: 0; }
+    .nav-item span:not(.nb):not(.nav-ic) { flex: 1; }
+    .nav-item .nav-ic {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+    }
+    .nav-item .nav-ic i { font-size: 16px; line-height: 1; }
+    .nav-item-cat .nav-ic { background: rgba(107,114,128,0.12); color: var(--muted); }
+    .nav-item-cat.active .nav-ic { background: rgba(107,114,128,0.2); color: var(--text); }
+    .nav-item-offer .nav-ic-pb { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
+    .nav-item-offer .nav-ic-cr { background: rgba(0,75,60,0.12); color: var(--green); }
+    .nav-item-offer .nav-ic-nxcb { background: rgba(225,45,45,0.12); color: var(--red); }
+    .nav-item-offer .nav-ic-rac { background: rgba(245,158,11,0.14); color: var(--orange); }
+    .nav-item-offer .nav-ic-carte { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .nav-item-offer .nav-ic-dist { background: rgba(14,116,144,0.12); color: #0e7490; }
 
     .sb-nav-label {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -1114,60 +1127,61 @@
       <i class="ti ti-home"></i>
       <span>Accueil</span>
     </div>
-    <div class="sb-nav-label">Catégories</div>
-    <div class="nav-item" data-nav="produit_tarification">
-      <i class="ti ti-receipt-2"></i>
+    <div class="sb-nav-label">Actualités</div>
+    <div class="nav-item nav-item-cat" data-nav="produit_tarification">
+      <span class="nav-ic nav-ic-cat"><i class="ti ti-receipt-2"></i></span>
       <span>Produit &amp; Tarification</span>
       <span class="nb nb-cat">P&amp;T</span>
     </div>
-    <div class="nav-item" data-nav="commercial_communication">
-      <i class="ti ti-speakerphone"></i>
+    <div class="nav-item nav-item-cat" data-nav="commercial_communication">
+      <span class="nav-ic nav-ic-cat"><i class="ti ti-speakerphone"></i></span>
       <span>Commercial &amp; Communication</span>
       <span class="nb nb-cat">C&amp;C</span>
     </div>
-    <div class="nav-item" data-nav="strategie_corporate">
-      <i class="ti ti-building-skyscraper"></i>
+    <div class="nav-item nav-item-cat" data-nav="strategie_corporate">
+      <span class="nav-ic nav-ic-cat"><i class="ti ti-building-skyscraper"></i></span>
       <span>Stratégie &amp; Corporate</span>
       <span class="nb nb-cat">S&amp;C</span>
     </div>
-    <div class="nav-item" data-nav="rse_juridique">
-      <i class="ti ti-scale"></i>
+    <div class="nav-item nav-item-cat" data-nav="rse_juridique">
+      <span class="nav-ic nav-ic-cat"><i class="ti ti-scale"></i></span>
       <span>RSE &amp; Juridique</span>
       <span class="nb nb-cat">RSE</span>
     </div>
-    <div class="nav-item" data-nav="innovation_securite">
-      <i class="ti ti-shield-lock"></i>
+    <div class="nav-item nav-item-cat" data-nav="innovation_securite">
+      <span class="nav-ic nav-ic-cat"><i class="ti ti-shield-lock"></i></span>
       <span>Innovation &amp; Sécurité</span>
       <span class="nb nb-cat">I&amp;S</span>
     </div>
     <div class="sb-nav-sep"></div>
-    <div class="nav-item" data-nav="pb">
-      <i class="ti ti-pig-money"></i>
+    <div class="sb-nav-label">Offres</div>
+    <div class="nav-item nav-item-offer" data-nav="pb">
+      <span class="nav-ic nav-ic-pb"><i class="ti ti-pig-money"></i></span>
       <span>Prêt Personnel</span>
       <span class="nb nb-pb">PP</span>
     </div>
-    <div class="nav-item" data-nav="cr">
-      <i class="ti ti-refresh"></i>
+    <div class="nav-item nav-item-offer" data-nav="cr">
+      <span class="nav-ic nav-ic-cr"><i class="ti ti-refresh"></i></span>
       <span>Crédit Renouvelable</span>
       <span class="nb nb-cr">CR</span>
     </div>
-    <div class="nav-item" data-nav="nxcb">
-      <i class="ti ti-credit-card"></i>
+    <div class="nav-item nav-item-offer" data-nav="nxcb">
+      <span class="nav-ic nav-ic-nxcb"><i class="ti ti-credit-card"></i></span>
       <span>Paiement Fractionné</span>
       <span class="nb nb-nxcb">Nx</span>
     </div>
-    <div class="nav-item" data-nav="rac">
-      <i class="ti ti-arrows-exchange"></i>
+    <div class="nav-item nav-item-offer" data-nav="rac">
+      <span class="nav-ic nav-ic-rac"><i class="ti ti-arrows-exchange"></i></span>
       <span>Rachat de Crédit</span>
       <span class="nb nb-rac">RAC</span>
     </div>
-    <div class="nav-item" data-nav="carte">
-      <i class="ti ti-credit-card-pay"></i>
+    <div class="nav-item nav-item-offer" data-nav="carte">
+      <span class="nav-ic nav-ic-carte"><i class="ti ti-credit-card-pay"></i></span>
       <span>Carte</span>
       <span class="nb nb-carte">Carte</span>
     </div>
-    <div class="nav-item" data-nav="distribution">
-      <i class="ti ti-truck-delivery"></i>
+    <div class="nav-item nav-item-offer" data-nav="distribution">
+      <span class="nav-ic nav-ic-dist"><i class="ti ti-truck-delivery"></i></span>
       <span>Modèle Distribution</span>
       <span class="nb nb-dist">Dist</span>
     </div>
