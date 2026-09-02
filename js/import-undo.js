@@ -1,11 +1,25 @@
 /**
- * Annulation du dernier import Excel — instantané unique (table import_undo_snapshot).
- *
- * Choix de stockage : une ligne JSONB `payload` dans `import_undo_snapshot` (id='last').
- * Plus simple qu'une table par entité : un seul niveau, remplacement atomique à chaque import.
+ * Annulation imports Excel — jusqu'à 5 instantanés FIFO (table import_undo_snapshot).
+ * Chaque ligne = état des tables juste avant un import.
  */
 (function (global) {
-  var SNAPSHOT_ID = 'last';
+  var MAX_UNDO_SNAPSHOTS = 5;
+  var LEGACY_SNAPSHOT_ID = 'last';
+
+  function newSnapshotId () {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    return 'undo-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+  }
+
+  function formatSnapshotLabel (row) {
+    var d = new Date(row.created_at || row.createdAt || Date.now());
+    if (isNaN(d.getTime()) && row.import_date) {
+      d = new Date(row.import_date + 'T12:00:00');
+    }
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return 'Import du ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
 
   async function fetchAllRows (sb, table, queryFn) {
     var rows = [];
@@ -22,6 +36,20 @@
       from += pageSize;
     }
     return rows;
+  }
+
+  async function deleteByIds (sb, table, ids) {
+    if (!ids || !ids.length) return;
+    var chunk = 80;
+    for (var i = 0; i < ids.length; i += chunk) {
+      var slice = ids.slice(i, i + chunk);
+      var del = await sb.from(table).delete().in('id', slice);
+      if (del.error) throw new Error('delete ' + table + ': ' + del.error.message);
+    }
+  }
+
+  function isMigrationMissingError (msg) {
+    return msg && msg.indexOf('import_undo_snapshot') >= 0;
   }
 
   function buildImportUndoScope (wb, data, opts) {
@@ -116,67 +144,105 @@
     return payload;
   }
 
+  async function listAvailableSnapshots (sb) {
+    var res = await sb.from('import_undo_snapshot')
+      .select('id, created_at, import_date, available')
+      .eq('available', true)
+      .order('created_at', { ascending: false });
+    if (res.error) {
+      if (isMigrationMissingError(res.error.message)) return { migrationRequired: true, items: [] };
+      throw new Error('import_undo_snapshot: ' + res.error.message);
+    }
+    var items = (res.data || []).map(function (row) {
+      return {
+        id: row.id,
+        createdAt: row.created_at,
+        importDate: row.import_date,
+        label: formatSnapshotLabel(row)
+      };
+    });
+    return { migrationRequired: false, items: items };
+  }
+
+  async function pruneUndoSnapshots (sb) {
+    var res = await sb.from('import_undo_snapshot')
+      .select('id, created_at')
+      .eq('available', true)
+      .order('created_at', { ascending: true });
+    if (res.error) throw new Error('import_undo_snapshot: ' + res.error.message);
+    var rows = res.data || [];
+    if (rows.length <= MAX_UNDO_SNAPSHOTS) return;
+    var excess = rows.length - MAX_UNDO_SNAPSHOTS;
+    var toDelete = rows.slice(0, excess).map(function (r) { return r.id; });
+    await deleteByIds(sb, 'import_undo_snapshot', toDelete);
+  }
+
   async function saveImportUndoSnapshot (sb, scope, payload, importDate) {
+    var createdAt = new Date().toISOString();
     var row = {
-      id: SNAPSHOT_ID,
-      created_at: new Date().toISOString(),
-      import_date: importDate || new Date().toISOString().slice(0, 10),
+      id: newSnapshotId(),
+      created_at: createdAt,
+      import_date: importDate || createdAt.slice(0, 10),
       scope: scope,
       payload: payload,
       available: true
     };
-    var res = await sb.from('import_undo_snapshot').upsert(row, { onConflict: 'id' });
+    var res = await sb.from('import_undo_snapshot').insert(row);
     if (res.error) throw new Error('import_undo_snapshot: ' + res.error.message);
+    await pruneUndoSnapshots(sb);
     return row;
   }
 
   async function getImportUndoStatus (sb) {
-    var res = await sb.from('import_undo_snapshot').select('available, import_date, created_at').eq('id', SNAPSHOT_ID).maybeSingle();
-    if (res.error) {
-      if (res.error.message && res.error.message.indexOf('import_undo_snapshot') >= 0) {
-        return { available: false, migrationRequired: true };
-      }
-      throw new Error('import_undo_snapshot: ' + res.error.message);
+    var listed = await listAvailableSnapshots(sb);
+    if (listed.migrationRequired) {
+      return { available: false, migrationRequired: true, items: [], maxLevels: MAX_UNDO_SNAPSHOTS };
     }
-    if (!res.data || !res.data.available) return { available: false };
+    var items = listed.items;
+    var newest = items[0] || null;
     return {
-      available: true,
-      importDate: res.data.import_date,
-      createdAt: res.data.created_at
+      available: items.length > 0,
+      items: items,
+      maxLevels: MAX_UNDO_SNAPSHOTS,
+      importDate: newest ? newest.importDate : null,
+      createdAt: newest ? newest.createdAt : null
     };
   }
 
-  async function loadImportUndoSnapshot (sb) {
-    var res = await sb.from('import_undo_snapshot').select('*').eq('id', SNAPSHOT_ID).maybeSingle();
+  async function loadImportUndoSnapshot (sb, snapshotId) {
+    var res;
+    if (snapshotId) {
+      res = await sb.from('import_undo_snapshot').select('*').eq('id', snapshotId).eq('available', true).maybeSingle();
+    } else {
+      res = await sb.from('import_undo_snapshot')
+        .select('*')
+        .eq('available', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    }
     if (res.error) throw new Error('import_undo_snapshot: ' + res.error.message);
-    if (!res.data || !res.data.available) return null;
+    if (!res.data) return null;
     return res.data;
   }
 
-  async function deleteByIds (sb, table, ids) {
-    if (!ids || !ids.length) return;
-    var chunk = 80;
-    for (var i = 0; i < ids.length; i += chunk) {
-      var slice = ids.slice(i, i + chunk);
-      var del = await sb.from(table).delete().in('id', slice);
-      if (del.error) throw new Error('delete ' + table + ': ' + del.error.message);
+  async function removeSnapshotsFrom (sb, snapshotId) {
+    var res = await sb.from('import_undo_snapshot')
+      .select('id, created_at')
+      .eq('available', true)
+      .order('created_at', { ascending: true });
+    if (res.error) throw new Error('import_undo_snapshot: ' + res.error.message);
+    var rows = res.data || [];
+    var idx = -1;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].id === snapshotId) { idx = i; break; }
     }
+    if (idx < 0) throw new Error('Instantané introuvable.');
+    var toDelete = rows.slice(idx).map(function (r) { return r.id; });
+    await deleteByIds(sb, 'import_undo_snapshot', toDelete);
   }
 
-  async function replaceScopedRows (sb, table, deleteFilter, snapshotRows) {
-    var existing = await fetchAllRows(sb, table, deleteFilter);
-    if (existing.length) {
-      await deleteByIds(sb, table, existing.map(function (r) { return r.id; }));
-    }
-    if (snapshotRows && snapshotRows.length) {
-      var ins = await sb.from(table).insert(snapshotRows);
-      if (ins.error) throw new Error('insert ' + table + ': ' + ins.error.message);
-    }
-  }
-
-  async function restoreImportUndoSnapshot (sb) {
-    var snap = await loadImportUndoSnapshot(sb);
-    if (!snap) throw new Error('Aucun import récent à annuler.');
+  async function applySnapshotPayload (sb, snap) {
     var scope = snap.scope || {};
     var payload = snap.payload || {};
 
@@ -284,18 +350,32 @@
       var upApp = await sb.from('app_meta').upsert(payload.app_meta, { onConflict: 'id' });
       if (upApp.error) throw new Error('restore app_meta: ' + upApp.error.message);
     }
+  }
 
-    var mark = await sb.from('import_undo_snapshot').update({ available: false }).eq('id', SNAPSHOT_ID);
-    if (mark.error) throw new Error('import_undo_snapshot: ' + mark.error.message);
-
-    return { restored: true, importDate: snap.import_date };
+  async function restoreImportUndoSnapshot (sb, snapshotId) {
+    var snap;
+    if (snapshotId) {
+      snap = await loadImportUndoSnapshot(sb, snapshotId);
+    } else {
+      var listed = await listAvailableSnapshots(sb);
+      if (!listed.items.length) throw new Error('Aucun import récent à annuler.');
+      snap = await loadImportUndoSnapshot(sb, listed.items[0].id);
+    }
+    if (!snap) throw new Error('Aucun import récent à annuler.');
+    await applySnapshotPayload(sb, snap);
+    await removeSnapshotsFrom(sb, snap.id);
+    return { restored: true, importDate: snap.import_date, snapshotId: snap.id };
   }
 
   global.SofincoImportUndo = {
+    MAX_UNDO_SNAPSHOTS: MAX_UNDO_SNAPSHOTS,
+    LEGACY_SNAPSHOT_ID: LEGACY_SNAPSHOT_ID,
     buildImportUndoScope: buildImportUndoScope,
     captureImportUndoPayload: captureImportUndoPayload,
     saveImportUndoSnapshot: saveImportUndoSnapshot,
     getImportUndoStatus: getImportUndoStatus,
-    restoreImportUndoSnapshot: restoreImportUndoSnapshot
+    listImportUndoSnapshots: listAvailableSnapshots,
+    restoreImportUndoSnapshot: restoreImportUndoSnapshot,
+    formatSnapshotLabel: formatSnapshotLabel
   };
 })(typeof window !== 'undefined' ? window : globalThis);
