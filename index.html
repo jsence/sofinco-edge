@@ -2630,12 +2630,42 @@
 
   function setHomeActuCategory (catId) {
     state.homeActuCategory = catId || 'all';
-    renderHome();
+    var root = $('view-home');
+    var feedEl = root && root.querySelector('.news-feed.home-feed-wide');
+    if (!feedEl) {
+      renderHome();
+      return;
+    }
+    feedEl.innerHTML = renderHomeActuFeedHtml();
+    syncHomeCatFilterButtons();
+  }
+
+  function renderHomeActuFeedHtml () {
+    var all = actuList();
+    var feed = homeFeedActus();
+    var html = '';
+    if (!feed.length) {
+      html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité pour ce filtre</div></div>';
+    } else {
+      feed.slice(0, 12).forEach(function (e, pos) {
+        html += renderHomeActuItem(e, all.indexOf(e), pos);
+      });
+    }
+    return html;
+  }
+
+  function syncHomeCatFilterButtons () {
+    var catFilter = state.homeActuCategory || 'all';
+    var root = $('view-home');
+    if (!root) return;
+    root.querySelectorAll('.home-cat-tag[data-cat]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-cat') === catFilter);
+    });
   }
 
   function renderHomeFeatured (actu) {
     var idx = actuList().indexOf(actu);
-    var html = '<div class="home-featured stagger-item" onclick="openActuDetail(' + idx + ')">';
+    var html = '<div class="home-featured" onclick="openActuDetail(' + idx + ')">';
     html += '<div class="home-featured-kicker"><i class="ti ti-star-filled"></i> À la une</div>';
     html += '<div class="home-featured-title">' + esc(actu.titre) + '</div>';
     html += '<div class="home-featured-meta">';
@@ -2685,20 +2715,14 @@
     html += '<div class="home-actu-main">';
     html += '<div class="section-hd"><i class="ti ti-news"></i> Actualités</div>';
     html += '<div class="home-cat-tags">';
-    html += '<button type="button" class="home-cat-tag' + (catFilter === 'all' ? ' active' : '') + '" onclick="setHomeActuCategory(\'all\')">Toutes</button>';
+    html += '<button type="button" class="home-cat-tag' + (catFilter === 'all' ? ' active' : '') + '" data-cat="all" onclick="setHomeActuCategory(\'all\')">Toutes</button>';
     ACTU_CATEGORIES.forEach(function (cat) {
-      html += '<button type="button" class="home-cat-tag' + (catFilter === cat.id ? ' active' : '') + '" onclick="setHomeActuCategory(\'' + cat.id + '\')">' + esc(cat.label) + '</button>';
+      html += '<button type="button" class="home-cat-tag' + (catFilter === cat.id ? ' active' : '') + '" data-cat="' + esc(cat.id) + '" onclick="setHomeActuCategory(\'' + cat.id + '\')">' + esc(cat.label) + '</button>';
     });
     html += '</div>';
 
     html += '<div class="news-feed home-feed-wide">';
-    if (!feed.length) {
-      html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité pour ce filtre</div></div>';
-    } else {
-      feed.slice(0, 12).forEach(function (e, pos) {
-        html += renderHomeActuItem(e, all.indexOf(e), pos);
-      });
-    }
+    html += renderHomeActuFeedHtml();
     html += '</div>';
     html += '</div>';
 
@@ -6168,6 +6192,23 @@ cb.checked = on;
     return {
       ok: subtitleBeforeFeatured && featuredBeforeActu,
       order: [subtitle.textContent.trim(), featured.querySelector('.home-featured-title').textContent.trim(), actuTitle.textContent.trim()]
+    };
+  };
+  window.__testHomeFeaturedFilterStable = function () {
+    DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: 'STABLE FEATURED', acteur: 'Cofidis', a_la_une: true }];
+    state.view = 'home';
+    state.homeActuCategory = 'all';
+    render();
+    var featured = document.querySelector('.home-featured');
+    if (!featured) return { ok: false, reason: 'no featured' };
+    var htmlBefore = featured.outerHTML;
+    var nodeBefore = featured;
+    setHomeActuCategory('produit_tarification');
+    var featuredAfter = document.querySelector('.home-featured');
+    if (!featuredAfter) return { ok: false, reason: 'featured removed' };
+    return {
+      ok: nodeBefore === featuredAfter && htmlBefore === featuredAfter.outerHTML,
+      sameNode: nodeBefore === featuredAfter
     };
   };
   window.__testRenderTopbarLastUpdate = function (lastImportAt, actuDate) {

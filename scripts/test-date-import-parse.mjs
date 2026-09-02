@@ -108,6 +108,11 @@ async function run () {
       layout.order[2].indexOf('Actualités') >= 0;
   })]);
 
+  checks.push(['filtre catégorie: bloc à la une stable', await page.evaluate(function () {
+    var stable = window.__testHomeFeaturedFilterStable();
+    return stable.ok && stable.sameNode;
+  })]);
+
   checks.push(['UI contributeur : sélecteur À la une présent', await page.evaluate(function () {
     return document.getElementById('contrib-featured-select') !== null &&
       document.getElementById('contrib-featured-apply') !== null &&
