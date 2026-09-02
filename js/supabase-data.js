@@ -284,15 +284,22 @@
   }
 
   async function ensureActors(sb, actorNames, groups, domains) {
-    var rows = actorNames.map(function (nom) {
-      return {
-        id: toActorId(nom),
+    var seenIds = {};
+    var rows = [];
+    actorNames.forEach(function (nom) {
+      if (!nom) return;
+      var id = toActorId(nom);
+      if (seenIds[id]) return;
+      seenIds[id] = 1;
+      rows.push({
+        id: id,
         nom: nom,
         groupe: (groups && groups[nom]) || null,
         domaine: (domains && domains[nom]) || null,
         est_nous: nom === 'Sofinco'
-      };
+      });
     });
+    if (!rows.length) return {};
     var { error } = await sb.from('acteurs').upsert(rows, { onConflict: 'id' });
     if (error) throw new Error('acteurs: ' + error.message);
     return rows.reduce(function (acc, a) { acc[a.nom] = a.id; return acc; }, {});
@@ -629,8 +636,25 @@
     return null;
   }
 
+  var actualitesALaUneColumnOk = null;
+  var ACTUALITES_A_LA_UNE_MIGRATION = 'supabase/migrations/20250902160000_actualites_a_la_une.sql';
+
+  async function probeActualitesALaUneColumn (sb) {
+    if (actualitesALaUneColumnOk !== null) return actualitesALaUneColumnOk;
+    var res = await sb.from('actualites').select('a_la_une').limit(0);
+    actualitesALaUneColumnOk = !res.error;
+    return actualitesALaUneColumnOk;
+  }
+
+  function actualitesALaUneMigrationHint () {
+    return 'Colonne actualites.a_la_une absente — appliquez la migration ' + ACTUALITES_A_LA_UNE_MIGRATION;
+  }
+
   async function setActualiteALaUne(sb, actualiteId) {
     if (!actualiteId) throw new Error('Identifiant actualité requis.');
+    if (!(await probeActualitesALaUneColumn(sb))) {
+      throw new Error(actualitesALaUneMigrationHint());
+    }
     var { error: clearErr } = await sb.from('actualites').update({ a_la_une: false }).eq('a_la_une', true);
     if (clearErr) throw new Error('actualites: ' + clearErr.message);
     var { data, error } = await sb.from('actualites').update({ a_la_une: true }).eq('id', actualiteId).select('*').single();
@@ -639,13 +663,18 @@
   }
 
   async function clearActualiteALaUne(sb) {
+    if (!(await probeActualitesALaUneColumn(sb))) {
+      throw new Error(actualitesALaUneMigrationHint());
+    }
     var { error } = await sb.from('actualites').update({ a_la_une: false }).eq('a_la_une', true);
     if (error) throw new Error('actualites: ' + error.message);
   }
 
   async function syncActualitesFromImport(sb, rows, idByNom, groups, domains) {
-    if (!rows || !rows.length) return { map: idByNom || {}, count: 0 };
+    if (!rows || !rows.length) return { map: idByNom || {}, count: 0, warnings: [] };
     var map = Object.assign({}, idByNom || {});
+    var warnings = [];
+    var supportsFeatured = await probeActualitesALaUneColumn(sb);
     var actorNames = rows.map(function (r) { return r.acteur; }).filter(Boolean);
     var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
     if (uniqueNames.length) {
@@ -655,10 +684,12 @@
 
     var count = 0;
     var lastFeaturedId = null;
+    var wantsFeatured = false;
     for (var ri = 0; ri < rows.length; ri++) {
       var row = rows[ri];
       var titre = String(row.titre || '').trim();
       if (!titre) continue;
+      if (row.a_la_une) wantsFeatured = true;
       var acteurId = null;
       if (row.acteur) {
         acteurId = map[row.acteur] || toActorId(row.acteur);
@@ -682,13 +713,27 @@
       if (row.a_la_une) lastFeaturedId = ins.data.id;
     }
 
-    if (!count) return { map: map, count: 0 };
+    if (!count) return { map: map, count: 0, warnings: warnings };
 
     if (lastFeaturedId) {
-      await setActualiteALaUne(sb, lastFeaturedId);
+      if (supportsFeatured) {
+        await setActualiteALaUne(sb, lastFeaturedId);
+      } else {
+        warnings.push({
+          sheet: 'ACTUALITES',
+          row: 0,
+          reason: 'Colonne a_la_une absente — « À la une » non appliqué (migration ' + ACTUALITES_A_LA_UNE_MIGRATION + ')'
+        });
+      }
+    } else if (wantsFeatured && !supportsFeatured) {
+      warnings.push({
+        sheet: 'ACTUALITES',
+        row: 0,
+        reason: 'Colonne a_la_une absente — colonne Une ignorée (migration requise)'
+      });
     }
 
-    return { map: map, count: count };
+    return { map: map, count: count, warnings: warnings };
   }
 
   function resolveActorIdFromMap (nom, idByNom) {
@@ -767,11 +812,12 @@
     };
     var { data, error } = await sb.from('actualites').insert(row).select('*').single();
     if (error) throw new Error('actualites: ' + error.message);
-    if (payload.a_la_une) {
+    var supportsFeatured = await probeActualitesALaUneColumn(sb);
+    if (payload.a_la_une && supportsFeatured) {
       await setActualiteALaUne(sb, data.id);
       data.a_la_une = true;
     }
-    return { row: data, map: map };
+    return { row: data, map: map, featuredSkipped: !!(payload.a_la_une && !supportsFeatured) };
   }
 
   async function upsertContributionDifferenciateur(sb, payload, idByNom) {
@@ -1110,6 +1156,7 @@
     syncActualitesFromImport: syncActualitesFromImport,
     setActualiteALaUne: setActualiteALaUne,
     clearActualiteALaUne: clearActualiteALaUne,
+    probeActualitesALaUneColumn: probeActualitesALaUneColumn,
     syncTendancesFromImport: syncTendancesFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,

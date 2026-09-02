@@ -28,6 +28,21 @@ SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJ... npm run se
 
 Variables : `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (recommandé) ou `SUPABASE_ANON_KEY`.
 
+## Migrations manuelles (SQL Editor)
+
+Si une migration n'a pas été appliquée par l'intégration GitHub, exécutez le fichier concerné dans **SQL Editor** du dashboard Supabase.
+
+**À la une** (`20250902160000_actualites_a_la_une.sql`) — requis pour la colonne `Une` à l'import Excel et le bloc accueil :
+
+```sql
+ALTER TABLE actualites
+  ADD COLUMN IF NOT EXISTS a_la_une BOOLEAN NOT NULL DEFAULT false;
+
+CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
+  ON actualites ((1))
+  WHERE a_la_une = true;
+```
+
 ## Tables
 
 `produits`, `acteurs`, `acteurs_produits`, `criteres`, `valeurs`, `promos`, `differenciateurs` (dont `categorie` optionnelle), `tendances` (dont `portee`, `categorie` optionnelle), `actualites` (dont `resume`, `fiabilite`, `acteur_id` optionnel, `categorie`, `a_la_une`), `taux_cr`, `taux_cr_meta`, `historique`, `indicateurs`, `produits_texte_libre`
