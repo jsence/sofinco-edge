@@ -1329,7 +1329,7 @@
         </div>
         <input type="file" id="file-input" accept=".xlsx" style="display:none">
         <div class="bg-note mt-4">
-          <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; ACTUALITES
+          <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; DECRYPTAGE &nbsp;·&nbsp; ACTUALITES
         </div>
       </div>
 
@@ -2056,6 +2056,52 @@
     return out;
   }
 
+  function parseDecryptageSheet (sheet) {
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) return [];
+    var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+    function getCol (row, names) {
+      for (var ni = 0; ni < names.length; ni++) {
+        var idx = hdrs.indexOf(names[ni]);
+        if (idx >= 0) return String(row[idx] || '').trim();
+      }
+      return '';
+    }
+    var VALID = { pb: 1, cr: 1, nxcb: 1, rac: 1, carte: 1, distribution: 1 };
+    function normDecryptProduit (raw) {
+      if (!raw) return '';
+      var key = String(raw).trim().toLowerCase().replace(/_/g, ' ');
+      if (key === 'modele distribution' || key === 'modele de distribution') return 'distribution';
+      if (key === 'distribution') return 'distribution';
+      var viaContrib = normalizeProduitValue(raw);
+      if (viaContrib && VALID[viaContrib]) return viaContrib;
+      var viaPid = normPid(raw);
+      if (VALID[viaPid]) return viaPid;
+      return '';
+    }
+    var out = [];
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      var produitId = normDecryptProduit(getCol(row, ['produit_id', 'produit']));
+      var titre = getCol(row, ['titre']);
+      if (!produitId || !titre) continue;
+      var acteursRaw = getCol(row, ['acteurs_concernes', 'acteurs concernes', 'acteurs']);
+      var acteurs = acteursRaw
+        ? acteursRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean)
+        : [];
+      var porteeRaw = getCol(row, ['portee', 'portée']).toLowerCase();
+      var portee = porteeRaw === 'benchmark' ? 'benchmark' : 'produit';
+      out.push({
+        produit_id: produitId,
+        titre: titre,
+        description: getCol(row, ['description']),
+        acteurs_concernes: acteurs,
+        portee: portee
+      });
+    }
+    return out;
+  }
+
   function parseActualitesSheet (sheet) {
     var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
     if (rows.length < 2) return [];
@@ -2133,8 +2179,11 @@
     pendingActualitesImport = wb.SheetNames.indexOf('ACTUALITES') >= 0
       ? parseActualitesSheet(wb.Sheets['ACTUALITES'])
       : [];
+    pendingDecryptageImport = wb.SheetNames.indexOf('DECRYPTAGE') >= 0
+      ? parseDecryptageSheet(wb.Sheets['DECRYPTAGE'])
+      : [];
 
-    var importStats = { updated: 0, changes: 0, actualites: 0 };
+    var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0 };
     try {
       var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
       Object.assign(actorIdByNom, syncResult.map);
@@ -2153,6 +2202,12 @@
         importStats.actualites = syncResult.stats.actualites || 0;
       }
       pendingActualitesImport = null;
+      if (pendingDecryptageImport && pendingDecryptageImport.length) {
+        var tendImportRes = await SofincoSupabase.syncTendancesFromImport(
+          sbClient, pendingDecryptageImport, syncResult.map);
+        importStats.decryptage = tendImportRes.count;
+      }
+      pendingDecryptageImport = null;
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
     } catch (e) {
@@ -3435,6 +3490,7 @@
   var exportPending = { format: null, productId: null };
   var pendingTauxImport = null;
   var pendingActualitesImport = null;
+  var pendingDecryptageImport = null;
   var generalExportPending = { format: 'xlsx' };
 
   var GENERAL_EXPORT_SECTIONS = [
@@ -5495,6 +5551,7 @@ cb.checked = on;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
   window.__parseActualitesSheet = parseActualitesSheet;
+  window.__parseDecryptageSheet = parseDecryptageSheet;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

@@ -600,6 +600,49 @@
     return { map: map, count: dbRows.length };
   }
 
+  function resolveActorIdFromMap (nom, idByNom) {
+    if (!nom) return null;
+    var s = String(nom).trim();
+    if (!s) return null;
+    if (idByNom[s]) return idByNom[s];
+    var keys = Object.keys(idByNom);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === s.toLowerCase()) return idByNom[keys[i]];
+    }
+    var cid = toActorId(s);
+    for (var j = 0; j < keys.length; j++) {
+      if (idByNom[keys[j]] === cid) return cid;
+    }
+    return null;
+  }
+
+  async function syncTendancesFromImport (sb, rows, idByNom) {
+    if (!rows || !rows.length) return { map: idByNom || {}, count: 0 };
+    var map = Object.assign({}, idByNom || {});
+    var dbRows = [];
+    rows.forEach(function (row) {
+      var titre = String(row.titre || '').trim();
+      if (!titre || !row.produit_id) return;
+      var acteurIds = [];
+      (row.acteurs_concernes || []).forEach(function (nom) {
+        var id = resolveActorIdFromMap(nom, map);
+        if (id) acteurIds.push(id);
+      });
+      dbRows.push({
+        produit_id: row.produit_id,
+        titre: titre,
+        description: row.description ? String(row.description).trim() : '',
+        acteurs_concernes: acteurIds,
+        portee: row.portee === 'benchmark' ? 'benchmark' : 'produit',
+        status: null
+      });
+    });
+    if (!dbRows.length) return { map: map, count: 0 };
+    var { error } = await sb.from('tendances').insert(dbRows);
+    if (error) throw new Error('tendances: ' + error.message);
+    return { map: map, count: dbRows.length };
+  }
+
   async function ensureActorByName(sb, nom, idByNom) {
     var map = Object.assign({}, idByNom || {});
     if (!nom) throw new Error('Acteur requis.');
@@ -967,6 +1010,7 @@
     syncAllFromImport: syncAllFromImport,
     syncTauxCrFromImport: syncTauxCrFromImport,
     syncActualitesFromImport: syncActualitesFromImport,
+    syncTendancesFromImport: syncTendancesFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
     insertContributionTendance: insertContributionTendance,
