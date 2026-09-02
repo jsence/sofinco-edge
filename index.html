@@ -1441,6 +1441,7 @@
         <input type="file" id="file-input" accept=".xlsx" style="display:none">
         <div class="bg-note mt-4">
           <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; DECRYPTAGE &nbsp;·&nbsp; ACTUALITES
+          <br><span class="text-sm text-muted">Colonnes optionnelles <strong>Categorie</strong> / <strong>Catégorie</strong> sur ACTUALITES, DIFFERENCIATEURS et DECRYPTAGE (slugs : produit_tarification, commercial_communication, strategie_corporate, rse_juridique, innovation_securite). Si renseignée et valide, la catégorie prime sur <strong>Produit</strong> (produit ignoré). Slug invalide : ligne ignorée, import poursuivi.</span>
           <br><span class="text-sm text-muted">Feuille ACTUALITES : colonne optionnelle <strong>Une</strong> (Oui/Non) — si plusieurs lignes Oui, la dernière l'emporte.</span>
         </div>
       </div>
@@ -2184,11 +2185,36 @@
     return out;
   }
 
+  function normalizeImportCategorie (raw) {
+    if (raw == null || String(raw).trim() === '') {
+      return { valid: true, slug: null };
+    }
+    var s = String(raw).trim().toLowerCase();
+    for (var i = 0; i < ACTU_CATEGORY_IDS.length; i++) {
+      if (ACTU_CATEGORY_IDS[i] === s) return { valid: true, slug: ACTU_CATEGORY_IDS[i] };
+    }
+    return { valid: false, slug: null, raw: String(raw).trim() };
+  }
+
+  function importSkipEntry (sheet, rowNum, reason) {
+    return { sheet: sheet, row: rowNum, reason: reason };
+  }
+
+  function getImportCol (hdrs, row, names) {
+    for (var ni = 0; ni < names.length; ni++) {
+      var idx = hdrs.indexOf(names[ni]);
+      if (idx >= 0) return String(row[idx] || '').trim();
+    }
+    return '';
+  }
+
   function parseDiffSheet (sheet) {
     var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-    if (rows.length < 2) return null;
+    if (rows.length < 2) return { byProduit: {}, byCategorie: {}, skipped: [] };
     var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
-    var out = {};
+    var byProduit = {};
+    var byCategorie = {};
+    var skipped = [];
 
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
@@ -2198,8 +2224,12 @@
       };
       var actor = get('acteur');
       if (!actor) continue;
-      var pid = normPid(get('produit') || 'pb');
-      if (!out[pid]) out[pid] = {};
+      var catRaw = getImportCol(hdrs, row, ['categorie', 'catégorie']);
+      var catNorm = normalizeImportCategorie(catRaw);
+      if (!catNorm.valid) {
+        skipped.push(importSkipEntry('DIFFERENCIATEURS', r + 1, 'Catégorie invalide : « ' + catNorm.raw + ' »'));
+        continue;
+      }
       var tags = [get('tag1'), get('tag2'), get('tag3')].filter(Boolean);
       var entry = { tags: tags, conclusion: get('conclusion') };
       var diff = get('difference');
@@ -2211,21 +2241,24 @@
       var st = (get('status') || get('statut')).toLowerCase();
       if (st === 'genere' || st === 'généré' || st === 'generated') entry.status = 'genere';
       else if (st === 'valide' || st === 'validé' || st === 'validated') entry.status = 'valide';
-      out[pid][actor] = entry;
+      if (catNorm.slug) {
+        if (!byCategorie[catNorm.slug]) byCategorie[catNorm.slug] = {};
+        byCategorie[catNorm.slug][actor] = entry;
+      } else {
+        var pid = normPid(get('produit') || 'pb');
+        if (!byProduit[pid]) byProduit[pid] = {};
+        byProduit[pid][actor] = entry;
+      }
     }
-    return out;
+    return { byProduit: byProduit, byCategorie: byCategorie, skipped: skipped };
   }
 
   function parseDecryptageSheet (sheet) {
     var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-    if (rows.length < 2) return [];
+    if (rows.length < 2) return { rows: [], skipped: [] };
     var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
     function getCol (row, names) {
-      for (var ni = 0; ni < names.length; ni++) {
-        var idx = hdrs.indexOf(names[ni]);
-        if (idx >= 0) return String(row[idx] || '').trim();
-      }
-      return '';
+      return getImportCol(hdrs, row, names);
     }
     var VALID = { pb: 1, cr: 1, nxcb: 1, rac: 1, carte: 1, distribution: 1 };
     function normDecryptProduit (raw) {
@@ -2240,11 +2273,19 @@
       return '';
     }
     var out = [];
+    var skipped = [];
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
-      var produitId = normDecryptProduit(getCol(row, ['produit_id', 'produit']));
       var titre = getCol(row, ['titre']);
-      if (!produitId || !titre) continue;
+      if (!titre) continue;
+      var catRaw = getCol(row, ['categorie', 'catégorie']);
+      var catNorm = normalizeImportCategorie(catRaw);
+      if (!catNorm.valid) {
+        skipped.push(importSkipEntry('DECRYPTAGE', r + 1, 'Catégorie invalide : « ' + catNorm.raw + ' »'));
+        continue;
+      }
+      var produitId = catNorm.slug ? null : normDecryptProduit(getCol(row, ['produit_id', 'produit']));
+      if (!catNorm.slug && !produitId) continue;
       var acteursRaw = getCol(row, ['acteurs_concernes', 'acteurs concernes', 'acteurs']);
       var acteurs = acteursRaw
         ? acteursRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean)
@@ -2253,13 +2294,14 @@
       var portee = porteeRaw === 'benchmark' ? 'benchmark' : 'produit';
       out.push({
         produit_id: produitId,
+        categorie: catNorm.slug,
         titre: titre,
         description: getCol(row, ['description']),
         acteurs_concernes: acteurs,
         portee: portee
       });
     }
-    return out;
+    return { rows: out, skipped: skipped };
   }
 
   function parseUneImport (raw) {
@@ -2270,28 +2312,31 @@
 
   function parseActualitesSheet (sheet) {
     var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-    if (rows.length < 2) return [];
+    if (rows.length < 2) return { rows: [], skipped: [] };
     var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
     function getCol (row, names) {
-      for (var ni = 0; ni < names.length; ni++) {
-        var idx = hdrs.indexOf(names[ni]);
-        if (idx >= 0) return String(row[idx] || '').trim();
-      }
-      return '';
+      return getImportCol(hdrs, row, names);
     }
     var out = [];
+    var skipped = [];
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
       var titre = getCol(row, ['titre']);
       if (!titre) continue;
+      var catRaw = getCol(row, ['categorie', 'catégorie']);
+      var catNorm = normalizeImportCategorie(catRaw);
+      if (!catNorm.valid) {
+        skipped.push(importSkipEntry('ACTUALITES', r + 1, 'Catégorie invalide : « ' + catNorm.raw + ' »'));
+        continue;
+      }
       var produitRaw = getCol(row, ['produit', 'produit_id']);
-      var produitId = produitRaw ? normalizeProduitValue(produitRaw) : '';
+      var produitId = (!catNorm.slug && produitRaw) ? normalizeProduitValue(produitRaw) : '';
       out.push({
         date: getCol(row, ['date']) || today(),
         acteur: getCol(row, ['acteur']),
         type: getCol(row, ['type']),
         produit_id: produitId || null,
-        categorie: getCol(row, ['categorie', 'catégorie']) || null,
+        categorie: catNorm.slug,
         titre: titre,
         resume: getCol(row, ['résumé', 'resume']),
         source: getCol(row, ['source']),
@@ -2300,22 +2345,36 @@
         a_la_une: parseUneImport(getCol(row, ['une', 'à la une', 'a la une', 'a_la_une']))
       });
     }
-    return out;
+    return { rows: out, skipped: skipped };
   }
 
   function showImportSummary (stats) {
     var updated = stats.updated || 0;
     var changes = stats.changes || 0;
     var actualites = stats.actualites || 0;
+    var decryptage = stats.decryptage || 0;
+    var skipped = stats.skipped || [];
     var msg = 'Import terminé';
-    if (changes === 0) {
+    if (changes === 0 && !actualites && !decryptage) {
       msg += ' — aucun changement détecté par rapport aux données en base.';
     } else {
       msg += ' — ' + updated + ' valeur' + (updated > 1 ? 's' : '') + ' mise' + (updated > 1 ? 's' : '') + ' à jour';
       msg += ', ' + changes + ' changement' + (changes > 1 ? 's' : '') + ' détecté' + (changes > 1 ? 's' : '');
       msg += '. ' + actualites + ' nouvelle' + (actualites > 1 ? 's' : '') + ' actualité' + (actualites > 1 ? 's' : '') + ' créée' + (actualites > 1 ? 's' : '') + '.';
+      if (decryptage) {
+        msg += ' ' + decryptage + ' décryptage' + (decryptage > 1 ? 's' : '') + ' importé' + (decryptage > 1 ? 's' : '') + '.';
+      }
     }
-    $('import-result-msg').textContent = msg;
+    if (skipped.length) {
+      msg += '\n\n' + skipped.length + ' ligne' + (skipped.length > 1 ? 's' : '') + ' ignorée' + (skipped.length > 1 ? 's' : '') + ' :';
+      skipped.slice(0, 8).forEach(function (s) {
+        msg += '\n• ' + s.sheet + ' (ligne ' + s.row + ') — ' + s.reason;
+      });
+      if (skipped.length > 8) msg += '\n• … et ' + (skipped.length - 8) + ' autre(s)';
+    }
+    var msgEl = $('import-result-msg');
+    msgEl.textContent = msg;
+    msgEl.style.whiteSpace = 'pre-line';
     $('import-result-actus').style.display = changes > 0 ? '' : 'none';
     $('modal-import-result').classList.add('show');
   }
@@ -2339,24 +2398,40 @@
       var p = parsePromosSheet(wb.Sheets['PROMOS']);
       if (p) DATA.promos = p;
     }
+    var importSkipped = [];
+    var pendingDiffsByCategorieImport = null;
     if (wb.SheetNames.indexOf('DIFFERENCIATEURS') >= 0) {
       var d = parseDiffSheet(wb.Sheets['DIFFERENCIATEURS']);
-      if (d) DATA.differenciateurs = d;
+      if (d) {
+        DATA.differenciateurs = d.byProduit;
+        pendingDiffsByCategorieImport = d.byCategorie;
+        importSkipped = importSkipped.concat(d.skipped || []);
+      }
     }
     pendingTauxImport = parseTauxSheets(wb);
-    pendingActualitesImport = wb.SheetNames.indexOf('ACTUALITES') >= 0
+    var actuParse = wb.SheetNames.indexOf('ACTUALITES') >= 0
       ? parseActualitesSheet(wb.Sheets['ACTUALITES'])
-      : [];
-    pendingDecryptageImport = wb.SheetNames.indexOf('DECRYPTAGE') >= 0
+      : { rows: [], skipped: [] };
+    pendingActualitesImport = actuParse.rows;
+    importSkipped = importSkipped.concat(actuParse.skipped || []);
+    var decryptParse = wb.SheetNames.indexOf('DECRYPTAGE') >= 0
       ? parseDecryptageSheet(wb.Sheets['DECRYPTAGE'])
-      : [];
+      : { rows: [], skipped: [] };
+    pendingDecryptageImport = decryptParse.rows;
+    importSkipped = importSkipped.concat(decryptParse.skipped || []);
 
-    var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0 };
+    var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0, skipped: importSkipped };
     try {
       var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
       Object.assign(actorIdByNom, syncResult.map);
       importStats.updated = syncResult.stats.updated || 0;
       importStats.changes = syncResult.stats.changes || 0;
+      if (pendingDiffsByCategorieImport && Object.keys(pendingDiffsByCategorieImport).length) {
+        var diffCatRes = await SofincoSupabase.syncDifferenciateursByCategorieFromImport(
+          sbClient, pendingDiffsByCategorieImport, syncResult.map, GROUPS, DOMAINS);
+        Object.assign(actorIdByNom, diffCatRes.map);
+      }
+      pendingDiffsByCategorieImport = null;
       if (pendingTauxImport && pendingTauxImport.length) {
         await SofincoSupabase.syncTauxCrFromImport(sbClient, pendingTauxImport, syncResult.map, GROUPS, DOMAINS);
         pendingTauxImport = null;
@@ -5927,8 +6002,10 @@ cb.checked = on;
   window.scrollToDiffDetail = scrollToDiffDetail;
   window.setHomeActuCategory  = setHomeActuCategory;
   window.__parseActualitesSheet = parseActualitesSheet;
+  window.__parseDiffSheet = parseDiffSheet;
   window.__parseUneImport = parseUneImport;
   window.__parseDecryptageSheet = parseDecryptageSheet;
+  window.__normalizeImportCategorie = normalizeImportCategorie;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
