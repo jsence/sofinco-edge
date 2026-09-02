@@ -2441,6 +2441,9 @@
           sbClient, pendingActualitesImport, syncResult.map, GROUPS, DOMAINS);
         Object.assign(actorIdByNom, actuImportRes.map);
         importStats.actualites = (syncResult.stats.actualites || 0) + actuImportRes.count;
+        if (actuImportRes.warnings && actuImportRes.warnings.length) {
+          importStats.skipped = (importStats.skipped || []).concat(actuImportRes.warnings);
+        }
       } else {
         importStats.actualites = syncResult.stats.actualites || 0;
       }
