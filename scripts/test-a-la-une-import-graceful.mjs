@@ -8,20 +8,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { createClient } from '@supabase/supabase-js';
+import { loadSupabaseConfig, cleanupTestData } from './test-helpers.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const ACCESS_CODE = 'SOFINCO2026';
 const MARKER = 'TEST UNE GRACEFUL ' + Date.now();
 const ACTOR = 'ActeurTestUne' + Date.now();
-
-function loadSupabaseConfig () {
-  var src = fs.readFileSync(path.join(root, 'supabase-config.js'), 'utf8');
-  return {
-    url: (src.match(/url:\s*['"]([^'"]+)['"]/) || [])[1],
-    anonKey: (src.match(/anonKey:\s*['"]([^'"]+)['"]/) || [])[1]
-  };
-}
 
 function startServer () {
   return new Promise(function (resolve) {
@@ -51,6 +44,7 @@ async function run () {
   const migrationOk = !(await sb.from('actualites').select('a_la_une').limit(0)).error;
 
   const { server, port } = await startServer();
+  try {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
   var dialogMsg = '';
@@ -162,6 +156,11 @@ async function run () {
   }
   if (!allOk) process.exit(1);
   console.log('\nAll checks passed.');
+  } finally {
+    const cleaned = await cleanupTestData(sb);
+    const n = cleaned.deleted.actus + cleaned.deleted.diffs + cleaned.deleted.tends;
+    if (n > 0) console.log('\n[Test cleanup]', cleaned.deleted.actus, 'actus,', cleaned.deleted.diffs, 'diffs,', cleaned.deleted.tends, 'tendances supprimées.');
+  }
 }
 
 run().catch(function (err) {

@@ -7,6 +7,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { createClient } from '@supabase/supabase-js';
+import { loadSupabaseConfig, cleanupTestData } from './test-helpers.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -35,7 +37,10 @@ function startServer () {
 async function run () {
   const puppeteer = require('puppeteer');
   const XLSX = require('xlsx');
+  const cfg = loadSupabaseConfig();
+  const sb = createClient(cfg.url, cfg.anonKey);
   const { server, port } = await startServer();
+  try {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
   var dialogMsg = '';
@@ -126,6 +131,11 @@ async function run () {
   }
   if (!allOk) process.exit(1);
   console.log('\nAll checks passed.');
+  } finally {
+    const cleaned = await cleanupTestData(sb);
+    const n = cleaned.deleted.actus + cleaned.deleted.diffs + cleaned.deleted.tends;
+    if (n > 0) console.log('\n[Test cleanup]', cleaned.deleted.actus, 'actus,', cleaned.deleted.diffs, 'diffs,', cleaned.deleted.tends, 'tendances supprimées.');
+  }
 }
 
 run().catch(function (err) {
