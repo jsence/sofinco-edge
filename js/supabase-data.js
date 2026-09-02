@@ -222,7 +222,8 @@
         taux: taux,
         actualites: actualitesData,
         indicateurs: indicateursData,
-        texteLibre: texteLibreObj
+        texteLibre: texteLibreObj,
+        lastImportAt: null
       },
       groups: groups,
       domains: domains,
@@ -266,7 +267,9 @@
       texteLibreRows = texteRes.data || [];
     }
 
-    return buildInMemoryData(
+    var lastImportAt = await loadLastImportAt(sb);
+
+    var built = buildInMemoryData(
       results[0].data || [],
       results[1].data || [],
       results[2].data || [],
@@ -281,6 +284,29 @@
       indicateurs,
       texteLibreRows
     );
+    built.data.lastImportAt = lastImportAt;
+    return built;
+  }
+
+  async function loadLastImportAt (sb) {
+    var res = await sb.from('app_meta').select('last_import_at').eq('id', 'global').maybeSingle();
+    if (res.error) {
+      console.warn('app_meta:', res.error.message);
+      return null;
+    }
+    var d = res.data && res.data.last_import_at;
+    if (!d) return null;
+    if (String(d).indexOf('T') >= 0) d = String(d).split('T')[0];
+    return String(d).slice(0, 10);
+  }
+
+  async function recordLastImportAt (sb, dateIso) {
+    dateIso = dateIso || new Date().toISOString().slice(0, 10);
+    var res = await sb.from('app_meta').upsert({ id: 'global', last_import_at: dateIso }, { onConflict: 'id' });
+    if (res.error) {
+      console.warn('app_meta last_import_at:', res.error.message);
+    }
+    return dateIso;
   }
 
   async function ensureActors(sb, actorNames, groups, domains) {
@@ -1198,6 +1224,8 @@
     insertContributionTendance: insertContributionTendance,
     publishContributionEntriesBulk: publishContributionEntriesBulk,
     touchProduitUpdatedAt: touchProduitUpdatedAt,
+    recordLastImportAt: recordLastImportAt,
+    loadLastImportAt: loadLastImportAt,
     findExistingPromos: findExistingPromos,
     publishContributionPromosBulk: publishContributionPromosBulk
   };

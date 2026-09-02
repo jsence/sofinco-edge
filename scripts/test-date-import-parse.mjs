@@ -90,6 +90,11 @@ async function run () {
       '2026-09-02' > '2026-07-09';
   })]);
 
+  checks.push(['Dernière MAJ = date import, pas date actu', await page.evaluate(function () {
+    var txt = window.__testRenderTopbarLastUpdate('2026-09-02', '2026-09-07');
+    return txt.indexOf('02/09/2026') >= 0 && txt.indexOf('07/09/2026') < 0;
+  })]);
+
   checks.push(['bloc À la une rendu (mock)', await page.evaluate(function () {
     var txt = window.__testSetFeaturedActu('FEATURED MOCK');
     return txt.indexOf('FEATURED MOCK') >= 0 && txt.indexOf('09/07/2026') >= 0;
