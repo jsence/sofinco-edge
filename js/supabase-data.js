@@ -500,7 +500,13 @@
     return map;
   }
 
-  async function syncDifferenciateursToSupabase(sb, diffsObj, idByNom, groups, domains) {
+  async function syncDifferenciateursByCategorieFromImport (sb, diffsObj, idByNom, groups, domains) {
+    if (!diffsObj || !Object.keys(diffsObj).length) return { map: idByNom || {} };
+    return syncDifferenciateursScopeToSupabase(sb, diffsObj, idByNom, groups, domains, 'categorie');
+  }
+
+  async function syncDifferenciateursScopeToSupabase (sb, diffsObj, idByNom, groups, domains, scope) {
+    var isCategory = scope === 'categorie';
     var map = Object.assign({}, idByNom);
     var allNames = [];
     Object.values(diffsObj).forEach(function (byActor) {
@@ -513,27 +519,55 @@
 
     var rows = [];
     Object.entries(diffsObj).forEach(function (entry) {
-      var pid = entry[0];
+      var scopeId = entry[0];
       Object.entries(entry[1]).forEach(function (ae) {
         var nom = ae[0];
         var d = ae[1];
-        rows.push({
-          produit_id: pid,
+        var row = {
           acteur_id: map[nom] || toActorId(nom),
           difference: d.difference || null,
           pourquoi: d.pourquoi || null,
           conclusion: d.positionnement || d.conclusion || '',
           tags: d.tags || [],
           status: d.status || null
-        });
+        };
+        if (isCategory) {
+          row.produit_id = null;
+          row.categorie = scopeId;
+        } else {
+          row.produit_id = scopeId;
+          row.categorie = null;
+        }
+        rows.push(row);
       });
     });
 
     if (rows.length) {
-      var { error } = await sb.from('differenciateurs').upsert(rows, { onConflict: 'produit_id,acteur_id' });
-      if (error) throw new Error('differenciateurs: ' + error.message);
+      for (var ri = 0; ri < rows.length; ri++) {
+        var row = rows[ri];
+        var sel = sb.from('differenciateurs').select('id');
+        if (isCategory) {
+          sel = sel.eq('categorie', row.categorie).eq('acteur_id', row.acteur_id).is('produit_id', null);
+        } else {
+          sel = sel.eq('produit_id', row.produit_id).eq('acteur_id', row.acteur_id).is('categorie', null);
+        }
+        var existingRes = await sel.maybeSingle();
+        if (existingRes.error) throw new Error('differenciateurs: ' + existingRes.error.message);
+        if (existingRes.data && existingRes.data.id) {
+          var upd = await sb.from('differenciateurs').update(row).eq('id', existingRes.data.id);
+          if (upd.error) throw new Error('differenciateurs: ' + upd.error.message);
+        } else {
+          var ins = await sb.from('differenciateurs').insert(row);
+          if (ins.error) throw new Error('differenciateurs: ' + ins.error.message);
+        }
+      }
     }
-    return map;
+    return { map: map };
+  }
+
+  async function syncDifferenciateursToSupabase(sb, diffsObj, idByNom, groups, domains) {
+    var res = await syncDifferenciateursScopeToSupabase(sb, diffsObj, idByNom, groups, domains, 'produit');
+    return res.map;
   }
 
   async function syncAllFromImport(sb, data, idByNom, groups, domains, importedProductIds) {
@@ -624,8 +658,7 @@
         resume: row.resume ? String(row.resume).trim() : null,
         fiabilite: normalizeFiabiliteImport(row.fiabilite),
         source: row.source ? String(row.source).trim() : null,
-        impact: impactKey,
-        a_la_une: false
+        impact: impactKey
       };
       var ins = await sb.from('actualites').insert(dbRow).select('id').single();
       if (ins.error) throw new Error('actualites: ' + ins.error.message);
@@ -664,14 +697,18 @@
     var dbRows = [];
     rows.forEach(function (row) {
       var titre = String(row.titre || '').trim();
-      if (!titre || !row.produit_id) return;
+      if (!titre) return;
+      var categorie = row.categorie || null;
+      var produitId = categorie ? null : row.produit_id;
+      if (!categorie && !produitId) return;
       var acteurIds = [];
       (row.acteurs_concernes || []).forEach(function (nom) {
         var id = resolveActorIdFromMap(nom, map);
         if (id) acteurIds.push(id);
       });
       dbRows.push({
-        produit_id: row.produit_id,
+        produit_id: produitId,
+        categorie: categorie,
         titre: titre,
         description: row.description ? String(row.description).trim() : '',
         acteurs_concernes: acteurIds,
@@ -1053,6 +1090,7 @@
     syncProductToSupabase: syncProductToSupabase,
     syncPromosToSupabase: syncPromosToSupabase,
     syncDifferenciateursToSupabase: syncDifferenciateursToSupabase,
+    syncDifferenciateursByCategorieFromImport: syncDifferenciateursByCategorieFromImport,
     syncAllFromImport: syncAllFromImport,
     syncTauxCrFromImport: syncTauxCrFromImport,
     syncActualitesFromImport: syncActualitesFromImport,

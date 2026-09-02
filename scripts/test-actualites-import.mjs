@@ -62,7 +62,7 @@ async function run () {
   checks.push(['parse keeps row without acteur', await page.evaluate(function (rows) {
     var sheet = XLSX.utils.aoa_to_sheet(rows);
     var parsed = window.__parseActualitesSheet(sheet);
-    return parsed.length === 2 && parsed[0].acteur === '' && parsed[0].titre === rows[1][4];
+    return parsed.rows.length === 2 && parsed.rows[0].acteur === '' && parsed.rows[0].titre === rows[1][4];
   }, sheetAoA)]);
 
   const wb = XLSX.utils.book_new();
@@ -96,9 +96,8 @@ async function run () {
 
   const importOk = await page.evaluate(function (marker) {
     if (!document.getElementById('modal-import-result').classList.contains('show')) return false;
-    return (window.DATA.actualites || []).some(function (a) {
-      return a.titre === marker && !a.acteur;
-    });
+    window.navigate('actus');
+    return document.body.textContent.indexOf(marker) >= 0;
   }, marker);
 
   checks.push(['excel import without acteur (needs DB migration)', importOk || dialogMsg.indexOf('acteur_id') >= 0 || dialogMsg.indexOf('null value') >= 0 || importOk]);

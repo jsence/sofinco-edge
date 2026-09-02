@@ -63,11 +63,11 @@ async function run () {
   checks.push(['parse valid decryptage row', await page.evaluate(function (rows, marker) {
     var sheet = XLSX.utils.aoa_to_sheet(rows);
     var parsed = window.__parseDecryptageSheet(sheet);
-    return parsed.length === 1 &&
-      parsed[0].produit_id === 'pb' &&
-      parsed[0].titre === marker &&
-      parsed[0].acteurs_concernes.length === 2 &&
-      parsed[0].portee === 'produit';
+    return parsed.rows.length === 1 &&
+      parsed.rows[0].produit_id === 'pb' &&
+      parsed.rows[0].titre === marker &&
+      parsed.rows[0].acteurs_concernes.length === 2 &&
+      parsed.rows[0].portee === 'produit';
   }, decryptageAoA, marker)]);
 
   checks.push(['parse modele_distribution alias', await page.evaluate(function () {
@@ -77,7 +77,7 @@ async function run () {
     ];
     var sheet = XLSX.utils.aoa_to_sheet(rows);
     var parsed = window.__parseDecryptageSheet(sheet);
-    return parsed.length === 1 && parsed[0].produit_id === 'distribution';
+    return parsed.rows.length === 1 && parsed.rows[0].produit_id === 'distribution';
   })]);
 
   const pbSheet = [
