@@ -156,6 +156,8 @@
     .nb-nxcb { background: rgba(225,45,45,0.12); color: var(--red); }
     .nb-rac { background: rgba(245,158,11,0.14); color: var(--orange); }
     .nb-carte { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .nb-dist { background: rgba(14,116,144,0.12); color: #0e7490; }
+    .nb-cat { background: rgba(107,114,128,0.12); color: var(--muted); font-size: 9px; letter-spacing: 0.02em; }
 
     .sb-footer {
       padding: 10px 8px 14px;
@@ -279,6 +281,7 @@
     .sc-nxcb  .shortcut-icon { background: rgba(225,45,45,0.12); color: var(--red); }
     .sc-rac   .shortcut-icon { background: rgba(245,158,11,0.12); color: var(--orange); }
     .sc-carte .shortcut-icon { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .sc-dist .shortcut-icon { background: rgba(14,116,144,0.12); color: #0e7490; }
     .sc-bench .shortcut-icon { background: rgba(107,114,128,0.1); color: var(--muted); }
 
     .impact-badge {
@@ -335,6 +338,7 @@
     .ic-nxcb { background: rgba(225,45,45,0.1); color: var(--red); }
     .ic-rac { background: rgba(245,158,11,0.1); color: var(--orange); }
     .ic-carte { background: rgba(124,58,237,0.1); color: var(--purple); }
+    .ic-dist { background: rgba(14,116,144,0.1); color: #0e7490; }
     .ic-bench { background: rgba(107,114,128,0.1); color: var(--muted); }
     .pc-title { font-size: 15px; font-weight: 600; }
     .pc-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
@@ -371,6 +375,7 @@
     .d-nxcb { background: var(--red); }
     .d-rac { background: var(--orange); }
     .d-carte { background: var(--purple); }
+    .d-dist { background: #0e7490; }
     .news-body { flex: 1; }
     .news-meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
     .news-text { font-size: 13px; }
@@ -1109,6 +1114,33 @@
       <i class="ti ti-home"></i>
       <span>Accueil</span>
     </div>
+    <div class="sb-nav-label">Catégories</div>
+    <div class="nav-item" data-nav="produit_tarification">
+      <i class="ti ti-receipt-2"></i>
+      <span>Produit &amp; Tarification</span>
+      <span class="nb nb-cat">P&amp;T</span>
+    </div>
+    <div class="nav-item" data-nav="commercial_communication">
+      <i class="ti ti-speakerphone"></i>
+      <span>Commercial &amp; Communication</span>
+      <span class="nb nb-cat">C&amp;C</span>
+    </div>
+    <div class="nav-item" data-nav="strategie_corporate">
+      <i class="ti ti-building-skyscraper"></i>
+      <span>Stratégie &amp; Corporate</span>
+      <span class="nb nb-cat">S&amp;C</span>
+    </div>
+    <div class="nav-item" data-nav="rse_juridique">
+      <i class="ti ti-scale"></i>
+      <span>RSE &amp; Juridique</span>
+      <span class="nb nb-cat">RSE</span>
+    </div>
+    <div class="nav-item" data-nav="innovation_securite">
+      <i class="ti ti-shield-lock"></i>
+      <span>Innovation &amp; Sécurité</span>
+      <span class="nb nb-cat">I&amp;S</span>
+    </div>
+    <div class="sb-nav-sep"></div>
     <div class="nav-item" data-nav="pb">
       <i class="ti ti-pig-money"></i>
       <span>Prêt Personnel</span>
@@ -1134,28 +1166,12 @@
       <span>Carte</span>
       <span class="nb nb-carte">Carte</span>
     </div>
-    <div class="sb-nav-sep"></div>
-    <div class="sb-nav-label">Benchmarks</div>
-    <div class="nav-item" data-nav="digital">
-      <i class="ti ti-device-mobile"></i>
-      <span>Digital</span>
-    </div>
-    <div class="nav-item" data-nav="sav">
-      <i class="ti ti-headset"></i>
-      <span>SAV</span>
-    </div>
-    <div class="nav-item" data-nav="com">
-      <i class="ti ti-speakerphone"></i>
-      <span>Communication</span>
-    </div>
     <div class="nav-item" data-nav="distribution">
       <i class="ti ti-truck-delivery"></i>
-      <span>Distribution</span>
+      <span>Modèle Distribution</span>
+      <span class="nb nb-dist">Dist</span>
     </div>
-    <div class="nav-item" data-nav="indicateurs">
-      <i class="ti ti-chart-line"></i>
-      <span>Indicateurs marché</span>
-    </div>
+    <div class="sb-nav-sep"></div>
     <div class="nav-item" data-nav="actus">
       <i class="ti ti-news"></i>
       <span>Actualités</span>
@@ -1191,6 +1207,7 @@
   <div id="content">
     <div id="view-home" class="view active"></div>
     <div id="view-product" class="view"></div>
+    <div id="view-category" class="view"></div>
     <div id="view-actus" class="view"></div>
     <div id="view-indicateurs" class="view"></div>
   </div>
@@ -1606,33 +1623,42 @@
     }
   };
 
-  var P_COLORS = { pb: 'var(--tq)', cr: 'var(--green)', nxcb: 'var(--red)', rac: 'var(--orange)', carte: 'var(--purple)' };
+  var P_COLORS = { pb: 'var(--tq)', cr: 'var(--green)', nxcb: 'var(--red)', rac: 'var(--orange)', carte: 'var(--purple)', distribution: '#0e7490' };
   var P_ICONS  = {
     pb: 'ti-pig-money', cr: 'ti-refresh', nxcb: 'ti-credit-card', rac: 'ti-arrows-exchange', carte: 'ti-credit-card-pay',
     digital: 'ti-device-mobile', sav: 'ti-headset', com: 'ti-speakerphone', distribution: 'ti-truck-delivery'
   };
   var P_IC_CLS = {
-    pb: 'ic-pb', cr: 'ic-cr', nxcb: 'ic-nxcb', rac: 'ic-rac', carte: 'ic-carte',
-    digital: 'ic-bench', sav: 'ic-bench', com: 'ic-bench', distribution: 'ic-bench'
+    pb: 'ic-pb', cr: 'ic-cr', nxcb: 'ic-nxcb', rac: 'ic-rac', carte: 'ic-carte', distribution: 'ic-dist',
+    digital: 'ic-bench', sav: 'ic-bench', com: 'ic-bench'
   };
-  var P_DOT    = { pb: 'd-pb', cr: 'd-cr', nxcb: 'd-nxcb', rac: 'd-rac', carte: 'd-carte' };
+  var P_DOT    = { pb: 'd-pb', cr: 'd-cr', nxcb: 'd-nxcb', rac: 'd-rac', carte: 'd-carte', distribution: 'd-dist' };
   var HOME_SHORTCUT_LINES = {
     pb: ['Prêt', 'Personnel'],
     cr: ['Crédit', 'renouvelable'],
     nxcb: ['Paiement', 'Fractionné'],
     rac: ['Rachat', 'de crédit'],
     carte: ['Carte', ''],
+    distribution: ['Modèle de', 'distribution'],
     digital: ['Digital', ''],
     sav: ['SAV', ''],
-    com: ['Communication', ''],
-    distribution: ['Modèle de', 'distribution']
+    com: ['Communication', '']
   };
-  var BENCHMARK_PRODUCT_IDS = ['digital', 'sav', 'com', 'distribution'];
+  var ACTU_CATEGORIES = [
+    { id: 'produit_tarification', label: 'Produit & Tarification', icon: 'ti-receipt-2' },
+    { id: 'commercial_communication', label: 'Commercial & Communication', icon: 'ti-speakerphone' },
+    { id: 'strategie_corporate', label: 'Stratégie & Corporate', icon: 'ti-building-skyscraper' },
+    { id: 'rse_juridique', label: 'RSE & Juridique', icon: 'ti-scale' },
+    { id: 'innovation_securite', label: 'Innovation & Sécurité', icon: 'ti-shield-lock' }
+  ];
+  var ACTU_CATEGORY_IDS = ACTU_CATEGORIES.map(function (c) { return c.id; });
+  var CORE_PRODUCT_IDS = ['pb', 'cr', 'nxcb', 'rac', 'carte', 'distribution'];
+  var BENCHMARK_PRODUCT_IDS = ['digital', 'sav', 'com'];
   var INDICATEUR_CATEGORIES = ['Indicateurs consommation', 'Tendances conso'];
   var IMPACT_CLS = { 'à surveiller': 'impact-surveiller', 'menace directe': 'impact-menace', 'neutre': 'impact-neutre' };
   var SHORTCUT_CLS = {
-    pb: 'sc-pb', cr: 'sc-cr', nxcb: 'sc-nxcb', rac: 'sc-rac', carte: 'sc-carte',
-    digital: 'sc-bench', sav: 'sc-bench', com: 'sc-bench', distribution: 'sc-bench'
+    pb: 'sc-pb', cr: 'sc-cr', nxcb: 'sc-nxcb', rac: 'sc-rac', carte: 'sc-carte', distribution: 'sc-dist',
+    digital: 'sc-bench', sav: 'sc-bench', com: 'sc-bench'
   };
 
   /* ──────────────────────────────────────────
@@ -1642,7 +1668,9 @@
     produits: [],
     promos: {},
     differenciateurs: {},
+    differenciateursByCategorie: {},
     tendances: {},
+    tendancesByCategorie: {},
     taux: {},
     actualites: [],
     indicateurs: [],
@@ -1658,7 +1686,9 @@
     DATA.produits = result.data.produits;
     DATA.promos = result.data.promos;
     DATA.differenciateurs = result.data.differenciateurs;
+    DATA.differenciateursByCategorie = result.data.differenciateursByCategorie || {};
     DATA.tendances = result.data.tendances;
+    DATA.tendancesByCategorie = result.data.tendancesByCategorie || {};
     DATA.taux = result.data.taux;
     DATA.actualites = result.data.actualites;
     DATA.indicateurs = result.data.indicateurs || [];
@@ -1696,7 +1726,9 @@
   var state = {
     view: 'home',
     productId: null,
+    categoryId: null,
     tab: 'tableau',
+    categoryTab: 'actualites',
     compareActors: {},
     tauxBracket: 'b1',
     tauxCat: 'all',
@@ -1812,6 +1844,25 @@
 
   function isBenchmarkProduct (productId) {
     return BENCHMARK_PRODUCT_IDS.indexOf(productId) >= 0;
+  }
+
+  function isCoreProduct (productId) {
+    return CORE_PRODUCT_IDS.indexOf(productId) >= 0;
+  }
+
+  function isCategoryNav (id) {
+    return ACTU_CATEGORY_IDS.indexOf(id) >= 0;
+  }
+
+  function categoryById (id) {
+    for (var i = 0; i < ACTU_CATEGORIES.length; i++) {
+      if (ACTU_CATEGORIES[i].id === id) return ACTU_CATEGORIES[i];
+    }
+    return null;
+  }
+
+  function coreProducts () {
+    return DATA.produits.filter(function (p) { return isCoreProduct(p.id); });
   }
 
   function productHasActorFiche (productId) {
@@ -2273,16 +2324,17 @@
     document.querySelectorAll('[data-nav]').forEach(function (el) { el.classList.remove('active'); });
     var key = 'home';
     if (state.view === 'actus') key = 'actus';
-    else if (state.view === 'indicateurs') key = 'indicateurs';
+    else if (state.view === 'category') key = state.categoryId;
     else if (state.view === 'product') key = state.productId;
     var el = document.querySelector('[data-nav="' + key + '"]');
     if (el) el.classList.add('active');
 
     var p = state.productId ? productById(state.productId) : null;
+    var cat = state.categoryId ? categoryById(state.categoryId) : null;
     var title = '';
     if (state.view === 'home') title = '';
     else if (state.view === 'actus') title = 'Actualités';
-    else if (state.view === 'indicateurs') title = 'Indicateurs marché';
+    else if (state.view === 'category') title = cat ? cat.label : '';
     else title = p ? p.label : '';
     $('topbar-title').textContent = title;
     renderTopbarMeta();
@@ -2302,7 +2354,7 @@
 
     /* Bande de raccourcis produits */
     html += '<div class="shortcuts-grid">';
-    DATA.produits.forEach(function (p, idx) {
+    coreProducts().forEach(function (p, idx) {
       var lines = HOME_SHORTCUT_LINES[p.id] || [p.label, ''];
       html += '<div class="shortcut-card stagger-item ' + (SHORTCUT_CLS[p.id] || '') + '" style="animation-delay:' + (idx * 60) + 'ms" onclick="navigate(\'' + p.id + '\')">';
       html += '<div class="shortcut-icon"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
@@ -2317,9 +2369,9 @@
       return (e.impact === 'à surveiller' || e.impact === 'menace directe') && actuWithinPeriode(e.date, '7');
     }).length;
     var actorSet = {};
-    DATA.produits.forEach(function (p) { p.acteurs.forEach(function (a) { actorSet[a] = 1; }); });
+    coreProducts().forEach(function (p) { p.acteurs.forEach(function (a) { actorSet[a] = 1; }); });
     var actorCount = Object.keys(actorSet).length;
-    var productCount = DATA.produits.length;
+    var productCount = coreProducts().length;
 
     html += '<div class="home-grid">';
 
@@ -2410,6 +2462,102 @@
     html += '</div>';
 
     $('view-product').innerHTML = html;
+  }
+
+  function renderCategory () {
+    var cat = categoryById(state.categoryId);
+    if (!cat) return;
+
+    var TABS = [
+      { id: 'actualites', icon: 'ti-news', label: 'Actualités' },
+      { id: 'differenciateurs', icon: 'ti-star', label: 'Différenciateurs' },
+      { id: 'decryptage', icon: 'ti-bulb', label: 'Décryptage' }
+    ];
+    if (TABS.map(function (t) { return t.id; }).indexOf(state.categoryTab) < 0) state.categoryTab = 'actualites';
+
+    var html = '';
+    html += '<div class="prod-hd">';
+    html += '<div class="prod-icon-lg" style="background:rgba(107,114,128,0.1);color:var(--muted)"><i class="ti ' + cat.icon + '"></i></div>';
+    html += '<div class="prod-hd-main">';
+    html += '<div class="prod-title">' + esc(cat.label) + '</div>';
+    html += '<div class="prod-sub">Veille par catégorie — actualités, différenciateurs et décryptage</div>';
+    html += '</div></div>';
+
+    html += '<div class="tabs">';
+    TABS.forEach(function (t) {
+      var a = state.categoryTab === t.id ? ' active' : '';
+      html += '<button class="tab-btn' + a + '" onclick="switchCategoryTab(\'' + t.id + '\')">';
+      html += '<i class="ti ' + t.icon + '"></i>' + t.label + '</button>';
+    });
+    html += '</div>';
+
+    html += '<div id="tab-content">';
+    if (state.categoryTab === 'actualites') html += renderActusCategory(cat);
+    else if (state.categoryTab === 'differenciateurs') html += renderDifferenciateursCategory(cat);
+    else if (state.categoryTab === 'decryptage') html += renderDecryptageCategory(cat);
+    html += '</div>';
+
+    $('view-category').innerHTML = html;
+  }
+
+  function renderActusCategory (cat) {
+    var items = actuList().filter(function (e) {
+      return e.categorie === cat.id;
+    }).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+
+    var html = '<div class="news-feed">';
+    if (!items.length) {
+      html += '<div class="empty-state"><i class="ti ti-inbox"></i>';
+      html += '<div>Aucune actualité pour cette catégorie</div></div>';
+    } else {
+      items.forEach(function (e, pos) { html += renderActuItem(e, pos); });
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderDifferenciateursCategory (cat) {
+    var diffs = (DATA.differenciateursByCategorie && DATA.differenciateursByCategorie[cat.id]) || {};
+    var actors = orderTableActors(Object.keys(diffs));
+    var html = '';
+
+    if (!actors.length) {
+      html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
+      html += '<div>Aucun différenciateur pour cette catégorie</div></div>';
+      return html;
+    }
+
+    html += '<div class="diff-cards-hd"><i class="ti ti-star"></i> Différenciateurs</div>';
+    html += '<div class="diff-grid">';
+    actors.forEach(function (actor, idx) {
+      var d = diffs[actor];
+      if (!d) return;
+      var isUs = actor === 'Sofinco';
+      var cardId = diffCardId(cat.id, actor);
+
+      html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
+      html += renderDiffStatusBadge(d.status);
+      html += '<div class="diff-actor-hd">';
+      html += faviconImg(actor, 36);
+      html += '<div>';
+      html += '<div class="ac-name">' + esc(actor);
+      if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
+      html += '</div>';
+      html += '<div class="ac-group">' + esc(GROUPS[actor] || '') + '</div>';
+      html += '</div></div>';
+      html += isUs ? renderSofincoDiffContent(d) : renderCompetitorDiffContent(d);
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderDecryptageCategory (cat) {
+    var tendances = (DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || [];
+    if (!tendances.length) {
+      return '<div class="empty-state"><i class="ti ti-bulb-off"></i><div>Aucun décryptage pour cette catégorie</div></div>';
+    }
+    return renderDecryptageSection({ id: cat.id }, tendances);
   }
 
   /* ──────────────────────────────────────────
@@ -2965,7 +3113,7 @@
     html += '<span class="actu-filter-label">Produit</span>';
     html += '<select class="actu-select" onchange="setActuFilter(\'global\',\'produit\',this.value)">';
     html += '<option value="all"' + (f.produit === 'all' ? ' selected' : '') + '>Tous</option>';
-    DATA.produits.forEach(function (p) {
+    coreProducts().forEach(function (p) {
       html += '<option value="' + p.id + '"' + (f.produit === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
     });
     html += '</select>';
@@ -4442,13 +4590,13 @@ cb.checked = on;
   function navigate (id) {
     fade(function () {
       if (id === 'home' || !id) {
-        state.view = 'home'; state.productId = null;
+        state.view = 'home'; state.productId = null; state.categoryId = null;
       } else if (id === 'actus') {
-        state.view = 'actus'; state.productId = null;
-      } else if (id === 'indicateurs') {
-        state.view = 'indicateurs'; state.productId = null;
+        state.view = 'actus'; state.productId = null; state.categoryId = null;
+      } else if (isCategoryNav(id)) {
+        state.view = 'category'; state.categoryId = id; state.productId = null; state.categoryTab = 'actualites';
       } else {
-        state.view = 'product'; state.productId = id; state.tab = 'tableau';
+        state.view = 'product'; state.productId = id; state.categoryId = null; state.tab = 'tableau';
       }
       render();
     });
@@ -4457,6 +4605,11 @@ cb.checked = on;
   function switchTab (tabId) {
     state.tab = tabId;
     renderProduct();
+  }
+
+  function switchCategoryTab (tabId) {
+    state.categoryTab = tabId;
+    renderCategory();
   }
 
   function toggleCompare (productId, actor) {
@@ -4478,17 +4631,17 @@ cb.checked = on;
   ────────────────────────────────────────── */
   function render () {
     renderNav();
-    var vh = $('view-home'), vp = $('view-product'), va = $('view-actus'), vi = $('view-indicateurs');
-    vh.classList.remove('active'); vp.classList.remove('active'); va.classList.remove('active'); vi.classList.remove('active');
+    var vh = $('view-home'), vp = $('view-product'), vc = $('view-category'), va = $('view-actus'), vi = $('view-indicateurs');
+    vh.classList.remove('active'); vp.classList.remove('active'); vc.classList.remove('active'); va.classList.remove('active'); vi.classList.remove('active');
     if (state.view === 'home') {
       vh.classList.add('active');
       renderHome();
     } else if (state.view === 'actus') {
       va.classList.add('active');
       va.innerHTML = renderActusGlobal();
-    } else if (state.view === 'indicateurs') {
-      vi.classList.add('active');
-      vi.innerHTML = renderIndicateurs();
+    } else if (state.view === 'category') {
+      vc.classList.add('active');
+      renderCategory();
     } else {
       vp.classList.add('active');
       renderProduct();
@@ -5534,6 +5687,7 @@ cb.checked = on;
   /* Exposer pour les handlers inline */
   window.navigate          = navigate;
   window.switchTab         = switchTab;
+  window.switchCategoryTab = switchCategoryTab;
   window.toggleCompare     = toggleCompare;
   window.openDetail        = openDetail;
   window.openActorFiche    = openActorFiche;

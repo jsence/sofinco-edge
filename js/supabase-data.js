@@ -104,8 +104,8 @@
     });
 
     var diffsObj = {};
+    var diffsByCategorie = {};
     diffs.forEach(function (d) {
-      if (!diffsObj[d.produit_id]) diffsObj[d.produit_id] = {};
       var nom = nomById[d.acteur_id];
       var entry = {
         tags: d.tags || [],
@@ -118,19 +118,32 @@
       } else {
         entry.conclusion = d.conclusion || '';
       }
-      diffsObj[d.produit_id][nom] = entry;
+      if (d.categorie) {
+        if (!diffsByCategorie[d.categorie]) diffsByCategorie[d.categorie] = {};
+        diffsByCategorie[d.categorie][nom] = entry;
+      } else if (d.produit_id) {
+        if (!diffsObj[d.produit_id]) diffsObj[d.produit_id] = {};
+        diffsObj[d.produit_id][nom] = entry;
+      }
     });
 
     var tendObj = {};
+    var tendByCategorie = {};
     tendances.forEach(function (t) {
-      if (!tendObj[t.produit_id]) tendObj[t.produit_id] = [];
-      tendObj[t.produit_id].push({
+      var item = {
         titre: t.titre,
         description: t.description,
         acteurs: (t.acteurs_concernes || []).map(function (id) { return nomById[id]; }).filter(Boolean),
         status: t.status || undefined,
         portee: t.portee || 'produit'
-      });
+      };
+      if (t.categorie) {
+        if (!tendByCategorie[t.categorie]) tendByCategorie[t.categorie] = [];
+        tendByCategorie[t.categorie].push(item);
+      } else if (t.produit_id) {
+        if (!tendObj[t.produit_id]) tendObj[t.produit_id] = [];
+        tendObj[t.produit_id].push(item);
+      }
     });
 
     var IMPACT_REV = { a_surveiller: 'à surveiller', menace_directe: 'menace directe', neutre: 'neutre' };
@@ -140,6 +153,7 @@
         acteur: a.acteur_id ? nomById[a.acteur_id] : null,
         type: a.type,
         produit: a.produit_id,
+        categorie: a.categorie || null,
         titre: a.titre,
         resume: a.resume || null,
         fiabilite: a.fiabilite || null,
@@ -200,7 +214,9 @@
         produits: produitsData,
         promos: promosObj,
         differenciateurs: diffsObj,
+        differenciateursByCategorie: diffsByCategorie,
         tendances: tendObj,
+        tendancesByCategorie: tendByCategorie,
         taux: taux,
         actualites: actualitesData,
         indicateurs: indicateursData,
