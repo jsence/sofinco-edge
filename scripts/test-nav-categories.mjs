@@ -138,11 +138,49 @@ async function run () {
     });
   })]);
 
-  checks.push(['category icons neutral background', await page.evaluate(function () {
-    var ic = document.querySelector('[data-nav="produit_tarification"] .nav-ic-cat');
-    if (!ic) return false;
-    var bg = window.getComputedStyle(ic).backgroundColor;
-    return bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+  checks.push(['category icons distinct colors', await page.evaluate(function () {
+    var ids = ['produit_tarification', 'commercial_communication', 'strategie_corporate', 'rse_juridique', 'innovation_securite'];
+    var classes = ['nav-ic-cat-pt', 'nav-ic-cat-cc', 'nav-ic-cat-sc', 'nav-ic-cat-rse', 'nav-ic-cat-is'];
+    var colors = [];
+    for (var i = 0; i < ids.length; i++) {
+      var ic = document.querySelector('[data-nav="' + ids[i] + '"] .' + classes[i]);
+      if (!ic) return false;
+      colors.push(window.getComputedStyle(ic).color);
+    }
+    var unique = colors.filter(function (c, idx, arr) { return arr.indexOf(c) === idx; });
+    return unique.length === 5;
+  })]);
+
+  checks.push(['no global actus nav entry', await page.evaluate(function () {
+    return !document.querySelector('[data-nav="actus"]');
+  })]);
+
+  checks.push(['sidebar nav scrollable', await page.evaluate(function () {
+    var nav = document.querySelector('.sb-nav');
+    if (!nav) return false;
+    var oy = window.getComputedStyle(nav).overflowY;
+    return oy === 'auto' || oy === 'scroll';
+  })]);
+
+  await page.setViewport({ width: 1280, height: 420 });
+
+  checks.push(['sidebar scroll reaches last offer', await page.evaluate(function () {
+    var nav = document.querySelector('.sb-nav');
+    var last = document.querySelector('[data-nav="distribution"]');
+    if (!nav || !last) return false;
+    nav.scrollTop = nav.scrollHeight;
+    var navRect = nav.getBoundingClientRect();
+    var itemRect = last.getBoundingClientRect();
+    return itemRect.top >= navRect.top - 2 && itemRect.bottom <= navRect.bottom + 2;
+  })]);
+
+  checks.push(['sidebar footer stays visible', await page.evaluate(function () {
+    var footer = document.querySelector('.sb-footer');
+    var logo = document.querySelector('.sb-logo');
+    if (!footer || !logo) return false;
+    var fRect = footer.getBoundingClientRect();
+    var lRect = logo.getBoundingClientRect();
+    return fRect.top > lRect.bottom && fRect.bottom <= window.innerHeight + 1;
   })]);
 
   checks.push(['offer icons colored background', await page.evaluate(function () {

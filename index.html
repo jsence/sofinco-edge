@@ -93,7 +93,8 @@
     /* ── SIDEBAR ──────────────────────────────── */
     #sidebar {
       width: var(--sw);
-      min-height: 100vh;
+      height: 100vh;
+      max-height: 100vh;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
@@ -102,6 +103,7 @@
       top: 0; left: 0;
       z-index: 200;
       transition: transform 200ms ease;
+      overflow: hidden;
     }
 
     .sb-logo {
@@ -110,6 +112,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-shrink: 0;
     }
     .sb-logo-mark {
       width: 34px; height: 34px;
@@ -122,7 +125,17 @@
     .sb-logo-text { font-size: 12px; font-weight: 700; line-height: 1.3; }
     .sb-logo-sub { font-size: 10px; color: var(--muted); }
 
-    .sb-nav { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+    .sb-nav {
+      flex: 1;
+      min-height: 0;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
 
     .nav-item {
       display: flex; align-items: center; gap: 10px;
@@ -144,8 +157,16 @@
       width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
     }
     .nav-item .nav-ic i { font-size: 16px; line-height: 1; }
-    .nav-item-cat .nav-ic { background: rgba(107,114,128,0.12); color: var(--muted); }
-    .nav-item-cat.active .nav-ic { background: rgba(107,114,128,0.2); color: var(--text); }
+    .nav-item-cat .nav-ic-cat-pt { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
+    .nav-item-cat .nav-ic-cat-cc { background: rgba(225,45,45,0.12); color: var(--red); }
+    .nav-item-cat .nav-ic-cat-sc { background: rgba(0,75,60,0.12); color: var(--green); }
+    .nav-item-cat .nav-ic-cat-rse { background: rgba(14,116,144,0.12); color: #0e7490; }
+    .nav-item-cat .nav-ic-cat-is { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .nav-item-cat.active .nav-ic-cat-pt { background: rgba(79,216,216,0.24); }
+    .nav-item-cat.active .nav-ic-cat-cc { background: rgba(225,45,45,0.2); }
+    .nav-item-cat.active .nav-ic-cat-sc { background: rgba(0,75,60,0.2); }
+    .nav-item-cat.active .nav-ic-cat-rse { background: rgba(14,116,144,0.2); }
+    .nav-item-cat.active .nav-ic-cat-is { background: rgba(124,58,237,0.2); }
     .nav-item-offer .nav-ic-pb { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
     .nav-item-offer .nav-ic-cr { background: rgba(0,75,60,0.12); color: var(--green); }
     .nav-item-offer .nav-ic-nxcb { background: rgba(225,45,45,0.12); color: var(--red); }
@@ -175,6 +196,7 @@
     .sb-footer {
       padding: 10px 8px 14px;
       border-top: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     /* ── BUTTONS ──────────────────────────────── */
@@ -1129,27 +1151,27 @@
     </div>
     <div class="sb-nav-label">Actualités</div>
     <div class="nav-item nav-item-cat" data-nav="produit_tarification">
-      <span class="nav-ic nav-ic-cat"><i class="ti ti-receipt-2"></i></span>
+      <span class="nav-ic nav-ic-cat-pt"><i class="ti ti-receipt-2"></i></span>
       <span>Produit &amp; Tarification</span>
       <span class="nb nb-cat">P&amp;T</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="commercial_communication">
-      <span class="nav-ic nav-ic-cat"><i class="ti ti-speakerphone"></i></span>
+      <span class="nav-ic nav-ic-cat-cc"><i class="ti ti-speakerphone"></i></span>
       <span>Commercial &amp; Communication</span>
       <span class="nb nb-cat">C&amp;C</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="strategie_corporate">
-      <span class="nav-ic nav-ic-cat"><i class="ti ti-building-skyscraper"></i></span>
+      <span class="nav-ic nav-ic-cat-sc"><i class="ti ti-building-skyscraper"></i></span>
       <span>Stratégie &amp; Corporate</span>
       <span class="nb nb-cat">S&amp;C</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="rse_juridique">
-      <span class="nav-ic nav-ic-cat"><i class="ti ti-scale"></i></span>
+      <span class="nav-ic nav-ic-cat-rse"><i class="ti ti-scale"></i></span>
       <span>RSE &amp; Juridique</span>
       <span class="nb nb-cat">RSE</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="innovation_securite">
-      <span class="nav-ic nav-ic-cat"><i class="ti ti-shield-lock"></i></span>
+      <span class="nav-ic nav-ic-cat-is"><i class="ti ti-shield-lock"></i></span>
       <span>Innovation &amp; Sécurité</span>
       <span class="nb nb-cat">I&amp;S</span>
     </div>
@@ -1184,11 +1206,6 @@
       <span class="nav-ic nav-ic-dist"><i class="ti ti-truck-delivery"></i></span>
       <span>Modèle Distribution</span>
       <span class="nb nb-dist">Dist</span>
-    </div>
-    <div class="sb-nav-sep"></div>
-    <div class="nav-item" data-nav="actus">
-      <i class="ti ti-news"></i>
-      <span>Actualités</span>
     </div>
   </nav>
 
@@ -2392,7 +2409,7 @@
     /* Dernières actualités */
     html += '<div>';
     html += '<div class="section-hd"><i class="ti ti-bell"></i> Dernières actualités';
-    html += '<button class="btn btn-secondary" style="margin-left:auto;font-size:12px" onclick="navigate(\'actus\')">Voir tout <i class="ti ti-arrow-right"></i></button>';
+    html += '<button class="btn btn-secondary" style="margin-left:auto;font-size:12px" onclick="navigate(\'produit_tarification\')">Voir tout <i class="ti ti-arrow-right"></i></button>';
     html += '</div>';
     html += '<div class="news-feed">';
     if (!sorted.length) {
@@ -5585,7 +5602,7 @@ cb.checked = on;
     $('modal-import-result').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
     $('import-result-actus').addEventListener('click', function () {
       $('modal-import-result').classList.remove('show');
-      navigate('actus');
+      navigate('produit_tarification');
     });
 
     /* Modal export produit */
