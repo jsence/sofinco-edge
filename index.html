@@ -2431,6 +2431,9 @@
     }
     if (stats.undoAvailable) {
       msg += '\n\nAnnulation possible : Espace contributeur — choisissez un import récent à annuler (5 versions max).';
+    } else if (stats.undoAttempted && stats.undoError) {
+      msg += '\n\n⚠ Instantané d\'annulation non enregistré : ' + stats.undoError +
+        '. L\'import a bien été appliqué, mais l\'annulation ne sera pas disponible pour cette version.';
     }
     var msgEl = $('import-result-msg');
     msgEl.textContent = msg;
@@ -2486,10 +2489,12 @@
       hasTauxImport: !!(pendingTauxImport && pendingTauxImport.length)
     });
     var undoPayload = null;
+    var undoCaptureError = null;
     try {
       undoPayload = await SofincoImportUndo.captureImportUndoPayload(sbClient, undoScope);
     } catch (undoCapErr) {
-      console.warn('Instantané import (annulation) non capturé :', undoCapErr.message || undoCapErr);
+      undoCaptureError = undoCapErr.message || String(undoCapErr);
+      console.warn('Instantané import (annulation) non capturé :', undoCaptureError);
     }
 
     var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0, skipped: importSkipped };
@@ -2527,15 +2532,21 @@
       }
       pendingDecryptageImport = null;
       var undoSaved = false;
+      var undoSaveError = null;
       if (undoPayload) {
         try {
           await SofincoImportUndo.saveImportUndoSnapshot(sbClient, undoScope, undoPayload, importDate);
           undoSaved = true;
         } catch (undoSaveErr) {
-          console.warn('Instantané import non enregistré :', undoSaveErr.message || undoSaveErr);
+          undoSaveError = undoSaveErr.message || String(undoSaveErr);
+          console.warn('Instantané import non enregistré :', undoSaveError);
         }
       }
       importStats.undoAvailable = undoSaved;
+      importStats.undoAttempted = true;
+      if (!undoSaved) {
+        importStats.undoError = undoCaptureError || undoSaveError || (!undoPayload ? 'capture vide' : null);
+      }
       await SofincoSupabase.recordLastImportAt(sbClient, importDate);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
@@ -4544,8 +4555,14 @@ promos: 'Promos',
         return;
       }
       if (!status.available || !status.items || !status.items.length) {
-        box.style.display = 'none';
+        box.style.display = 'block';
         btn.disabled = true;
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">— Aucun import Excel annulable —</option>';
+        if (hint) {
+          hint.innerHTML = 'Seuls les <strong>imports Excel</strong> récents (5 max.) apparaissent ici. ' +
+            'Effectuez un import .xlsx pour enregistrer une version annulable.';
+        }
         return;
       }
       box.style.display = 'block';

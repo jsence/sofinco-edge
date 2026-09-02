@@ -35,8 +35,11 @@ function run () {
     emptyData,
     Object.assign({}, baseOpts, { importedProductIds: ['pb'] })
   );
-  checks.push(['PB → snapshot actualites (changements)', pbScope.snapshotAllActualites === true]);
+  checks.push(['PB → pas snapshot actualites sans feuille ACTUALITES', pbScope.snapshotAllActualites === false]);
   checks.push(['PB → productIds', pbScope.productIds.length === 1 && pbScope.productIds[0] === 'pb']);
+
+  var actuOnly = api.buildImportUndoScope({ SheetNames: ['ACTUALITES'] }, { promos: { pb: [] }, differenciateurs: { cr: [] } }, baseOpts);
+  checks.push(['ACTUALITES seul → pas promos/diffs', actuOnly.promoProductIds.length === 0 && actuOnly.diffProductIds.length === 0]);
 
   var promoScope = api.buildImportUndoScope(
     { SheetNames: ['PROMOS'] },
