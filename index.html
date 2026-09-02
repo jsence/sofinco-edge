@@ -1451,7 +1451,7 @@
           <br><span class="text-sm text-muted">Feuille ACTUALITES : colonne optionnelle <strong>Une</strong> (Oui/Non) — si plusieurs lignes Oui, la dernière l'emporte.</span>
         </div>
         <div id="contrib-undo-box" class="contrib-undo-box" style="display:none">
-          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import"><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import" disabled><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
           <p class="contrib-undo-hint" id="contrib-undo-hint">Seul le <strong>dernier</strong> import Excel peut être annulé (un seul niveau de retour arrière).</p>
         </div>
       </div>
@@ -2680,6 +2680,8 @@
     var featured = featuredActu();
     var catFilter = state.homeActuCategory || 'all';
 
+    if (featured) html += renderHomeFeatured(featured);
+
     html += '<div class="home-actu-main">';
     html += '<div class="section-hd"><i class="ti ti-news"></i> Actualités</div>';
     html += '<div class="home-cat-tags">';
@@ -2688,8 +2690,6 @@
       html += '<button type="button" class="home-cat-tag' + (catFilter === cat.id ? ' active' : '') + '" onclick="setHomeActuCategory(\'' + cat.id + '\')">' + esc(cat.label) + '</button>';
     });
     html += '</div>';
-
-    if (featured) html += renderHomeFeatured(featured);
 
     html += '<div class="news-feed home-feed-wide">';
     if (!feed.length) {
@@ -4488,6 +4488,15 @@ promos: 'Promos',
     }
     try {
       var status = await SofincoImportUndo.getImportUndoStatus(sbClient);
+      if (status.migrationRequired) {
+        box.style.display = 'block';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-arrow-back-up"></i> Annuler le dernier import';
+        if (hint) {
+          hint.innerHTML = 'Fonction indisponible : appliquez la migration <code>20250902220000_import_undo_snapshot.sql</code> sur Supabase, puis effectuez un import Excel.';
+        }
+        return;
+      }
       if (!status.available) {
         box.style.display = 'none';
         btn.disabled = true;
@@ -6144,6 +6153,22 @@ cb.checked = on;
     render();
     var el = document.querySelector('.home-featured');
     return el ? el.textContent : '';
+  };
+  window.__testHomeFeaturedLayout = function () {
+    DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: 'LAYOUT TEST', acteur: 'Cofidis', a_la_une: true }];
+    state.view = 'home';
+    render();
+    var root = document.getElementById('view-home');
+    var subtitle = root.querySelector('.home-subtitle');
+    var featured = root.querySelector('.home-featured');
+    var actuTitle = root.querySelector('.home-actu-main .section-hd');
+    if (!subtitle || !featured || !actuTitle) return { ok: false, reason: 'missing nodes' };
+    var subtitleBeforeFeatured = (subtitle.compareDocumentPosition(featured) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    var featuredBeforeActu = (featured.compareDocumentPosition(actuTitle) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    return {
+      ok: subtitleBeforeFeatured && featuredBeforeActu,
+      order: [subtitle.textContent.trim(), featured.querySelector('.home-featured-title').textContent.trim(), actuTitle.textContent.trim()]
+    };
   };
   window.__testRenderTopbarLastUpdate = function (lastImportAt, actuDate) {
     DATA.lastImportAt = lastImportAt;
