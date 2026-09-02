@@ -2650,6 +2650,8 @@
     var featured = featuredActu();
     var catFilter = state.homeActuCategory || 'all';
 
+    if (featured) html += renderHomeFeatured(featured);
+
     html += '<div class="home-actu-main">';
     html += '<div class="section-hd"><i class="ti ti-news"></i> Actualités</div>';
     html += '<div class="home-cat-tags">';
@@ -2658,8 +2660,6 @@
       html += '<button type="button" class="home-cat-tag' + (catFilter === cat.id ? ' active' : '') + '" onclick="setHomeActuCategory(\'' + cat.id + '\')">' + esc(cat.label) + '</button>';
     });
     html += '</div>';
-
-    if (featured) html += renderHomeFeatured(featured);
 
     html += '<div class="news-feed home-feed-wide">';
     if (!feed.length) {
@@ -6055,6 +6055,22 @@ cb.checked = on;
     render();
     var el = document.querySelector('.home-featured');
     return el ? el.textContent : '';
+  };
+  window.__testHomeFeaturedLayout = function () {
+    DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: 'LAYOUT TEST', acteur: 'Cofidis', a_la_une: true }];
+    state.view = 'home';
+    render();
+    var root = document.getElementById('view-home');
+    var subtitle = root.querySelector('.home-subtitle');
+    var featured = root.querySelector('.home-featured');
+    var actuTitle = root.querySelector('.home-actu-main .section-hd');
+    if (!subtitle || !featured || !actuTitle) return { ok: false, reason: 'missing nodes' };
+    var subtitleBeforeFeatured = (subtitle.compareDocumentPosition(featured) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    var featuredBeforeActu = (featured.compareDocumentPosition(actuTitle) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    return {
+      ok: subtitleBeforeFeatured && featuredBeforeActu,
+      order: [subtitle.textContent.trim(), featured.querySelector('.home-featured-title').textContent.trim(), actuTitle.textContent.trim()]
+    };
   };
   window.__testRenderTopbarLastUpdate = function (lastImportAt, actuDate) {
     DATA.lastImportAt = lastImportAt;
