@@ -45,6 +45,8 @@ function run () {
   );
   checks.push(['PROMOS → promoProductIds', promoScope.promoProductIds.indexOf('pb') >= 0]);
 
+  checks.push(['MAX_UNDO_SNAPSHOTS = 5', api.MAX_UNDO_SNAPSHOTS === 5]);
+
   console.log('Import undo scope tests:\n');
   var allOk = true;
   checks.forEach(function (pair) {

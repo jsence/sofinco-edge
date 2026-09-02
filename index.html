@@ -392,6 +392,8 @@
       border-radius: var(--r); background: rgba(245, 158, 11, 0.06);
     }
     .contrib-undo-box .contrib-undo-hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+    .contrib-undo-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .contrib-undo-actions select { flex: 1; min-width: 200px; }
     .week-card {
       border-radius: var(--r);
       padding: 6px 22px;
@@ -1440,8 +1442,12 @@
           <p class="contrib-success" id="contrib-delete-actu-msg" style="display:none;margin-top:10px"></p>
         </div>
         <div id="contrib-undo-box" class="contrib-undo-box" style="display:none">
-          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import" disabled><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
-          <p class="contrib-undo-hint" id="contrib-undo-hint">Seul le <strong>dernier</strong> import Excel peut être annulé (un seul niveau de retour arrière).</p>
+          <div class="section-hd" style="margin-bottom:8px"><i class="ti ti-arrow-back-up"></i> Annuler un import Excel</div>
+          <div class="contrib-undo-actions">
+            <select id="contrib-undo-select" class="actu-select contrib-input" style="margin-bottom:0"></select>
+            <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import" disabled><i class="ti ti-arrow-back-up"></i> Annuler jusqu'à cette version</button>
+          </div>
+          <p class="contrib-undo-hint" id="contrib-undo-hint">Jusqu'à 5 imports récents conservés. Restaure l'état <strong>avant</strong> l'import choisi (les imports plus récents sont aussi annulés).</p>
         </div>
       </div>
 
@@ -2424,7 +2430,7 @@
       if (skipped.length > 8) msg += '\n• … et ' + (skipped.length - 8) + ' autre(s)';
     }
     if (stats.undoAvailable) {
-      msg += '\n\nAnnulation possible : rouvrez Espace contributeur — le bouton « Annuler le dernier import » apparaît sur l\'accueil contributeur.';
+      msg += '\n\nAnnulation possible : Espace contributeur — choisissez un import récent à annuler (5 versions max).';
     }
     var msgEl = $('import-result-msg');
     msgEl.textContent = msg;
@@ -4517,8 +4523,9 @@ promos: 'Promos',
   async function refreshImportUndoUI () {
     var box = $('contrib-undo-box');
     var btn = $('contrib-undo-import');
+    var sel = $('contrib-undo-select');
     var hint = $('contrib-undo-hint');
-    if (!box || !btn) return;
+    if (!box || !btn || !sel) return;
     if (!contribUnlocked || !sbClient) {
       box.style.display = 'none';
       btn.disabled = true;
@@ -4529,23 +4536,36 @@ promos: 'Promos',
       if (status.migrationRequired) {
         box.style.display = 'block';
         btn.disabled = true;
-        btn.innerHTML = '<i class="ti ti-arrow-back-up"></i> Annuler le dernier import';
+        sel.innerHTML = '<option value="">— Aucun import —</option>';
+        sel.disabled = true;
         if (hint) {
-          hint.innerHTML = 'Fonction indisponible : appliquez la migration <code>20250902220000_import_undo_snapshot.sql</code> sur Supabase, puis effectuez un import Excel.';
+          hint.innerHTML = 'Fonction indisponible : appliquez les migrations <code>import_undo_snapshot</code> sur Supabase, puis effectuez un import Excel.';
         }
         return;
       }
-      if (!status.available) {
+      if (!status.available || !status.items || !status.items.length) {
         box.style.display = 'none';
         btn.disabled = true;
         return;
       }
       box.style.display = 'block';
-      btn.disabled = false;
-      var label = status.importDate ? fmtDate(status.importDate) : 'récent';
-      btn.innerHTML = '<i class="ti ti-arrow-back-up"></i> Annuler le dernier import (' + esc(label) + ')';
+      sel.disabled = false;
+      var prev = sel.value;
+      var html = '';
+      status.items.forEach(function (item) {
+        html += '<option value="' + esc(item.id) + '">' + esc(item.label) + '</option>';
+      });
+      sel.innerHTML = html;
+      if (prev) {
+        for (var ui = 0; ui < sel.options.length; ui++) {
+          if (sel.options[ui].value === prev) { sel.value = prev; break; }
+        }
+      }
+      btn.disabled = !sel.value;
       if (hint) {
-        hint.innerHTML = 'Restaure l\'état des tables <strong>avant</strong> cet import. Un seul niveau : si un nouvel import a été fait depuis, seul le plus récent peut être annulé.';
+        var max = status.maxLevels || SofincoImportUndo.MAX_UNDO_SNAPSHOTS || 5;
+        hint.innerHTML = 'Jusqu\'à <strong>' + max + ' versions</strong> disponibles maximum. ' +
+          'Restaure l\'état <strong>avant</strong> l\'import choisi (les imports plus récents sont annulés aussi).';
       }
     } catch (e) {
       box.style.display = 'none';
@@ -4553,28 +4573,31 @@ promos: 'Promos',
     }
   }
 
-  async function undoLastExcelImport () {
+  async function undoSelectedExcelImport () {
     if (!contribUnlocked || !sbClient) return;
+    var sel = $('contrib-undo-select');
+    var snapshotId = sel ? (sel.value || '').trim() : '';
     var status = await SofincoImportUndo.getImportUndoStatus(sbClient);
-    if (!status.available) {
-      alert('Aucun import Excel récent à annuler.');
+    if (!status.available || !snapshotId) {
+      alert('Aucun import Excel à annuler.');
       refreshImportUndoUI();
       return;
     }
-    var label = status.importDate ? fmtDate(status.importDate) : 'récent';
+    var item = (status.items || []).filter(function (i) { return i.id === snapshotId; })[0];
+    var label = item ? item.label : 'import sélectionné';
     var ok = window.confirm(
-      'Annuler le dernier import Excel (' + label + ') ?\n\n' +
+      'Annuler jusqu\'à : ' + label + ' ?\n\n' +
       'Les données seront restaurées telles qu\'elles étaient juste avant cet import. ' +
-      'Cette action ne peut être faite qu\'une fois (seul le dernier import est annulable).'
+      'Les imports plus récents seront également annulés. Action irréversible.'
     );
     if (!ok) return;
     try {
-      await SofincoImportUndo.restoreImportUndoSnapshot(sbClient);
+      await SofincoImportUndo.restoreImportUndoSnapshot(sbClient, snapshotId);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
       render();
       refreshImportUndoUI();
-      alert('Dernier import annulé — les données ont été restaurées.');
+      alert('Import(s) annulé(s) — les données ont été restaurées.');
     } catch (e) {
       alert('Erreur lors de l\'annulation : ' + (e.message || e));
     }
@@ -6133,7 +6156,11 @@ cb.checked = on;
       if (e.key === 'Enter') validateContribAccess();
     });
     $('contrib-goto-excel').addEventListener('click', showContribExcelView);
-    $('contrib-undo-import').addEventListener('click', undoLastExcelImport);
+    $('contrib-undo-import').addEventListener('click', undoSelectedExcelImport);
+    $('contrib-undo-select').addEventListener('change', function () {
+      var btn = $('contrib-undo-import');
+      if (btn) btn.disabled = !($('contrib-undo-select').value || '').trim();
+    });
     $('contrib-goto-json').addEventListener('click', function () {
       resetContribBulkImport();
       showContribImportView();

@@ -49,19 +49,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
 -- Voir supabase/migrations/20250902210000_app_meta_last_import.sql
 ```
 
-## Annulation du dernier import Excel
+## Annulation des imports Excel (historique 5 niveaux)
 
-Table `import_undo_snapshot` (migration `20250902220000_import_undo_snapshot.sql`) : une seule ligne `id='last'` avec le JSON des tables concernées **juste avant** le dernier import.
+Table `import_undo_snapshot` : jusqu'à **5 instantanés** (FIFO — le plus ancien est purgé au 6e import).
 
-- Bouton « Annuler le dernier import » dans l'étape Excel contributeur (après un import réussi)
-- Un seul niveau de retour arrière ; un nouvel import écrase l'instantané précédent
-- **Sans cette migration appliquée sur Supabase**, le bouton reste désactivé avec un message explicite (le code front est déployé mais la table n'existe pas encore)
+- Migrations : `20250902220000_import_undo_snapshot.sql` puis `20250902230000_import_undo_snapshot_history.sql`
+- Hub contributeur : liste déroulante des imports récents + « Annuler jusqu'à cette version »
+- Restaure l'état **avant** l'import choisi ; les imports plus récents sont annulés aussi
 
-Appliquer manuellement dans **SQL Editor** si l'intégration GitHub Supabase ne l'a pas fait :
-
-```sql
--- Voir supabase/migrations/20250902220000_import_undo_snapshot.sql
-```
+Sans migration, l'import continue mais l'annulation est indisponible.
 
 Les scripts `scripts/test-*.mjs` **refusent de s'exécuter** sur la base de production (`supabase-config.js`). Utiliser un projet Supabase de test :
 

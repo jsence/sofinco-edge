@@ -96,17 +96,18 @@ async function run () {
     checks.push(['après import simulé: A et B', afterImport.length >= 2]);
 
     await page.evaluate(async function (scope, payload, importDate) {
-      await window.SofincoImportUndo.saveImportUndoSnapshot(window.sbClient, scope, payload, importDate);
+      return await window.SofincoImportUndo.saveImportUndoSnapshot(window.sbClient, scope, payload, importDate);
     }, scope, captured, '2026-09-02');
 
     var statusBefore = await page.evaluate(async function () {
       return await window.SofincoImportUndo.getImportUndoStatus(window.sbClient);
     });
-    checks.push(['undo disponible avant annulation', statusBefore.available === true]);
+    checks.push(['undo disponible avant annulation', statusBefore.available === true && statusBefore.items.length >= 1]);
 
-    await page.evaluate(async function () {
-      await window.SofincoImportUndo.restoreImportUndoSnapshot(window.sbClient);
-    });
+    var snapId = statusBefore.items[0].id;
+    await page.evaluate(async function (id) {
+      await window.SofincoImportUndo.restoreImportUndoSnapshot(window.sbClient, id);
+    }, snapId);
 
     var afterUndo = await countMarkerActus(sb, markerPrefix);
     checks.push(['après annulation: B absent', !afterUndo.some(function (a) { return a.titre === markerB; })]);
@@ -127,7 +128,12 @@ async function run () {
     })]);
 
     await sb.from('actualites').delete().eq('id', rowA.id);
-    await sb.from('import_undo_snapshot').update({ available: false }).eq('id', 'last');
+    var snaps = await sb.from('import_undo_snapshot').select('id').eq('available', true);
+    if (snaps.data) {
+      for (var si = 0; si < snaps.data.length; si++) {
+        await sb.from('import_undo_snapshot').delete().eq('id', snaps.data[si].id);
+      }
+    }
   } finally {
     await browser.close();
     server.close();

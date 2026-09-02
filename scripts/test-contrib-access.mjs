@@ -91,9 +91,10 @@ async function run () {
   checks.push(['undo rafraîchi sur le hub', await page.evaluate(function () {
     var box = document.getElementById('contrib-undo-box');
     var btn = document.getElementById('contrib-undo-import');
-    if (!box || !btn) return false;
+    var sel = document.getElementById('contrib-undo-select');
+    if (!box || !btn || !sel) return false;
     if (box.style.display === 'none' && btn.disabled) return true;
-    if (box.style.display !== 'none' && !btn.disabled) return true;
+    if (box.style.display !== 'none' && sel.options.length > 0) return true;
     return box.style.display !== 'none' && btn.disabled;
   })]);
 
