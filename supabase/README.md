@@ -45,10 +45,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
 
 ## Tests E2E et données de production
 
-Les scripts `scripts/test-*.mjs` ciblent la base configurée dans `supabase-config.js`. **Ne pas pointer vers la production** sans base de test dédiée.
+Les scripts `scripts/test-*.mjs` **refusent de s'exécuter** sur la base de production (`supabase-config.js`). Utiliser un projet Supabase de test :
 
-- Chaque script nettoie automatiquement les lignes de test en `finally` (préfixe `TEST`, source `example.com`, etc.).
-- Nettoyage manuel : `node scripts/cleanup-test-data.mjs` (ajouter `--dry-run` pour lister sans supprimer).
+1. Copier `supabase-config.test.example.js` → `supabase-config.test.js` (gitignored) et renseigner l'URL + clé anon du projet test
+2. Ou exporter `SUPABASE_TEST_URL` + `SUPABASE_TEST_ANON_KEY`
+
+- Chaque script nettoie automatiquement les lignes de test en `finally` (préfixe `TEST`, imports PB minimaux, etc.).
+- Nettoyage manuel sur la prod : `node scripts/cleanup-test-data.mjs --dry-run` puis `--apply`
 
 ## Tables
 
