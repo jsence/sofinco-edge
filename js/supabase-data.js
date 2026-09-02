@@ -500,6 +500,37 @@
     return map;
   }
 
+  async function upsertDifferenciateurRow (sb, row, opts) {
+    var selectSingle = opts && opts.selectSingle;
+    var isCategory = row.categorie != null && row.categorie !== '';
+    var sel = sb.from('differenciateurs').select(selectSingle ? '*' : 'id');
+    if (isCategory) {
+      sel = sel.eq('categorie', row.categorie).eq('acteur_id', row.acteur_id).is('produit_id', null);
+    } else {
+      sel = sel.eq('produit_id', row.produit_id).eq('acteur_id', row.acteur_id).is('categorie', null);
+    }
+    var existingRes = await sel.maybeSingle();
+    if (existingRes.error) throw new Error('differenciateurs: ' + existingRes.error.message);
+    if (existingRes.data && existingRes.data.id) {
+      var upd = await sb.from('differenciateurs').update(row).eq('id', existingRes.data.id);
+      if (upd.error) throw new Error('differenciateurs: ' + upd.error.message);
+      if (selectSingle) {
+        var refreshed = await sb.from('differenciateurs').select('*').eq('id', existingRes.data.id).single();
+        if (refreshed.error) throw new Error('differenciateurs: ' + refreshed.error.message);
+        return refreshed.data;
+      }
+      return existingRes.data;
+    }
+    if (selectSingle) {
+      var ins = await sb.from('differenciateurs').insert(row).select('*').single();
+      if (ins.error) throw new Error('differenciateurs: ' + ins.error.message);
+      return ins.data;
+    }
+    var insPlain = await sb.from('differenciateurs').insert(row);
+    if (insPlain.error) throw new Error('differenciateurs: ' + insPlain.error.message);
+    return null;
+  }
+
   async function syncDifferenciateursByCategorieFromImport (sb, diffsObj, idByNom, groups, domains) {
     if (!diffsObj || !Object.keys(diffsObj).length) return { map: idByNom || {} };
     return syncDifferenciateursScopeToSupabase(sb, diffsObj, idByNom, groups, domains, 'categorie');
@@ -544,22 +575,7 @@
 
     if (rows.length) {
       for (var ri = 0; ri < rows.length; ri++) {
-        var row = rows[ri];
-        var sel = sb.from('differenciateurs').select('id');
-        if (isCategory) {
-          sel = sel.eq('categorie', row.categorie).eq('acteur_id', row.acteur_id).is('produit_id', null);
-        } else {
-          sel = sel.eq('produit_id', row.produit_id).eq('acteur_id', row.acteur_id).is('categorie', null);
-        }
-        var existingRes = await sel.maybeSingle();
-        if (existingRes.error) throw new Error('differenciateurs: ' + existingRes.error.message);
-        if (existingRes.data && existingRes.data.id) {
-          var upd = await sb.from('differenciateurs').update(row).eq('id', existingRes.data.id);
-          if (upd.error) throw new Error('differenciateurs: ' + upd.error.message);
-        } else {
-          var ins = await sb.from('differenciateurs').insert(row);
-          if (ins.error) throw new Error('differenciateurs: ' + ins.error.message);
-        }
+        await upsertDifferenciateurRow(sb, rows[ri]);
       }
     }
     return { map: map };
@@ -759,7 +775,7 @@
   }
 
   async function upsertContributionDifferenciateur(sb, payload, idByNom) {
-    if (!payload.produit_id) throw new Error('Produit requis pour un différenciateur.');
+    if (!payload.produit_id && !payload.categorie) throw new Error('Produit ou catégorie requis pour un différenciateur.');
     var map = Object.assign({}, idByNom || {});
     var acteurId = payload.acteur_id || null;
     var acteurNom = payload.acteur ? String(payload.acteur).trim() : '';
@@ -779,6 +795,7 @@
     var status = payload.status === 'genere' ? 'genere' : (payload.status === 'valide' ? 'valide' : 'valide');
     var row = {
       produit_id: payload.produit_id,
+      categorie: payload.categorie || null,
       acteur_id: acteurId,
       difference: detail || null,
       pourquoi: pourquoi || null,
@@ -786,11 +803,8 @@
       tags: tags,
       status: status
     };
-    var { data, error } = await sb.from('differenciateurs')
-      .upsert(row, { onConflict: 'produit_id,acteur_id' })
-      .select('*')
-      .single();
-    if (error) throw new Error('differenciateurs: ' + error.message);
+    if (!row.produit_id && !row.categorie) throw new Error('Produit ou catégorie requis pour un différenciateur.');
+    var data = await upsertDifferenciateurRow(sb, row, { selectSingle: true });
     return { row: data, map: map };
   }
 
