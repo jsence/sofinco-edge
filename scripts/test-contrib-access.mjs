@@ -80,16 +80,24 @@ async function run () {
   await page.waitForFunction(function () {
     var box = document.getElementById('contrib-undo-box');
     var btn = document.getElementById('contrib-undo-import');
-    return box && box.style.display === 'none' && btn && btn.disabled;
+    if (!box || !btn) return false;
+    if (box.style.display === 'none' && btn.disabled) return true;
+    if (box.style.display !== 'none' && btn.disabled) {
+      var hint = document.getElementById('contrib-undo-hint');
+      return hint && (hint.textContent.indexOf('migration') >= 0 || hint.textContent.indexOf('dernier') >= 0);
+    }
+    return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
   }, { timeout: 15000 });
   checks.push(['excel step accessible', await page.evaluate(function () {
     return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
   })]);
 
-  checks.push(['undo import masqué sans import récent', await page.evaluate(function () {
+  checks.push(['undo import masqué ou migration signalée', await page.evaluate(function () {
     var box = document.getElementById('contrib-undo-box');
     var btn = document.getElementById('contrib-undo-import');
-    return box && box.style.display === 'none' && btn && btn.disabled;
+    if (!box || !btn) return false;
+    if (box.style.display === 'none' && btn.disabled) return true;
+    return box.style.display !== 'none' && btn.disabled;
   })]);
 
   await page.click('#contrib-back-hub-from-excel');

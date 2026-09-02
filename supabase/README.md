@@ -55,6 +55,13 @@ Table `import_undo_snapshot` (migration `20250902220000_import_undo_snapshot.sql
 
 - Bouton « Annuler le dernier import » dans l'étape Excel contributeur (après un import réussi)
 - Un seul niveau de retour arrière ; un nouvel import écrase l'instantané précédent
+- **Sans cette migration appliquée sur Supabase**, le bouton reste désactivé avec un message explicite (le code front est déployé mais la table n'existe pas encore)
+
+Appliquer manuellement dans **SQL Editor** si l'intégration GitHub Supabase ne l'a pas fait :
+
+```sql
+-- Voir supabase/migrations/20250902220000_import_undo_snapshot.sql
+```
 
 Les scripts `scripts/test-*.mjs` **refusent de s'exécuter** sur la base de production (`supabase-config.js`). Utiliser un projet Supabase de test :
 

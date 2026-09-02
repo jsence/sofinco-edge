@@ -100,6 +100,14 @@ async function run () {
     return txt.indexOf('FEATURED MOCK') >= 0 && txt.indexOf('09/07/2026') >= 0;
   })]);
 
+  checks.push(['ordre accueil: sous-titre → à la une → Actualités', await page.evaluate(function () {
+    var layout = window.__testHomeFeaturedLayout();
+    return layout.ok &&
+      layout.order[0].indexOf('Suivre en continu') >= 0 &&
+      layout.order[1] === 'LAYOUT TEST' &&
+      layout.order[2].indexOf('Actualités') >= 0;
+  })]);
+
   checks.push(['UI contributeur : sélecteur À la une présent', await page.evaluate(function () {
     return document.getElementById('contrib-featured-select') !== null &&
       document.getElementById('contrib-featured-apply') !== null &&
