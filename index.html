@@ -1775,7 +1775,8 @@
     taux: {},
     actualites: [],
     indicateurs: [],
-    texteLibre: {}
+    texteLibre: {},
+    lastImportAt: null
   };
 
   function applyLoadedData (result) {
@@ -1794,6 +1795,7 @@
     DATA.actualites = result.data.actualites;
     DATA.indicateurs = result.data.indicateurs || [];
     DATA.texteLibre = result.data.texteLibre || {};
+    DATA.lastImportAt = result.data.lastImportAt || null;
     dataReady = true;
   }
 
@@ -1924,6 +1926,8 @@
   }
 
   function getGlobalLastUpdateIso () {
+    var fromImport = normalizeIsoDate(DATA.lastImportAt);
+    if (fromImport) return fromImport;
     var latest = null;
     function consider (dateStr) {
       var iso = normalizeIsoDate(dateStr);
@@ -1932,7 +1936,6 @@
     }
     DATA.produits.forEach(function (p) { consider(p.updatedAt); });
     if (DATA.taux && DATA.taux.cr) consider(DATA.taux.cr.updatedAt);
-    actuList().forEach(function (a) { consider(a.date); });
     return latest;
   }
 
@@ -2485,6 +2488,7 @@
         importStats.decryptage = tendImportRes.count;
       }
       pendingDecryptageImport = null;
+      await SofincoSupabase.recordLastImportAt(sbClient, importDate);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
     } catch (e) {
@@ -5720,6 +5724,7 @@ cb.checked = on;
       contribBulkRows = contribBulkRows.filter(function (r) { return !publishedIds[r.id]; });
 
       if (okCount > 0) {
+        await SofincoSupabase.recordLastImportAt(sbClient);
         var reload = await SofincoSupabase.loadAllData(sbClient);
         applyLoadedData(reload);
         render();
@@ -5840,6 +5845,7 @@ cb.checked = on;
         Object.assign(actorIdByNom, res2.map);
       }
 
+      await SofincoSupabase.recordLastImportAt(sbClient);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
       render();
@@ -6040,6 +6046,8 @@ cb.checked = on;
   window.__parseUneImport = parseUneImport;
   window.__parseImportDateToIso = parseImportDateToIso;
   window.__fmtDate = fmtDate;
+  window.__getGlobalLastUpdateIso = getGlobalLastUpdateIso;
+  window.__renderTopbarMeta = renderTopbarMeta;
   window.__render = render;
   window.__testSetFeaturedActu = function (titre) {
     DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: titre, acteur: 'Cofidis', a_la_une: true }];
@@ -6047,6 +6055,13 @@ cb.checked = on;
     render();
     var el = document.querySelector('.home-featured');
     return el ? el.textContent : '';
+  };
+  window.__testRenderTopbarLastUpdate = function (lastImportAt, actuDate) {
+    DATA.lastImportAt = lastImportAt;
+    DATA.produits = [{ updatedAt: '2026-08-01' }];
+    DATA.actualites = [{ date: actuDate, titre: 'Test actu' }];
+    renderTopbarMeta();
+    return document.getElementById('topbar-last-update').textContent;
   };
   window.__parseDecryptageSheet = parseDecryptageSheet;
   window.__normalizeImportCategorie = normalizeImportCategorie;

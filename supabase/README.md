@@ -43,6 +43,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
   WHERE a_la_une = true;
 ```
 
+**Dernière mise à jour** (`20250902210000_app_meta_last_import.sql`) — date du dernier import contributeur (en-tête) :
+
+```sql
+-- Voir supabase/migrations/20250902210000_app_meta_last_import.sql
+```
+
 ## Tests E2E et données de production
 
 Les scripts `scripts/test-*.mjs` **refusent de s'exécuter** sur la base de production (`supabase-config.js`). Utiliser un projet Supabase de test :
