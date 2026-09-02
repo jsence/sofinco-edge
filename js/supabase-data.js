@@ -137,7 +137,7 @@
     var actualitesData = actualites.map(function (a) {
       return {
         date: a.date,
-        acteur: nomById[a.acteur_id],
+        acteur: a.acteur_id ? nomById[a.acteur_id] : null,
         type: a.type,
         produit: a.produit_id,
         titre: a.titre,
@@ -553,6 +553,53 @@
     'neutre': 'neutre'
   };
 
+  function normalizeFiabiliteImport (raw) {
+    if (!raw) return null;
+    var s = String(raw).trim().toLowerCase();
+    if (s.indexOf('verif') >= 0) return 'a_verifier';
+    if (s.indexOf('confirm') >= 0) return 'confirmee';
+    return null;
+  }
+
+  async function syncActualitesFromImport(sb, rows, idByNom, groups, domains) {
+    if (!rows || !rows.length) return { map: idByNom || {}, count: 0 };
+    var map = Object.assign({}, idByNom || {});
+    var actorNames = rows.map(function (r) { return r.acteur; }).filter(Boolean);
+    var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
+    if (uniqueNames.length) {
+      var merged = await ensureActors(sb, uniqueNames, groups, domains);
+      Object.assign(map, merged);
+    }
+
+    var dbRows = [];
+    rows.forEach(function (row) {
+      var titre = String(row.titre || '').trim();
+      if (!titre) return;
+      var acteurId = null;
+      if (row.acteur) {
+        acteurId = map[row.acteur] || toActorId(row.acteur);
+      }
+      var impactKey = IMPACT_TO_DB[String(row.impact || '').toLowerCase()] || null;
+      dbRows.push({
+        date: row.date || new Date().toISOString().slice(0, 10),
+        acteur_id: acteurId,
+        type: String(row.type || 'Corporate').trim() || 'Corporate',
+        produit_id: row.produit_id || null,
+        titre: titre,
+        resume: row.resume ? String(row.resume).trim() : null,
+        fiabilite: normalizeFiabiliteImport(row.fiabilite),
+        source: row.source ? String(row.source).trim() : null,
+        impact: impactKey
+      });
+    });
+
+    if (!dbRows.length) return { map: map, count: 0 };
+
+    var { error } = await sb.from('actualites').insert(dbRows);
+    if (error) throw new Error('actualites: ' + error.message);
+    return { map: map, count: dbRows.length };
+  }
+
   async function ensureActorByName(sb, nom, idByNom) {
     var map = Object.assign({}, idByNom || {});
     if (!nom) throw new Error('Acteur requis.');
@@ -919,6 +966,7 @@
     syncDifferenciateursToSupabase: syncDifferenciateursToSupabase,
     syncAllFromImport: syncAllFromImport,
     syncTauxCrFromImport: syncTauxCrFromImport,
+    syncActualitesFromImport: syncActualitesFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
     insertContributionTendance: insertContributionTendance,
