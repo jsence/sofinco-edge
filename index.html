@@ -328,6 +328,64 @@
     .impact-neutre { background: #F3F4F6; color: var(--muted); }
 
     .home-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 24px; align-items: start; }
+    .home-actu-main { margin-bottom: 28px; }
+    .home-featured {
+      background: linear-gradient(135deg, rgba(11,43,74,0.04) 0%, rgba(79,216,216,0.08) 100%);
+      border: 1px solid rgba(79,216,216,0.22);
+      border-radius: var(--r);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--sh-md);
+      cursor: pointer;
+      transition: box-shadow 220ms ease, transform 220ms ease;
+    }
+    .home-featured:hover { box-shadow: 0 16px 40px rgba(11,43,74,0.12); transform: translateY(-2px); }
+    .home-featured-kicker {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--tq-ink); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    }
+    .home-featured-title { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.25; margin-bottom: 10px; }
+    .home-featured-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .home-featured-resume { font-size: 15px; line-height: 1.55; color: var(--text); max-width: 820px; }
+    .home-cat-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .home-cat-tag {
+      font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+      cursor: pointer; transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+    }
+    .home-cat-tag:hover { border-color: var(--tq); color: var(--tq-ink); }
+    .home-cat-tag.active { background: var(--tq-light); border-color: rgba(79,216,216,0.4); color: var(--tq-ink); }
+    .home-feed-wide .news-item { padding: 18px 22px; }
+    .home-feed-wide .news-text { font-size: 15px; font-weight: 500; }
+    .home-feed-wide .news-meta { font-size: 12px; margin-bottom: 4px; }
+    .home-products-compact { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .home-products-compact .section-hd { margin-bottom: 14px; }
+    .home-products-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .home-product-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px 8px 10px; border-radius: 99px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 600; color: var(--text);
+      cursor: pointer; transition: box-shadow 180ms ease, transform 180ms ease;
+    }
+    .home-product-chip:hover { box-shadow: var(--sh); transform: translateY(-1px); }
+    .home-product-chip .chip-ic {
+      width: 26px; height: 26px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .chip-pb .chip-ic { background: rgba(79,216,216,0.14); color: var(--tq-ink); }
+    .chip-cr .chip-ic { background: rgba(0,75,60,0.12); color: var(--green); }
+    .chip-nxcb .chip-ic { background: rgba(225,45,45,0.12); color: var(--red); }
+    .chip-rac .chip-ic { background: rgba(245,158,11,0.14); color: var(--orange); }
+    .chip-carte .chip-ic { background: rgba(124,58,237,0.12); color: var(--purple); }
+    .chip-dist .chip-ic { background: rgba(14,116,144,0.12); color: #0e7490; }
+    .contrib-checkbox-line {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; cursor: pointer;
+    }
+    .contrib-featured-box {
+      margin-top: 20px; padding: 16px; border: 1px solid var(--border);
+      border-radius: var(--r); background: var(--bg);
+    }
     .week-card {
       border-radius: var(--r);
       padding: 6px 22px;
@@ -1363,6 +1421,16 @@
             <span class="contrib-hub-desc">Publier plusieurs actualités ou synthèses</span>
           </button>
         </div>
+        <div class="contrib-featured-box">
+          <div class="section-hd" style="margin-bottom:8px"><i class="ti ti-star"></i> À la une — accueil</div>
+          <p class="text-muted text-sm" style="margin-bottom:12px">Choisir l'actualité mise en avant sur la page d'accueil (une seule à la fois).</p>
+          <select id="contrib-featured-select" class="actu-select contrib-input" style="width:100%;margin-bottom:10px"></select>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-primary btn-sm" id="contrib-featured-apply"><i class="ti ti-star"></i> Définir à la une</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="contrib-featured-clear"><i class="ti ti-star-off"></i> Retirer</button>
+          </div>
+          <p class="contrib-success" id="contrib-featured-msg" style="display:none;margin-top:10px"></p>
+        </div>
       </div>
 
       <!-- Étape 2a : import Excel -->
@@ -1378,6 +1446,7 @@
         <input type="file" id="file-input" accept=".xlsx" style="display:none">
         <div class="bg-note mt-4">
           <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; DECRYPTAGE &nbsp;·&nbsp; ACTUALITES
+          <br><span class="text-sm text-muted">Feuille ACTUALITES : colonne optionnelle <strong>Une</strong> (Oui/Non) — si plusieurs lignes Oui, la dernière l'emporte.</span>
         </div>
       </div>
 
@@ -1490,6 +1559,10 @@
             <label class="contrib-label" for="contrib-actu-date">Date d'observation</label>
             <input type="date" class="contrib-input" id="contrib-actu-date">
           </div>
+          <label class="contrib-checkbox-line">
+            <input type="checkbox" id="contrib-actu-a-la-une">
+            <span>Mettre à la une sur l'accueil</span>
+          </label>
         </div>
 
         <!-- Mode Synthèse -->
@@ -1767,7 +1840,8 @@
     simDuree: 36,
     actuFiltersGlobal: { produit: 'all', acteur: 'all', type: 'all', periode: 'all' },
     actuFiltersProd: {},
-    indicateurCategorie: 'all'
+    indicateurCategorie: 'all',
+    homeActuCategory: 'all'
   };
 
   var tauxSort       = { col: 'b1', dir: -1 };
@@ -2184,6 +2258,12 @@
     return out;
   }
 
+  function parseUneImport (raw) {
+    if (!raw) return false;
+    var s = String(raw).trim().toLowerCase();
+    return s === 'oui' || s === 'yes' || s === 'true' || s === '1' || s === 'x';
+  }
+
   function parseActualitesSheet (sheet) {
     var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
     if (rows.length < 2) return [];
@@ -2207,11 +2287,13 @@
         acteur: getCol(row, ['acteur']),
         type: getCol(row, ['type']),
         produit_id: produitId || null,
+        categorie: getCol(row, ['categorie', 'catégorie']) || null,
         titre: titre,
         resume: getCol(row, ['résumé', 'resume']),
         source: getCol(row, ['source']),
         impact: getCol(row, ['impact']),
-        fiabilite: getCol(row, ['fiabilité', 'fiabilite'])
+        fiabilite: getCol(row, ['fiabilité', 'fiabilite']),
+        a_la_une: parseUneImport(getCol(row, ['une', 'à la une', 'a la une', 'a_la_une']))
       });
     }
     return out;
@@ -2374,28 +2456,83 @@
   /* ──────────────────────────────────────────
      RENDER — ACCUEIL
   ────────────────────────────────────────── */
+  function featuredActu () {
+    var all = actuList();
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].a_la_une) return all[i];
+    }
+    return null;
+  }
+
+  function actuCategoryLabel (catId) {
+    var c = categoryById(catId);
+    return c ? c.label : catId;
+  }
+
+  function homeFeedActus () {
+    var featured = featuredActu();
+    var all = actuList().slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    if (featured && featured.id) {
+      all = all.filter(function (e) { return e.id !== featured.id; });
+    }
+    if (state.homeActuCategory && state.homeActuCategory !== 'all') {
+      all = all.filter(function (e) { return e.categorie === state.homeActuCategory; });
+    }
+    return all;
+  }
+
+  function setHomeActuCategory (catId) {
+    state.homeActuCategory = catId || 'all';
+    renderHome();
+  }
+
+  function renderHomeFeatured (actu) {
+    var idx = actuList().indexOf(actu);
+    var html = '<div class="home-featured stagger-item" onclick="openActuDetail(' + idx + ')">';
+    html += '<div class="home-featured-kicker"><i class="ti ti-star-filled"></i> À la une</div>';
+    html += '<div class="home-featured-title">' + esc(actu.titre) + '</div>';
+    html += '<div class="home-featured-meta">';
+    html += fmtDate(actu.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(actu.acteur));
+    if (actu.categorie) html += ' &nbsp;·&nbsp; ' + esc(actuCategoryLabel(actu.categorie));
+    else if (actu.produit) html += ' &nbsp;·&nbsp; ' + esc(pLabel(actu.produit));
+    html += '</div>';
+    if (actu.resume) html += '<div class="home-featured-resume">' + esc(actu.resume) + '</div>';
+    else html += '<div class="home-featured-resume text-muted">Cliquez pour voir le détail de cette actualité.</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderHomeActuItem (e, idx, pos) {
+    var delay = typeof pos === 'number' ? ' style="animation-delay:' + (Math.min(pos, 12) * 50) + 'ms"' : '';
+    var html = '<div class="news-item stagger-item"' + delay + ' onclick="openActuDetail(' + idx + ')">';
+    html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
+    html += '<div class="news-body">';
+    html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(e.acteur));
+    if (e.categorie) html += ' &nbsp;·&nbsp; ' + esc(actuCategoryLabel(e.categorie));
+    else if (e.produit) html += ' &nbsp;·&nbsp; ' + esc(pLabel(e.produit));
+    html += '</div>';
+    html += '<div class="news-text">' + esc(e.titre) + '</div>';
+    if (e.resume) html += '<div class="news-resume">' + esc(e.resume) + '</div>';
+    html += '</div>';
+    if (e.impact) html += '<span class="impact-badge ' + (IMPACT_CLS[e.impact] || 'impact-neutre') + '">' + esc(e.impact) + '</span>';
+    if (isNew(e.date)) html += '<span class="badge b-new">Nouveau</span>';
+    html += '</div>';
+    return html;
+  }
+
   function renderHome () {
     var html = '';
 
-    /* Titre */
     html += '<div class="home-hd">';
     html += '<div class="home-title"><span class="home-title-sof">Sofinco</span><span class="home-title-edge">Edge</span></div>';
     html += '<div class="home-subtitle">Suivre en continu l\'offre et les mouvements de la concurrence</div>';
     html += '</div>';
 
-    /* Bande de raccourcis produits */
-    html += '<div class="shortcuts-grid">';
-    coreProducts().forEach(function (p, idx) {
-      var lines = HOME_SHORTCUT_LINES[p.id] || [p.label, ''];
-      html += '<div class="shortcut-card stagger-item ' + (SHORTCUT_CLS[p.id] || '') + '" style="animation-delay:' + (idx * 60) + 'ms" onclick="navigate(\'' + p.id + '\')">';
-      html += '<div class="shortcut-icon"><i class="ti ' + P_ICONS[p.id] + '"></i></div>';
-      html += '<div class="shortcut-label">' + esc(lines[0]) + (lines[1] ? '<br>' + esc(lines[1]) : '') + '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
+    var featured = featuredActu();
+    if (featured) html += renderHomeFeatured(featured);
 
     var all = actuList();
-    var sorted = all.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 5);
+    var feed = homeFeedActus();
     var watchCount = all.filter(function (e) {
       return (e.impact === 'à surveiller' || e.impact === 'menace directe') && actuWithinPeriode(e.date, '7');
     }).length;
@@ -2403,24 +2540,30 @@
     coreProducts().forEach(function (p) { p.acteurs.forEach(function (a) { actorSet[a] = 1; }); });
     var actorCount = Object.keys(actorSet).length;
     var productCount = coreProducts().length;
+    var catFilter = state.homeActuCategory || 'all';
+
+    html += '<div class="home-actu-main">';
+    html += '<div class="section-hd"><i class="ti ti-news"></i> Actualités</div>';
+    html += '<div class="home-cat-tags">';
+    html += '<button type="button" class="home-cat-tag' + (catFilter === 'all' ? ' active' : '') + '" onclick="setHomeActuCategory(\'all\')">Toutes</button>';
+    ACTU_CATEGORIES.forEach(function (cat) {
+      html += '<button type="button" class="home-cat-tag' + (catFilter === cat.id ? ' active' : '') + '" onclick="setHomeActuCategory(\'' + cat.id + '\')">' + esc(cat.label) + '</button>';
+    });
+    html += '</div>';
 
     html += '<div class="home-grid">';
-
-    /* Dernières actualités */
     html += '<div>';
-    html += '<div class="section-hd"><i class="ti ti-bell"></i> Dernières actualités';
-    html += '<button class="btn btn-secondary" style="margin-left:auto;font-size:12px" onclick="navigate(\'produit_tarification\')">Voir tout <i class="ti ti-arrow-right"></i></button>';
-    html += '</div>';
-    html += '<div class="news-feed">';
-    if (!sorted.length) {
-      html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité</div></div>';
+    html += '<div class="news-feed home-feed-wide">';
+    if (!feed.length) {
+      html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité pour ce filtre</div></div>';
     } else {
-      sorted.forEach(function (e, pos) { html += renderActuMiniItem(e, all.indexOf(e), pos); });
+      feed.slice(0, 12).forEach(function (e, pos) {
+        html += renderHomeActuItem(e, all.indexOf(e), pos);
+      });
     }
     html += '</div>';
     html += '</div>';
 
-    /* Cette semaine */
     html += '<div>';
     html += '<div class="section-hd"><i class="ti ti-calendar-stats"></i> Cette semaine</div>';
     html += '<div class="week-card glass">';
@@ -2429,7 +2572,19 @@
     html += '<div class="week-stat"><div class="week-num">' + productCount + '</div><div class="week-label">produits suivis</div></div>';
     html += '</div>';
     html += '</div>';
+    html += '</div>';
+    html += '</div>';
 
+    html += '<div class="home-products-compact">';
+    html += '<div class="section-hd"><i class="ti ti-layout-grid"></i> Accès produits</div>';
+    html += '<div class="home-products-row">';
+    coreProducts().forEach(function (p) {
+      html += '<div class="home-product-chip chip-' + p.id + '" onclick="navigate(\'' + p.id + '\')">';
+      html += '<span class="chip-ic"><i class="ti ' + P_ICONS[p.id] + '"></i></span>';
+      html += '<span>' + esc(p.label) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
     html += '</div>';
 
     $('view-home').innerHTML = html;
@@ -4189,6 +4344,7 @@ promos: 'Promos',
     if (!contribUnlocked) return;
     hideAllContribSteps();
     $('contrib-step-hub').classList.remove('contrib-step-hidden');
+    refreshContribFeaturedSelect();
     syncContribModalGateMode();
   }
 
@@ -4712,6 +4868,55 @@ cb.checked = on;
     return out.sort(function (a, b) { return a.localeCompare(b, 'fr'); });
   }
 
+  function refreshContribFeaturedSelect () {
+    var sel = $('contrib-featured-select');
+    if (!sel) return;
+    var featured = featuredActu();
+    var sorted = actuList().slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    var html = '<option value="">— Choisir une actualité —</option>';
+    sorted.slice(0, 50).forEach(function (a) {
+      if (!a.id) return;
+      var label = fmtDate(a.date) + ' — ' + (a.titre || '').slice(0, 60);
+      html += '<option value="' + esc(a.id) + '"' + (featured && featured.id === a.id ? ' selected' : '') + '>' + esc(label) + '</option>';
+    });
+    sel.innerHTML = html;
+  }
+
+  async function applyContribFeaturedActu () {
+    if (!contribUnlocked || !sbClient) return;
+    var id = ($('contrib-featured-select').value || '').trim();
+    if (!id) {
+      alert('Sélectionnez une actualité.');
+      return;
+    }
+    try {
+      await SofincoSupabase.setActualiteALaUne(sbClient, id);
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
+      refreshContribFeaturedSelect();
+      render();
+      var msg = $('contrib-featured-msg');
+      if (msg) { msg.textContent = 'Actualité définie à la une.'; msg.style.display = 'block'; }
+    } catch (e) {
+      alert('Erreur : ' + (e.message || e));
+    }
+  }
+
+  async function clearContribFeaturedActu () {
+    if (!contribUnlocked || !sbClient) return;
+    try {
+      await SofincoSupabase.clearActualiteALaUne(sbClient);
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
+      refreshContribFeaturedSelect();
+      render();
+      var msg = $('contrib-featured-msg');
+      if (msg) { msg.textContent = 'À la une retirée.'; msg.style.display = 'block'; }
+    } catch (e) {
+      alert('Erreur : ' + (e.message || e));
+    }
+  }
+
   function refreshContribActorList () {
     var dl = $('contrib-acteur-list');
     if (!dl) return;
@@ -4816,6 +5021,8 @@ cb.checked = on;
     $('contrib-actu-fiabilite').value = 'confirmee';
     $('contrib-actu-source').value = '';
     $('contrib-actu-date').value = today();
+    var uneCb = $('contrib-actu-a-la-une');
+    if (uneCb) uneCb.checked = false;
     updateContribCharCount('contrib-actu-titre', 'contrib-actu-titre-count', 100);
     updateContribCharCount('contrib-actu-resume', 'contrib-actu-resume-count', 300);
     updateContribPublishBtn();
@@ -4839,6 +5046,7 @@ cb.checked = on;
     }
     resetContribModalUI();
     refreshContribActorList();
+    refreshContribFeaturedSelect();
     if (contribUnlocked) {
       showContribHubView();
     } else {
@@ -5518,7 +5726,8 @@ cb.checked = on;
           impact: ($('contrib-actu-impact').value || '').trim(),
           fiabilite: $('contrib-actu-fiabilite').value,
           source: ($('contrib-actu-source').value || '').trim(),
-          date: ($('contrib-actu-date').value || '').trim() || today()
+          date: ($('contrib-actu-date').value || '').trim() || today(),
+          a_la_une: !!($('contrib-actu-a-la-une') && $('contrib-actu-a-la-une').checked)
         };
         var res = await SofincoSupabase.insertContributionActualite(sbClient, payload, actorIdByNom);
         Object.assign(actorIdByNom, res.map);
@@ -5646,6 +5855,8 @@ cb.checked = on;
       resetContribBulkImport();
       showContribImportView();
     });
+    $('contrib-featured-apply').addEventListener('click', applyContribFeaturedActu);
+    $('contrib-featured-clear').addEventListener('click', clearContribFeaturedActu);
     $('contrib-back-hub-from-excel').addEventListener('click', showContribHubView);
     $('contrib-back-hub-from-json').addEventListener('click', showContribHubView);
     $('contrib-goto-manual').addEventListener('click', showContribManualView);
@@ -5735,7 +5946,9 @@ cb.checked = on;
   window.setIndicateurCategorie = setIndicateurCategorie;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
+  window.setHomeActuCategory  = setHomeActuCategory;
   window.__parseActualitesSheet = parseActualitesSheet;
+  window.__parseUneImport = parseUneImport;
   window.__parseDecryptageSheet = parseDecryptageSheet;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

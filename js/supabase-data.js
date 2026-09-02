@@ -149,6 +149,7 @@
     var IMPACT_REV = { a_surveiller: 'à surveiller', menace_directe: 'menace directe', neutre: 'neutre' };
     var actualitesData = actualites.map(function (a) {
       return {
+        id: a.id,
         date: a.date,
         acteur: a.acteur_id ? nomById[a.acteur_id] : null,
         type: a.type,
@@ -158,7 +159,8 @@
         resume: a.resume || null,
         fiabilite: a.fiabilite || null,
         source: a.source,
-        impact: IMPACT_REV[a.impact] || a.impact
+        impact: IMPACT_REV[a.impact] || a.impact,
+        a_la_une: !!a.a_la_une
       };
     });
 
@@ -577,6 +579,20 @@
     return null;
   }
 
+  async function setActualiteALaUne(sb, actualiteId) {
+    if (!actualiteId) throw new Error('Identifiant actualité requis.');
+    var { error: clearErr } = await sb.from('actualites').update({ a_la_une: false }).eq('a_la_une', true);
+    if (clearErr) throw new Error('actualites: ' + clearErr.message);
+    var { data, error } = await sb.from('actualites').update({ a_la_une: true }).eq('id', actualiteId).select('*').single();
+    if (error) throw new Error('actualites: ' + error.message);
+    return data;
+  }
+
+  async function clearActualiteALaUne(sb) {
+    var { error } = await sb.from('actualites').update({ a_la_une: false }).eq('a_la_une', true);
+    if (error) throw new Error('actualites: ' + error.message);
+  }
+
   async function syncActualitesFromImport(sb, rows, idByNom, groups, domains) {
     if (!rows || !rows.length) return { map: idByNom || {}, count: 0 };
     var map = Object.assign({}, idByNom || {});
@@ -587,33 +603,43 @@
       Object.assign(map, merged);
     }
 
-    var dbRows = [];
-    rows.forEach(function (row) {
+    var count = 0;
+    var lastFeaturedId = null;
+    for (var ri = 0; ri < rows.length; ri++) {
+      var row = rows[ri];
       var titre = String(row.titre || '').trim();
-      if (!titre) return;
+      if (!titre) continue;
       var acteurId = null;
       if (row.acteur) {
         acteurId = map[row.acteur] || toActorId(row.acteur);
       }
       var impactKey = IMPACT_TO_DB[String(row.impact || '').toLowerCase()] || null;
-      dbRows.push({
+      var dbRow = {
         date: row.date || new Date().toISOString().slice(0, 10),
         acteur_id: acteurId,
         type: String(row.type || 'Corporate').trim() || 'Corporate',
         produit_id: row.produit_id || null,
+        categorie: row.categorie || null,
         titre: titre,
         resume: row.resume ? String(row.resume).trim() : null,
         fiabilite: normalizeFiabiliteImport(row.fiabilite),
         source: row.source ? String(row.source).trim() : null,
-        impact: impactKey
-      });
-    });
+        impact: impactKey,
+        a_la_une: false
+      };
+      var ins = await sb.from('actualites').insert(dbRow).select('id').single();
+      if (ins.error) throw new Error('actualites: ' + ins.error.message);
+      count++;
+      if (row.a_la_une) lastFeaturedId = ins.data.id;
+    }
 
-    if (!dbRows.length) return { map: map, count: 0 };
+    if (!count) return { map: map, count: 0 };
 
-    var { error } = await sb.from('actualites').insert(dbRows);
-    if (error) throw new Error('actualites: ' + error.message);
-    return { map: map, count: dbRows.length };
+    if (lastFeaturedId) {
+      await setActualiteALaUne(sb, lastFeaturedId);
+    }
+
+    return { map: map, count: count };
   }
 
   function resolveActorIdFromMap (nom, idByNom) {
@@ -688,6 +714,10 @@
     };
     var { data, error } = await sb.from('actualites').insert(row).select('*').single();
     if (error) throw new Error('actualites: ' + error.message);
+    if (payload.a_la_une) {
+      await setActualiteALaUne(sb, data.id);
+      data.a_la_une = true;
+    }
     return { row: data, map: map };
   }
 
@@ -1026,6 +1056,8 @@
     syncAllFromImport: syncAllFromImport,
     syncTauxCrFromImport: syncTauxCrFromImport,
     syncActualitesFromImport: syncActualitesFromImport,
+    setActualiteALaUne: setActualiteALaUne,
+    clearActualiteALaUne: clearActualiteALaUne,
     syncTendancesFromImport: syncTendancesFromImport,
     insertContributionActualite: insertContributionActualite,
     upsertContributionDifferenciateur: upsertContributionDifferenciateur,
