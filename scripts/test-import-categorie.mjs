@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { createClient } from '@supabase/supabase-js';
-import { loadSupabaseConfig, cleanupTestData } from './test-helpers.mjs';
+import { assertSafeTestTarget, cleanupTestData } from './test-helpers.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -45,7 +45,7 @@ async function run () {
   const puppeteer = require('puppeteer');
   const XLSX = require('xlsx');
   const { server, port } = await startServer();
-  const cfg = loadSupabaseConfig();
+  const cfg = assertSafeTestTarget();
   const sb = createClient(cfg.url, cfg.anonKey);
   try {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
