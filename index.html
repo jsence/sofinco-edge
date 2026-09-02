@@ -1439,6 +1439,10 @@
           <button type="button" class="btn btn-secondary btn-sm" id="contrib-delete-actu-btn"><i class="ti ti-trash"></i> Supprimer</button>
           <p class="contrib-success" id="contrib-delete-actu-msg" style="display:none;margin-top:10px"></p>
         </div>
+        <div id="contrib-undo-box" class="contrib-undo-box" style="display:none">
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import" disabled><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
+          <p class="contrib-undo-hint" id="contrib-undo-hint">Seul le <strong>dernier</strong> import Excel peut être annulé (un seul niveau de retour arrière).</p>
+        </div>
       </div>
 
       <!-- Étape 2a : import Excel -->
@@ -1456,10 +1460,6 @@
           <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; DECRYPTAGE &nbsp;·&nbsp; ACTUALITES
           <br><span class="text-sm text-muted">Colonnes optionnelles <strong>Categorie</strong> / <strong>Catégorie</strong> sur ACTUALITES, DIFFERENCIATEURS et DECRYPTAGE (slugs : produit_tarification, commercial_communication, strategie_corporate, rse_juridique, innovation_securite). Si renseignée et valide, la catégorie prime sur <strong>Produit</strong> (produit ignoré). Slug invalide : ligne ignorée, import poursuivi.</span>
           <br><span class="text-sm text-muted">Feuille ACTUALITES : colonne optionnelle <strong>Une</strong> (Oui/Non) — si plusieurs lignes Oui, la dernière l'emporte.</span>
-        </div>
-        <div id="contrib-undo-box" class="contrib-undo-box" style="display:none">
-          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import" disabled><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
-          <p class="contrib-undo-hint" id="contrib-undo-hint">Seul le <strong>dernier</strong> import Excel peut être annulé (un seul niveau de retour arrière).</p>
         </div>
       </div>
 
@@ -2423,6 +2423,9 @@
       });
       if (skipped.length > 8) msg += '\n• … et ' + (skipped.length - 8) + ' autre(s)';
     }
+    if (stats.undoAvailable) {
+      msg += '\n\nAnnulation possible : rouvrez Espace contributeur — le bouton « Annuler le dernier import » apparaît sur l\'accueil contributeur.';
+    }
     var msgEl = $('import-result-msg');
     msgEl.textContent = msg;
     msgEl.style.whiteSpace = 'pre-line';
@@ -2517,13 +2520,16 @@
         importStats.decryptage = tendImportRes.count;
       }
       pendingDecryptageImport = null;
+      var undoSaved = false;
       if (undoPayload) {
         try {
           await SofincoImportUndo.saveImportUndoSnapshot(sbClient, undoScope, undoPayload, importDate);
+          undoSaved = true;
         } catch (undoSaveErr) {
           console.warn('Instantané import non enregistré :', undoSaveErr.message || undoSaveErr);
         }
       }
+      importStats.undoAvailable = undoSaved;
       await SofincoSupabase.recordLastImportAt(sbClient, importDate);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
@@ -4496,6 +4502,7 @@ promos: 'Promos',
     hideAllContribSteps();
     $('contrib-step-hub').classList.remove('contrib-step-hidden');
     refreshContribActuSelects();
+    refreshImportUndoUI();
     syncContribModalGateMode();
   }
 

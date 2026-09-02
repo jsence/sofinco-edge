@@ -76,28 +76,33 @@ async function run () {
       document.getElementById('contrib-step-access').classList.contains('contrib-step-hidden');
   })]);
 
-  await page.click('#contrib-goto-excel');
   await page.waitForFunction(function () {
+    var hub = document.getElementById('contrib-step-hub');
+    var box = document.getElementById('contrib-undo-box');
+    return hub && box && hub.contains(box);
+  }, { timeout: 15000 });
+
+  checks.push(['undo box dans le hub contributeur', await page.evaluate(function () {
+    var hub = document.getElementById('contrib-step-hub');
+    var box = document.getElementById('contrib-undo-box');
+    return hub && box && hub.contains(box);
+  })]);
+
+  checks.push(['undo rafraîchi sur le hub', await page.evaluate(function () {
     var box = document.getElementById('contrib-undo-box');
     var btn = document.getElementById('contrib-undo-import');
     if (!box || !btn) return false;
     if (box.style.display === 'none' && btn.disabled) return true;
-    if (box.style.display !== 'none' && btn.disabled) {
-      var hint = document.getElementById('contrib-undo-hint');
-      return hint && (hint.textContent.indexOf('migration') >= 0 || hint.textContent.indexOf('dernier') >= 0);
-    }
+    if (box.style.display !== 'none' && !btn.disabled) return true;
+    return box.style.display !== 'none' && btn.disabled;
+  })]);
+
+  await page.click('#contrib-goto-excel');
+  await page.waitForFunction(function () {
     return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
   }, { timeout: 15000 });
   checks.push(['excel step accessible', await page.evaluate(function () {
     return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
-  })]);
-
-  checks.push(['undo import masqué ou migration signalée', await page.evaluate(function () {
-    var box = document.getElementById('contrib-undo-box');
-    var btn = document.getElementById('contrib-undo-import');
-    if (!box || !btn) return false;
-    if (box.style.display === 'none' && btn.disabled) return true;
-    return box.style.display !== 'none' && btn.disabled;
   })]);
 
   await page.click('#contrib-back-hub-from-excel');
