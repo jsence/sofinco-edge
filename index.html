@@ -20,6 +20,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
+  <script src="js/import-undo.js"></script>
   <script src="js/supabase-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -386,6 +387,11 @@
       margin-top: 20px; padding: 16px; border: 1px solid var(--border);
       border-radius: var(--r); background: var(--bg);
     }
+    .contrib-undo-box {
+      margin-top: 16px; padding: 14px 16px; border: 1px dashed var(--border);
+      border-radius: var(--r); background: rgba(245, 158, 11, 0.06);
+    }
+    .contrib-undo-box .contrib-undo-hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.45; }
     .week-card {
       border-radius: var(--r);
       padding: 6px 22px;
@@ -1444,6 +1450,10 @@
           <br><span class="text-sm text-muted">Colonnes optionnelles <strong>Categorie</strong> / <strong>Catégorie</strong> sur ACTUALITES, DIFFERENCIATEURS et DECRYPTAGE (slugs : produit_tarification, commercial_communication, strategie_corporate, rse_juridique, innovation_securite). Si renseignée et valide, la catégorie prime sur <strong>Produit</strong> (produit ignoré). Slug invalide : ligne ignorée, import poursuivi.</span>
           <br><span class="text-sm text-muted">Feuille ACTUALITES : colonne optionnelle <strong>Une</strong> (Oui/Non) — si plusieurs lignes Oui, la dernière l'emporte.</span>
         </div>
+        <div id="contrib-undo-box" class="contrib-undo-box" style="display:none">
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-undo-import"><i class="ti ti-arrow-back-up"></i> Annuler le dernier import</button>
+          <p class="contrib-undo-hint" id="contrib-undo-hint">Seul le <strong>dernier</strong> import Excel peut être annulé (un seul niveau de retour arrière).</p>
+        </div>
       </div>
 
       <!-- Étape 2b : import groupé JSON -->
@@ -2454,6 +2464,18 @@
     pendingDecryptageImport = decryptParse.rows;
     importSkipped = importSkipped.concat(decryptParse.skipped || []);
 
+    var undoScope = SofincoImportUndo.buildImportUndoScope(wb, DATA, {
+      importedProductIds: importedProductIds,
+      diffsByCategorie: pendingDiffsByCategorieImport,
+      hasTauxImport: !!(pendingTauxImport && pendingTauxImport.length)
+    });
+    var undoPayload = null;
+    try {
+      undoPayload = await SofincoImportUndo.captureImportUndoPayload(sbClient, undoScope);
+    } catch (undoCapErr) {
+      console.warn('Instantané import (annulation) non capturé :', undoCapErr.message || undoCapErr);
+    }
+
     var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0, skipped: importSkipped };
     try {
       var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
@@ -2488,6 +2510,13 @@
         importStats.decryptage = tendImportRes.count;
       }
       pendingDecryptageImport = null;
+      if (undoPayload) {
+        try {
+          await SofincoImportUndo.saveImportUndoSnapshot(sbClient, undoScope, undoPayload, importDate);
+        } catch (undoSaveErr) {
+          console.warn('Instantané import non enregistré :', undoSaveErr.message || undoSaveErr);
+        }
+      }
       await SofincoSupabase.recordLastImportAt(sbClient, importDate);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
@@ -2505,6 +2534,7 @@
     resetContribModalUI();
     render();
     showImportSummary(importStats);
+    refreshImportUndoUI();
   }
 
   function readXlsx (file) {
@@ -4443,6 +4473,64 @@ promos: 'Promos',
     hideAllContribSteps();
     $('contrib-step-excel').classList.remove('contrib-step-hidden');
     syncContribModalGateMode();
+    refreshImportUndoUI();
+  }
+
+  async function refreshImportUndoUI () {
+    var box = $('contrib-undo-box');
+    var btn = $('contrib-undo-import');
+    var hint = $('contrib-undo-hint');
+    if (!box || !btn) return;
+    if (!contribUnlocked || !sbClient) {
+      box.style.display = 'none';
+      btn.disabled = true;
+      return;
+    }
+    try {
+      var status = await SofincoImportUndo.getImportUndoStatus(sbClient);
+      if (!status.available) {
+        box.style.display = 'none';
+        btn.disabled = true;
+        return;
+      }
+      box.style.display = 'block';
+      btn.disabled = false;
+      var label = status.importDate ? fmtDate(status.importDate) : 'récent';
+      btn.innerHTML = '<i class="ti ti-arrow-back-up"></i> Annuler le dernier import (' + esc(label) + ')';
+      if (hint) {
+        hint.innerHTML = 'Restaure l\'état des tables <strong>avant</strong> cet import. Un seul niveau : si un nouvel import a été fait depuis, seul le plus récent peut être annulé.';
+      }
+    } catch (e) {
+      box.style.display = 'none';
+      btn.disabled = true;
+    }
+  }
+
+  async function undoLastExcelImport () {
+    if (!contribUnlocked || !sbClient) return;
+    var status = await SofincoImportUndo.getImportUndoStatus(sbClient);
+    if (!status.available) {
+      alert('Aucun import Excel récent à annuler.');
+      refreshImportUndoUI();
+      return;
+    }
+    var label = status.importDate ? fmtDate(status.importDate) : 'récent';
+    var ok = window.confirm(
+      'Annuler le dernier import Excel (' + label + ') ?\n\n' +
+      'Les données seront restaurées telles qu\'elles étaient juste avant cet import. ' +
+      'Cette action ne peut être faite qu\'une fois (seul le dernier import est annulable).'
+    );
+    if (!ok) return;
+    try {
+      await SofincoImportUndo.restoreImportUndoSnapshot(sbClient);
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
+      render();
+      refreshImportUndoUI();
+      alert('Dernier import annulé — les données ont été restaurées.');
+    } catch (e) {
+      alert('Erreur lors de l\'annulation : ' + (e.message || e));
+    }
   }
 
   function getSelectedGeneralExportProducts () {
@@ -5945,6 +6033,7 @@ cb.checked = on;
       if (e.key === 'Enter') validateContribAccess();
     });
     $('contrib-goto-excel').addEventListener('click', showContribExcelView);
+    $('contrib-undo-import').addEventListener('click', undoLastExcelImport);
     $('contrib-goto-json').addEventListener('click', function () {
       resetContribBulkImport();
       showContribImportView();

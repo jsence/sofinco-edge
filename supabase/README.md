@@ -49,7 +49,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
 -- Voir supabase/migrations/20250902210000_app_meta_last_import.sql
 ```
 
-## Tests E2E et données de production
+## Annulation du dernier import Excel
+
+Table `import_undo_snapshot` (migration `20250902220000_import_undo_snapshot.sql`) : une seule ligne `id='last'` avec le JSON des tables concernées **juste avant** le dernier import.
+
+- Bouton « Annuler le dernier import » dans l'étape Excel contributeur (après un import réussi)
+- Un seul niveau de retour arrière ; un nouvel import écrase l'instantané précédent
 
 Les scripts `scripts/test-*.mjs` **refusent de s'exécuter** sur la base de production (`supabase-config.js`). Utiliser un projet Supabase de test :
 
