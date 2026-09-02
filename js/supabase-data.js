@@ -730,6 +730,12 @@
     if (error) throw new Error('actualites: ' + error.message);
   }
 
+  async function deleteActualiteById(sb, actualiteId) {
+    if (!actualiteId) throw new Error('Identifiant actualité requis.');
+    var { error } = await sb.from('actualites').delete().eq('id', actualiteId);
+    if (error) throw new Error('actualites: ' + error.message);
+  }
+
   async function syncActualitesFromImport(sb, rows, idByNom, groups, domains) {
     if (!rows || !rows.length) return { map: idByNom || {}, count: 0, warnings: [] };
     var map = Object.assign({}, idByNom || {});
@@ -1217,6 +1223,7 @@
     syncActualitesFromImport: syncActualitesFromImport,
     setActualiteALaUne: setActualiteALaUne,
     clearActualiteALaUne: clearActualiteALaUne,
+    deleteActualiteById: deleteActualiteById,
     probeActualitesALaUneColumn: probeActualitesALaUneColumn,
     syncTendancesFromImport: syncTendancesFromImport,
     insertContributionActualite: insertContributionActualite,

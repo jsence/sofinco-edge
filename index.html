@@ -1432,6 +1432,13 @@
           </div>
           <p class="contrib-success" id="contrib-featured-msg" style="display:none;margin-top:10px"></p>
         </div>
+        <div class="contrib-featured-box">
+          <div class="section-hd" style="margin-bottom:8px"><i class="ti ti-trash"></i> Supprimer une actualité</div>
+          <p class="text-muted text-sm" style="margin-bottom:12px">Retirer définitivement une actualité erronée ou en doublon. Action <strong>irréversible</strong> (pas d'annulation possible).</p>
+          <select id="contrib-delete-actu-select" class="actu-select contrib-input" style="width:100%;margin-bottom:10px"></select>
+          <button type="button" class="btn btn-secondary btn-sm" id="contrib-delete-actu-btn"><i class="ti ti-trash"></i> Supprimer</button>
+          <p class="contrib-success" id="contrib-delete-actu-msg" style="display:none;margin-top:10px"></p>
+        </div>
       </div>
 
       <!-- Étape 2a : import Excel -->
@@ -4488,7 +4495,7 @@ promos: 'Promos',
     if (!contribUnlocked) return;
     hideAllContribSteps();
     $('contrib-step-hub').classList.remove('contrib-step-hidden');
-    refreshContribFeaturedSelect();
+    refreshContribActuSelects();
     syncContribModalGateMode();
   }
 
@@ -5081,18 +5088,38 @@ cb.checked = on;
     return out.sort(function (a, b) { return a.localeCompare(b, 'fr'); });
   }
 
-  function refreshContribFeaturedSelect () {
-    var sel = $('contrib-featured-select');
-    if (!sel) return;
+  function contribActuSelectOptions (opts) {
+    opts = opts || {};
     var featured = featuredActu();
     var sorted = actuList().slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
     var html = '<option value="">— Choisir une actualité —</option>';
     sorted.slice(0, 50).forEach(function (a) {
       if (!a.id) return;
       var label = fmtDate(a.date) + ' — ' + (a.titre || '').slice(0, 60);
-      html += '<option value="' + esc(a.id) + '"' + (featured && featured.id === a.id ? ' selected' : '') + '>' + esc(label) + '</option>';
+      var selected = '';
+      if (opts.selectFeaturedId && featured && featured.id === a.id) selected = ' selected';
+      html += '<option value="' + esc(a.id) + '"' + selected + '>' + esc(label) + '</option>';
     });
-    sel.innerHTML = html;
+    return html;
+  }
+
+  function refreshContribActuSelects () {
+    var featSel = $('contrib-featured-select');
+    if (featSel) featSel.innerHTML = contribActuSelectOptions({ selectFeaturedId: true });
+    var delSel = $('contrib-delete-actu-select');
+    if (delSel) {
+      var prev = delSel.value;
+      delSel.innerHTML = contribActuSelectOptions();
+      if (prev) {
+        for (var di = 0; di < delSel.options.length; di++) {
+          if (delSel.options[di].value === prev) { delSel.value = prev; break; }
+        }
+      }
+    }
+  }
+
+  function refreshContribFeaturedSelect () {
+    refreshContribActuSelects();
   }
 
   async function applyContribFeaturedActu () {
@@ -5106,7 +5133,7 @@ cb.checked = on;
       await SofincoSupabase.setActualiteALaUne(sbClient, id);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
-      refreshContribFeaturedSelect();
+      refreshContribActuSelects();
       render();
       var msg = $('contrib-featured-msg');
       if (msg) { msg.textContent = 'Actualité définie à la une.'; msg.style.display = 'block'; }
@@ -5121,12 +5148,45 @@ cb.checked = on;
       await SofincoSupabase.clearActualiteALaUne(sbClient);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
-      refreshContribFeaturedSelect();
+      refreshContribActuSelects();
       render();
       var msg = $('contrib-featured-msg');
       if (msg) { msg.textContent = 'À la une retirée.'; msg.style.display = 'block'; }
     } catch (e) {
       alert('Erreur : ' + (e.message || e));
+    }
+  }
+
+  async function deleteContribActu () {
+    if (!contribUnlocked || !sbClient) return;
+    var id = ($('contrib-delete-actu-select').value || '').trim();
+    if (!id) {
+      alert('Sélectionnez une actualité à supprimer.');
+      return;
+    }
+    var actu = null;
+    actuList().forEach(function (a) { if (a.id === id) actu = a; });
+    var label = actu
+      ? (fmtDate(actu.date) + ' — ' + (actu.titre || '').slice(0, 80))
+      : id;
+    var ok = window.confirm(
+      'Supprimer définitivement cette actualité ?\n\n' +
+      label + '\n\n' +
+      'Cette action est irréversible. Contrairement à l\'annulation du dernier import Excel, il n\'y a pas de retour arrière.'
+    );
+    if (!ok) return;
+    try {
+      await SofincoSupabase.deleteActualiteById(sbClient, id);
+      var reload = await SofincoSupabase.loadAllData(sbClient);
+      applyLoadedData(reload);
+      refreshContribActuSelects();
+      render();
+      var msg = $('contrib-delete-actu-msg');
+      if (msg) { msg.textContent = 'Actualité supprimée.'; msg.style.display = 'block'; }
+      var featMsg = $('contrib-featured-msg');
+      if (featMsg) featMsg.style.display = 'none';
+    } catch (e) {
+      alert('Erreur lors de la suppression : ' + (e.message || e));
     }
   }
 
@@ -5259,7 +5319,7 @@ cb.checked = on;
     }
     resetContribModalUI();
     refreshContribActorList();
-    refreshContribFeaturedSelect();
+    refreshContribActuSelects();
     if (contribUnlocked) {
       showContribHubView();
     } else {
@@ -6073,6 +6133,7 @@ cb.checked = on;
     });
     $('contrib-featured-apply').addEventListener('click', applyContribFeaturedActu);
     $('contrib-featured-clear').addEventListener('click', clearContribFeaturedActu);
+    $('contrib-delete-actu-btn').addEventListener('click', deleteContribActu);
     $('contrib-back-hub-from-excel').addEventListener('click', showContribHubView);
     $('contrib-back-hub-from-json').addEventListener('click', showContribHubView);
     $('contrib-goto-manual').addEventListener('click', showContribManualView);
@@ -6171,6 +6232,15 @@ cb.checked = on;
   window.__getGlobalLastUpdateIso = getGlobalLastUpdateIso;
   window.__renderTopbarMeta = renderTopbarMeta;
   window.__render = render;
+  window.__testReloadDataAndRender = async function () {
+    var reload = await SofincoSupabase.loadAllData(sbClient);
+    applyLoadedData(reload);
+    render();
+  };
+  window.__testDeleteActuById = async function (id) {
+    await SofincoSupabase.deleteActualiteById(sbClient, id);
+    await window.__testReloadDataAndRender();
+  };
   window.__testSetFeaturedActu = function (titre) {
     DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: titre, acteur: 'Cofidis', a_la_une: true }];
     state.view = 'home';

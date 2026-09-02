@@ -116,7 +116,9 @@ async function run () {
   checks.push(['UI contributeur : sélecteur À la une présent', await page.evaluate(function () {
     return document.getElementById('contrib-featured-select') !== null &&
       document.getElementById('contrib-featured-apply') !== null &&
-      document.getElementById('contrib-featured-clear') !== null;
+      document.getElementById('contrib-featured-clear') !== null &&
+      document.getElementById('contrib-delete-actu-select') !== null &&
+      document.getElementById('contrib-delete-actu-btn') !== null;
   })]);
 
   await browser.close();
