@@ -77,8 +77,19 @@ async function run () {
   })]);
 
   await page.click('#contrib-goto-excel');
+  await page.waitForFunction(function () {
+    var box = document.getElementById('contrib-undo-box');
+    var btn = document.getElementById('contrib-undo-import');
+    return box && box.style.display === 'none' && btn && btn.disabled;
+  }, { timeout: 15000 });
   checks.push(['excel step accessible', await page.evaluate(function () {
     return !document.getElementById('contrib-step-excel').classList.contains('contrib-step-hidden');
+  })]);
+
+  checks.push(['undo import masqué sans import récent', await page.evaluate(function () {
+    var box = document.getElementById('contrib-undo-box');
+    var btn = document.getElementById('contrib-undo-import');
+    return box && box.style.display === 'none' && btn && btn.disabled;
   })]);
 
   await page.click('#contrib-back-hub-from-excel');
