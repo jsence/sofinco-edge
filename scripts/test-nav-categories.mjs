@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { createClient } from '@supabase/supabase-js';
+import { loadSupabaseConfig, cleanupTestData } from './test-helpers.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -15,12 +16,8 @@ const ACCESS_CODE = 'SOFINCO2026';
 const TEST_CAT = 'produit_tarification';
 const MARKER = 'TEST NAV CAT ' + Date.now();
 
-function loadSupabaseConfig () {
-  var cfgPath = path.join(root, 'supabase-config.js');
-  var src = fs.readFileSync(cfgPath, 'utf8');
-  var url = (src.match(/url:\s*['"]([^'"]+)['"]/) || [])[1];
-  var anonKey = (src.match(/anonKey:\s*['"]([^'"]+)['"]/) || [])[1];
-  return { url, anonKey };
+function loadSupabaseConfigLocal () {
+  return loadSupabaseConfig();
 }
 
 function startServer () {
@@ -79,20 +76,16 @@ async function insertCategoryTestData (sb) {
   return inserted;
 }
 
-async function cleanupTestData (sb, ids) {
-  if (ids.actu) await sb.from('actualites').delete().eq('id', ids.actu);
-  if (ids.diff) await sb.from('differenciateurs').delete().eq('id', ids.diff);
-  if (ids.tend) await sb.from('tendances').delete().eq('id', ids.tend);
-}
-
 async function run () {
   const puppeteer = require('puppeteer');
   const XLSX = require('xlsx');
   const { server, port } = await startServer();
-  const cfg = loadSupabaseConfig();
+  const cfg = loadSupabaseConfigLocal();
   const sb = createClient(cfg.url, cfg.anonKey);
   var testIds = await insertCategoryTestData(sb);
   var migrationOk = !!(testIds.actu && testIds.diff && testIds.tend);
+
+  try {
 
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -306,7 +299,6 @@ async function run () {
   }
 
   fs.unlinkSync(xlsxPath);
-  await cleanupTestData(sb, testIds);
   await browser.close();
   server.close();
 
@@ -320,6 +312,11 @@ async function run () {
   if (dialogMsg) console.log('\nImport dialog: ' + dialogMsg);
   if (!allOk) process.exit(1);
   console.log('\nAll checks passed.');
+  } finally {
+    const cleaned = await cleanupTestData(sb);
+    const n = cleaned.deleted.actus + cleaned.deleted.diffs + cleaned.deleted.tends;
+    if (n > 0) console.log('\n[Test cleanup]', cleaned.deleted.actus, 'actus,', cleaned.deleted.diffs, 'diffs,', cleaned.deleted.tends, 'tendances supprimées.');
+  }
 }
 
 run().catch(function (err) {

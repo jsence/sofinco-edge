@@ -43,6 +43,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS actualites_single_a_la_une_idx
   WHERE a_la_une = true;
 ```
 
+## Tests E2E et données de production
+
+Les scripts `scripts/test-*.mjs` ciblent la base configurée dans `supabase-config.js`. **Ne pas pointer vers la production** sans base de test dédiée.
+
+- Chaque script nettoie automatiquement les lignes de test en `finally` (préfixe `TEST`, source `example.com`, etc.).
+- Nettoyage manuel : `node scripts/cleanup-test-data.mjs` (ajouter `--dry-run` pour lister sans supprimer).
+
 ## Tables
 
 `produits`, `acteurs`, `acteurs_produits`, `criteres`, `valeurs`, `promos`, `differenciateurs` (dont `categorie` optionnelle), `tendances` (dont `portee`, `categorie` optionnelle), `actualites` (dont `resume`, `fiabilite`, `acteur_id` optionnel, `categorie`, `a_la_une`), `taux_cr`, `taux_cr_meta`, `historique`, `indicateurs`, `produits_texte_libre`
