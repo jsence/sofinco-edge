@@ -1329,7 +1329,7 @@
         </div>
         <input type="file" id="file-input" accept=".xlsx" style="display:none">
         <div class="bg-note mt-4">
-          <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS
+          <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; ACTUALITES
         </div>
       </div>
 
@@ -2056,6 +2056,39 @@
     return out;
   }
 
+  function parseActualitesSheet (sheet) {
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) return [];
+    var hdrs = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+    function getCol (row, names) {
+      for (var ni = 0; ni < names.length; ni++) {
+        var idx = hdrs.indexOf(names[ni]);
+        if (idx >= 0) return String(row[idx] || '').trim();
+      }
+      return '';
+    }
+    var out = [];
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      var titre = getCol(row, ['titre']);
+      if (!titre) continue;
+      var produitRaw = getCol(row, ['produit', 'produit_id']);
+      var produitId = produitRaw ? normalizeProduitValue(produitRaw) : '';
+      out.push({
+        date: getCol(row, ['date']) || today(),
+        acteur: getCol(row, ['acteur']),
+        type: getCol(row, ['type']),
+        produit_id: produitId || null,
+        titre: titre,
+        resume: getCol(row, ['résumé', 'resume']),
+        source: getCol(row, ['source']),
+        impact: getCol(row, ['impact']),
+        fiabilite: getCol(row, ['fiabilité', 'fiabilite'])
+      });
+    }
+    return out;
+  }
+
   function showImportSummary (stats) {
     var updated = stats.updated || 0;
     var changes = stats.changes || 0;
@@ -2097,16 +2130,29 @@
       if (d) DATA.differenciateurs = d;
     }
     pendingTauxImport = parseTauxSheets(wb);
+    pendingActualitesImport = wb.SheetNames.indexOf('ACTUALITES') >= 0
+      ? parseActualitesSheet(wb.Sheets['ACTUALITES'])
+      : [];
 
     var importStats = { updated: 0, changes: 0, actualites: 0 };
     try {
       var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
       Object.assign(actorIdByNom, syncResult.map);
+      importStats.updated = syncResult.stats.updated || 0;
+      importStats.changes = syncResult.stats.changes || 0;
       if (pendingTauxImport && pendingTauxImport.length) {
         await SofincoSupabase.syncTauxCrFromImport(sbClient, pendingTauxImport, syncResult.map, GROUPS, DOMAINS);
         pendingTauxImport = null;
       }
-      importStats = syncResult.stats || importStats;
+      if (pendingActualitesImport && pendingActualitesImport.length) {
+        var actuImportRes = await SofincoSupabase.syncActualitesFromImport(
+          sbClient, pendingActualitesImport, syncResult.map, GROUPS, DOMAINS);
+        Object.assign(actorIdByNom, actuImportRes.map);
+        importStats.actualites = (syncResult.stats.actualites || 0) + actuImportRes.count;
+      } else {
+        importStats.actualites = syncResult.stats.actualites || 0;
+      }
+      pendingActualitesImport = null;
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
     } catch (e) {
@@ -2786,9 +2832,15 @@
     }).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
   }
 
+  function actuActorLabel (acteur) {
+    return acteur ? acteur : 'Sans acteur';
+  }
+
   function actuActorOptions () {
     var seen = {}, out = [];
-    actuList().forEach(function (e) { if (!seen[e.acteur]) { seen[e.acteur] = 1; out.push(e.acteur); } });
+    actuList().forEach(function (e) {
+      if (e.acteur && !seen[e.acteur]) { seen[e.acteur] = 1; out.push(e.acteur); }
+    });
     return out.sort();
   }
 
@@ -2797,7 +2849,7 @@
     var html = '<div class="news-item stagger-item"' + delay + '>';
     html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
     html += '<div class="news-body">';
-    html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(e.acteur) +
+    html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(e.acteur)) +
       (e.produit ? ' &nbsp;·&nbsp; ' + pLabel(e.produit) : ' &nbsp;·&nbsp; Transverse') + '</div>';
     html += '<div class="news-text"><span class="actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span>&nbsp; ' + esc(e.titre);
     if (e.fiabilite === 'a_verifier') {
@@ -2818,7 +2870,7 @@
     var html = '<div class="news-item stagger-item"' + delay + ' onclick="openActuDetail(' + idx + ')">';
     html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
     html += '<div class="news-body">';
-    html += '<div class="news-meta">' + esc(e.acteur) + ' &nbsp;·&nbsp; ' +
+    html += '<div class="news-meta">' + esc(actuActorLabel(e.acteur)) + ' &nbsp;·&nbsp; ' +
       (e.produit ? pLabel(e.produit) : e.type) + ' &nbsp;·&nbsp; ' + timeAgo(e.date) + '</div>';
     html += '<div class="news-text">' + esc(e.titre) + '</div>';
     html += '</div>';
@@ -2832,7 +2884,7 @@
     if (!e) return;
     $('detail-title').textContent = e.titre;
     var html = '<div class="detail-grid">';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Acteur</div><div class="detail-ac-val">' + esc(e.acteur) + '</div></div>';
+    html += '<div class="detail-ac"><div class="detail-ac-name">Acteur</div><div class="detail-ac-val">' + esc(actuActorLabel(e.acteur)) + '</div></div>';
     html += '<div class="detail-ac"><div class="detail-ac-name">Type</div><div class="detail-ac-val"><span class="actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span></div></div>';
     html += '<div class="detail-ac"><div class="detail-ac-name">Produit</div><div class="detail-ac-val">' + (e.produit ? esc(pLabel(e.produit)) : 'Transverse') + '</div></div>';
     html += '<div class="detail-ac"><div class="detail-ac-name">Date</div><div class="detail-ac-val">' + fmtDate(e.date) + '</div></div>';
@@ -3382,6 +3434,7 @@
   var EXPORT_SLUG = { pb: 'PretPersonnel', cr: 'CreditRenouvelable', nxcb: 'NxCB', rac: 'RAC', carte: 'Carte' };
   var exportPending = { format: null, productId: null };
   var pendingTauxImport = null;
+  var pendingActualitesImport = null;
   var generalExportPending = { format: 'xlsx' };
 
   var GENERAL_EXPORT_SECTIONS = [
@@ -5441,6 +5494,7 @@ cb.checked = on;
   window.setIndicateurCategorie = setIndicateurCategorie;
   window.openActuDetail   = openActuDetail;
   window.scrollToDiffDetail = scrollToDiffDetail;
+  window.__parseActualitesSheet = parseActualitesSheet;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
