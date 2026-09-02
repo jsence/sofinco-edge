@@ -54,20 +54,22 @@
 
   function buildImportUndoScope (wb, data, opts) {
     opts = opts || {};
+    var sheetNames = (wb && wb.SheetNames) ? wb.SheetNames : [];
+    var hasPromosSheet = sheetNames.indexOf('PROMOS') >= 0;
+    var hasDiffSheet = sheetNames.indexOf('DIFFERENCIATEURS') >= 0;
     var scope = {
       productIds: opts.importedProductIds || [],
-      promoProductIds: Object.keys(data.promos || {}),
-      diffProductIds: Object.keys(data.differenciateurs || {}),
-      diffCategories: Object.keys(opts.diffsByCategorie || {}),
+      promoProductIds: hasPromosSheet ? Object.keys(data.promos || {}) : [],
+      diffProductIds: hasDiffSheet ? Object.keys(data.differenciateurs || {}) : [],
+      diffCategories: hasDiffSheet ? Object.keys(opts.diffsByCategorie || {}) : [],
       snapshotAllActualites: false,
       snapshotAllTendances: false,
       snapshotTauxCr: false
     };
-    if (!wb || !wb.SheetNames) return scope;
-    if (wb.SheetNames.indexOf('ACTUALITES') >= 0) scope.snapshotAllActualites = true;
-    if (wb.SheetNames.indexOf('DECRYPTAGE') >= 0) scope.snapshotAllTendances = true;
+    if (!sheetNames.length) return scope;
+    if (sheetNames.indexOf('ACTUALITES') >= 0) scope.snapshotAllActualites = true;
+    if (sheetNames.indexOf('DECRYPTAGE') >= 0) scope.snapshotAllTendances = true;
     if (opts.hasTauxImport) scope.snapshotTauxCr = true;
-    if (scope.productIds.length) scope.snapshotAllActualites = true;
     return scope;
   }
 
