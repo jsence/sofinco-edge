@@ -636,14 +636,48 @@
     return null;
   }
 
+  function normalizeImportDateIso (value) {
+    if (value == null || value === '') return null;
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.getFullYear() + '-' + String(value.getMonth() + 1).padStart(2, '0') + '-' + String(value.getDate()).padStart(2, '0');
+    }
+    if (typeof value === 'number' && value > 20000 && value < 120000) {
+      var utc = (value - 25569) * 86400 * 1000;
+      var d = new Date(utc);
+      if (!isNaN(d.getTime())) {
+        return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+      }
+    }
+    var s = String(value).trim();
+    if (!s) return null;
+    var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+    var fr = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    if (fr) return fr[3] + '-' + fr[2].padStart(2, '0') + '-' + fr[1].padStart(2, '0');
+    if (/^\d{5,6}$/.test(s)) {
+      var n = Number(s);
+      var utc2 = (n - 25569) * 86400 * 1000;
+      var d2 = new Date(utc2);
+      if (!isNaN(d2.getTime())) {
+        return d2.getUTCFullYear() + '-' + String(d2.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d2.getUTCDate()).padStart(2, '0');
+      }
+    }
+    return null;
+  }
+
   var actualitesALaUneColumnOk = null;
   var ACTUALITES_A_LA_UNE_MIGRATION = 'supabase/migrations/20250902160000_actualites_a_la_une.sql';
 
-  async function probeActualitesALaUneColumn (sb) {
-    if (actualitesALaUneColumnOk !== null) return actualitesALaUneColumnOk;
-    var res = await sb.from('actualites').select('a_la_une').limit(0);
-    actualitesALaUneColumnOk = !res.error;
-    return actualitesALaUneColumnOk;
+  async function probeActualitesALaUneColumn (sb, options) {
+    options = options || {};
+    if (!options.forceRecheck && actualitesALaUneColumnOk === true) return true;
+    var res = await sb.from('actualites').select('a_la_une').limit(1);
+    if (res.error) {
+      actualitesALaUneColumnOk = false;
+      return false;
+    }
+    actualitesALaUneColumnOk = true;
+    return true;
   }
 
   function actualitesALaUneMigrationHint () {
@@ -674,7 +708,8 @@
     if (!rows || !rows.length) return { map: idByNom || {}, count: 0, warnings: [] };
     var map = Object.assign({}, idByNom || {});
     var warnings = [];
-    var supportsFeatured = await probeActualitesALaUneColumn(sb);
+    var needsFeatured = rows.some(function (r) { return !!r.a_la_une; });
+    var supportsFeatured = await probeActualitesALaUneColumn(sb, { forceRecheck: needsFeatured });
     var actorNames = rows.map(function (r) { return r.acteur; }).filter(Boolean);
     var uniqueNames = actorNames.filter(function (n, i, a) { return a.indexOf(n) === i; });
     if (uniqueNames.length) {
@@ -696,7 +731,7 @@
       }
       var impactKey = IMPACT_TO_DB[String(row.impact || '').toLowerCase()] || null;
       var dbRow = {
-        date: row.date || new Date().toISOString().slice(0, 10),
+        date: normalizeImportDateIso(row.date) || new Date().toISOString().slice(0, 10),
         acteur_id: acteurId,
         type: String(row.type || 'Corporate').trim() || 'Corporate',
         produit_id: row.produit_id || null,
@@ -800,7 +835,7 @@
     var fiabilite = payload.fiabilite === 'a_verifier' ? 'a_verifier' : (payload.fiabilite === 'confirmee' ? 'confirmee' : null);
     var impactKey = IMPACT_TO_DB[String(payload.impact || '').toLowerCase()] || null;
     var row = {
-      date: payload.date || new Date().toISOString().slice(0, 10),
+      date: normalizeImportDateIso(payload.date) || new Date().toISOString().slice(0, 10),
       acteur_id: acteurId,
       type: payload.type,
       produit_id: payload.produit_id || null,

@@ -1877,19 +1877,50 @@
 
   function today () { return new Date().toISOString().slice(0, 10); }
 
+  /** Normalise une date d'import (ISO, JJ/MM/AAAA, série Excel) vers YYYY-MM-DD. */
+  function parseImportDateToIso (value) {
+    if (value == null || value === '') return null;
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.getFullYear() + '-' + String(value.getMonth() + 1).padStart(2, '0') + '-' + String(value.getDate()).padStart(2, '0');
+    }
+    if (typeof value === 'number' && value > 20000 && value < 120000 && typeof XLSX !== 'undefined' && XLSX.SSF) {
+      var dc = XLSX.SSF.parse_date_code(value);
+      if (dc && dc.y) {
+        return dc.y + '-' + String(dc.m).padStart(2, '0') + '-' + String(dc.d).padStart(2, '0');
+      }
+    }
+    var s = String(value).trim();
+    if (!s) return null;
+    var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+    var fr = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    if (fr) return fr[3] + '-' + fr[2].padStart(2, '0') + '-' + fr[1].padStart(2, '0');
+    if (/^\d{5,6}$/.test(s) && typeof XLSX !== 'undefined' && XLSX.SSF) {
+      var dc2 = XLSX.SSF.parse_date_code(Number(s));
+      if (dc2 && dc2.y) {
+        return dc2.y + '-' + String(dc2.m).padStart(2, '0') + '-' + String(dc2.d).padStart(2, '0');
+      }
+    }
+    return null;
+  }
+
   function fmtDate (iso) {
     if (!iso) return '—';
-    var p = String(iso).split('-');
-    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+    var normalized = parseImportDateToIso(iso);
+    if (normalized) {
+      var p = normalized.split('-');
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+    var raw = String(iso).trim();
+    var fr = raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    if (fr) return fr[1].padStart(2, '0') + '/' + fr[2].padStart(2, '0') + '/' + fr[3];
+    return raw;
   }
 
   function normalizeIsoDate (dateStr) {
-    if (!dateStr) return null;
-    var s = String(dateStr).trim();
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-    var d = new Date(s);
-    if (isNaN(d.getTime())) return null;
-    return d.toISOString().slice(0, 10);
+    var parsed = parseImportDateToIso(dateStr);
+    if (parsed) return parsed;
+    return null;
   }
 
   function getGlobalLastUpdateIso () {
@@ -2332,7 +2363,7 @@
       var produitRaw = getCol(row, ['produit', 'produit_id']);
       var produitId = (!catNorm.slug && produitRaw) ? normalizeProduitValue(produitRaw) : '';
       out.push({
-        date: getCol(row, ['date']) || today(),
+        date: parseImportDateToIso(getCol(row, ['date'])) || today(),
         acteur: getCol(row, ['acteur']),
         type: getCol(row, ['type']),
         produit_id: produitId || null,
@@ -2541,7 +2572,7 @@
   function featuredActu () {
     var all = actuList();
     for (var i = 0; i < all.length; i++) {
-      if (all[i].a_la_une) return all[i];
+      if (all[i].a_la_une === true || all[i].a_la_une === 'true' || all[i].a_la_une === 't') return all[i];
     }
     return null;
   }
@@ -6007,6 +6038,16 @@ cb.checked = on;
   window.__parseActualitesSheet = parseActualitesSheet;
   window.__parseDiffSheet = parseDiffSheet;
   window.__parseUneImport = parseUneImport;
+  window.__parseImportDateToIso = parseImportDateToIso;
+  window.__fmtDate = fmtDate;
+  window.__render = render;
+  window.__testSetFeaturedActu = function (titre) {
+    DATA.actualites = [{ id: 'test-featured', date: '2026-07-09', titre: titre, acteur: 'Cofidis', a_la_une: true }];
+    state.view = 'home';
+    render();
+    var el = document.querySelector('.home-featured');
+    return el ? el.textContent : '';
+  };
   window.__parseDecryptageSheet = parseDecryptageSheet;
   window.__normalizeImportCategorie = normalizeImportCategorie;
 
