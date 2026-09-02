@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Smoke test — accueil à la une + filtres catégorie + import Excel Une
+ * Smoke test — accueil épuré + à la une + filtres catégorie + import Excel Une
  */
 import http from 'http';
 import fs from 'fs';
@@ -62,10 +62,20 @@ async function run () {
   var probe = await sb.from('actualites').select('a_la_une').limit(1);
   migrationOk = !probe.error;
 
-  checks.push(['home layout: products compact row', await page.evaluate(function () {
-    return document.querySelector('.home-products-row') !== null &&
-      document.querySelector('.home-products-compact') !== null &&
+  checks.push(['home layout: header + feed only', await page.evaluate(function () {
+    return document.querySelector('.home-hd') !== null &&
+      document.querySelector('.home-actu-main') !== null &&
+      document.querySelector('.home-cat-tag') !== null &&
+      !document.querySelector('.home-products-row') &&
+      !document.querySelector('.home-products-compact') &&
+      !document.querySelector('.home-grid') &&
       !document.querySelector('.shortcuts-grid');
+  })]);
+
+  checks.push(['no week stats block', await page.evaluate(function () {
+    return document.body.textContent.indexOf('Cette semaine') < 0 &&
+      document.body.textContent.indexOf('acteurs suivis') < 0 &&
+      document.body.textContent.indexOf('Accès produits') < 0;
   })]);
 
   checks.push(['home category filter tags', await page.evaluate(function () {
@@ -77,12 +87,6 @@ async function run () {
     await new Promise(function (r) { setTimeout(r, 200); });
     var active = document.querySelector('.home-cat-tag.active');
     return active && active.textContent.indexOf('Produit') >= 0;
-  })]);
-
-  checks.push(['week stats block present', await page.evaluate(function () {
-    window.setHomeActuCategory('all');
-    return document.body.textContent.indexOf('Cette semaine') >= 0 &&
-      document.body.textContent.indexOf('acteurs suivis') >= 0;
   })]);
 
   if (migrationOk) {
@@ -119,10 +123,12 @@ async function run () {
     checks.push(['excel last Oui wins featured', await page.evaluate(function (markerB, markerA) {
       var featured = document.querySelector('.home-featured');
       if (!featured) return false;
-      return featured.textContent.indexOf(markerB) >= 0 && featured.textContent.indexOf(markerA) < 0;
+      return featured.textContent.indexOf('À la une') >= 0 &&
+        featured.textContent.indexOf(markerB) >= 0 &&
+        featured.textContent.indexOf(markerA) < 0;
     }, MARKER_B, MARKER_A)]);
 
-  checks.push(['contrib set featured without import', await page.evaluate(async function (markerB, code) {
+    checks.push(['contrib set featured without import', await page.evaluate(async function (markerB, code) {
       document.getElementById('btn-contributeur').click();
       await new Promise(function (r) { setTimeout(r, 200); });
       document.getElementById('contrib-access-code').value = code;

@@ -30,4 +30,4 @@ Variables : `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (recommandé) ou `SUPAB
 
 ## Tables
 
-`produits`, `acteurs`, `acteurs_produits`, `criteres`, `valeurs`, `promos`, `differenciateurs` (dont `categorie` optionnelle), `tendances` (dont `portee`, `categorie` optionnelle), `actualites` (dont `resume`, `fiabilite`, `acteur_id` optionnel, `categorie`), `taux_cr`, `taux_cr_meta`, `historique`, `indicateurs`, `produits_texte_libre`
+`produits`, `acteurs`, `acteurs_produits`, `criteres`, `valeurs`, `promos`, `differenciateurs` (dont `categorie` optionnelle), `tendances` (dont `portee`, `categorie` optionnelle), `actualites` (dont `resume`, `fiabilite`, `acteur_id` optionnel, `categorie`, `a_la_une`), `taux_cr`, `taux_cr_meta`, `historique`, `indicateurs`, `produits_texte_libre`

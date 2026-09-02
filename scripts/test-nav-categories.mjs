@@ -113,8 +113,9 @@ async function run () {
     return document.querySelectorAll('[data-nav="produit_tarification"], [data-nav="commercial_communication"], [data-nav="strategie_corporate"], [data-nav="rse_juridique"], [data-nav="innovation_securite"]').length === 5;
   })]);
 
-  checks.push(['6 product nav items', await page.evaluate(function () {
-    return document.querySelectorAll('[data-nav="pb"], [data-nav="cr"], [data-nav="nxcb"], [data-nav="rac"], [data-nav="carte"], [data-nav="distribution"]').length === 6;
+  checks.push(['5 product nav items', await page.evaluate(function () {
+    return document.querySelectorAll('[data-nav="pb"], [data-nav="cr"], [data-nav="nxcb"], [data-nav="rac"], [data-nav="carte"]').length === 5 &&
+      !document.querySelector('[data-nav="distribution"]');
   })]);
 
   checks.push(['no benchmarks in sidebar', await page.evaluate(function () {
@@ -166,7 +167,7 @@ async function run () {
 
   checks.push(['sidebar scroll reaches last offer', await page.evaluate(function () {
     var nav = document.querySelector('.sb-nav');
-    var last = document.querySelector('[data-nav="distribution"]');
+    var last = document.querySelector('[data-nav="carte"]');
     if (!nav || !last) return false;
     nav.scrollTop = nav.scrollHeight;
     var navRect = nav.getBoundingClientRect();
@@ -237,11 +238,12 @@ async function run () {
       tabs.indexOf('Promos') >= 0 && tabs.indexOf('Actualités') >= 0 && tabs.indexOf('Taux') >= 0;
   })]);
 
-  checks.push(['distribution product page', await page.evaluate(async function () {
+  checks.push(['distribution product blocked', await page.evaluate(async function () {
     window.navigate('distribution');
     await new Promise(function (r) { setTimeout(r, 400); });
-    var tabs = Array.from(document.querySelectorAll('.tab-btn')).map(function (b) { return b.textContent.trim(); });
-    return tabs.indexOf('Tableau') >= 0 && tabs.indexOf('Différenciateurs') >= 0 && tabs.indexOf('Promos') >= 0;
+    return document.getElementById('view-home').classList.contains('active') &&
+      !document.querySelector('[data-nav="distribution"]') &&
+      document.body.textContent.indexOf('Modèle de distribution') < 0;
   })]);
 
   const markerImport = 'TEST REGRESSION IMPORT ' + Date.now();

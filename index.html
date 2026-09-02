@@ -1260,11 +1260,6 @@
       <span>Carte</span>
       <span class="nb nb-carte">Carte</span>
     </div>
-    <div class="nav-item nav-item-offer" data-nav="distribution">
-      <span class="nav-ic nav-ic-dist"><i class="ti ti-truck-delivery"></i></span>
-      <span>Modèle Distribution</span>
-      <span class="nb nb-dist">Dist</span>
-    </div>
   </nav>
 
   <div class="sb-footer">
@@ -1756,7 +1751,8 @@
     { id: 'innovation_securite', label: 'Innovation & Sécurité', icon: 'ti-shield-lock' }
   ];
   var ACTU_CATEGORY_IDS = ACTU_CATEGORIES.map(function (c) { return c.id; });
-  var CORE_PRODUCT_IDS = ['pb', 'cr', 'nxcb', 'rac', 'carte', 'distribution'];
+  var CORE_PRODUCT_IDS = ['pb', 'cr', 'nxcb', 'rac', 'carte'];
+  var HIDDEN_PRODUCT_IDS = ['distribution'];
   var BENCHMARK_PRODUCT_IDS = ['digital', 'sav', 'com'];
   var INDICATEUR_CATEGORIES = ['Indicateurs consommation', 'Tendances conso'];
   var IMPACT_CLS = { 'à surveiller': 'impact-surveiller', 'menace directe': 'impact-menace', 'neutre': 'impact-neutre' };
@@ -1953,6 +1949,14 @@
 
   function isCoreProduct (productId) {
     return CORE_PRODUCT_IDS.indexOf(productId) >= 0;
+  }
+
+  function isHiddenProduct (productId) {
+    return HIDDEN_PRODUCT_IDS.indexOf(productId) >= 0;
+  }
+
+  function isNavigableProduct (productId) {
+    return isCoreProduct(productId) && !isHiddenProduct(productId);
   }
 
   function isCategoryNav (id) {
@@ -2528,18 +2532,9 @@
     html += '<div class="home-subtitle">Suivre en continu l\'offre et les mouvements de la concurrence</div>';
     html += '</div>';
 
-    var featured = featuredActu();
-    if (featured) html += renderHomeFeatured(featured);
-
     var all = actuList();
     var feed = homeFeedActus();
-    var watchCount = all.filter(function (e) {
-      return (e.impact === 'à surveiller' || e.impact === 'menace directe') && actuWithinPeriode(e.date, '7');
-    }).length;
-    var actorSet = {};
-    coreProducts().forEach(function (p) { p.acteurs.forEach(function (a) { actorSet[a] = 1; }); });
-    var actorCount = Object.keys(actorSet).length;
-    var productCount = coreProducts().length;
+    var featured = featuredActu();
     var catFilter = state.homeActuCategory || 'all';
 
     html += '<div class="home-actu-main">';
@@ -2551,8 +2546,8 @@
     });
     html += '</div>';
 
-    html += '<div class="home-grid">';
-    html += '<div>';
+    if (featured) html += renderHomeFeatured(featured);
+
     html += '<div class="news-feed home-feed-wide">';
     if (!feed.length) {
       html += '<div class="empty-state"><i class="ti ti-inbox"></i><div>Aucune actualité pour ce filtre</div></div>';
@@ -2564,29 +2559,6 @@
     html += '</div>';
     html += '</div>';
 
-    html += '<div>';
-    html += '<div class="section-hd"><i class="ti ti-calendar-stats"></i> Cette semaine</div>';
-    html += '<div class="week-card glass">';
-    html += '<div class="week-stat"><div class="week-num">' + watchCount + '</div><div class="week-label">actu' + (watchCount !== 1 ? 's' : '') + ' à surveiller / menace directe</div></div>';
-    html += '<div class="week-stat"><div class="week-num">' + actorCount + '</div><div class="week-label">acteurs suivis</div></div>';
-    html += '<div class="week-stat"><div class="week-num">' + productCount + '</div><div class="week-label">produits suivis</div></div>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
-
-    html += '<div class="home-products-compact">';
-    html += '<div class="section-hd"><i class="ti ti-layout-grid"></i> Accès produits</div>';
-    html += '<div class="home-products-row">';
-    coreProducts().forEach(function (p) {
-      html += '<div class="home-product-chip chip-' + p.id + '" onclick="navigate(\'' + p.id + '\')">';
-      html += '<span class="chip-ic"><i class="ti ' + P_ICONS[p.id] + '"></i></span>';
-      html += '<span>' + esc(p.label) + '</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-    html += '</div>';
-
     $('view-home').innerHTML = html;
   }
 
@@ -2595,7 +2567,12 @@
   ────────────────────────────────────────── */
   function renderProduct () {
     var p = productById(state.productId);
-    if (!p) return;
+    if (!p || !isNavigableProduct(p.id)) {
+      state.view = 'home';
+      state.productId = null;
+      render();
+      return;
+    }
 
     var html = '';
 
@@ -4782,8 +4759,10 @@ cb.checked = on;
         state.view = 'actus'; state.productId = null; state.categoryId = null;
       } else if (isCategoryNav(id)) {
         state.view = 'category'; state.categoryId = id; state.productId = null; state.categoryTab = 'actualites';
-      } else {
+      } else if (isNavigableProduct(id)) {
         state.view = 'product'; state.productId = id; state.categoryId = null; state.tab = 'tableau';
+      } else {
+        state.view = 'home'; state.productId = null; state.categoryId = null;
       }
       render();
     });
