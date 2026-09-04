@@ -80,7 +80,9 @@ async function run () {
       var card = cards.filter(function (c) { return c.textContent.indexOf('Actu test cartes enrichies') >= 0; })[0];
       if (!card) return false;
       return card.querySelectorAll('.actu-badge').length >= 5 &&
-        card.querySelector('.actu-card-side .impact-badge') !== null;
+        card.querySelector('.actu-card-side .impact-badge') !== null &&
+        card.textContent.indexOf('Prêt personnel') >= 0 &&
+        card.textContent.indexOf('PP') < 0;
     })]);
 
     checks.push(['accueil — résumé tronqué', await page.evaluate(function () {
@@ -125,6 +127,10 @@ async function run () {
     })]);
     checks.push(['modal — lien source', await page.evaluate(function () {
       return !!document.querySelector('#detail-body .actu-detail-source a[href*="example.com"]');
+    })]);
+    checks.push(['modal — nom complet produit', await page.evaluate(function () {
+      var body = document.getElementById('detail-body');
+      return body.textContent.indexOf('Prêt personnel') >= 0 && body.textContent.indexOf('PP') < 0;
     })]);
     await page.click('#detail-close');
 

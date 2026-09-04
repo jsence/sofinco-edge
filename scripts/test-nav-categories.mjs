@@ -225,7 +225,7 @@ async function run () {
     await new Promise(function (r) { setTimeout(r, 400); });
     var tabs = Array.from(document.querySelectorAll('.tab-btn')).map(function (b) { return b.textContent.trim(); });
     return tabs.indexOf('Tableau') >= 0 && tabs.indexOf('Différenciateurs') >= 0 &&
-      tabs.indexOf('Promos') >= 0 && tabs.indexOf('Actualités') >= 0 && tabs.indexOf('Taux') >= 0;
+      tabs.indexOf('Promos') >= 0 && tabs.indexOf('Actualités') >= 0 && tabs.indexOf('Taux') < 0;
   })]);
 
   checks.push(['distribution product blocked', await page.evaluate(async function () {

@@ -3,7 +3,7 @@
  * Tests unitaires logique filtres catégorie — sans Supabase.
  */
 function defaultCategoryFilters () {
-  return { actors: [], produit: 'all' };
+  return { actors: [], produits: [] };
 }
 
 function matchesCategoryActors (actorName, filters) {
@@ -13,8 +13,9 @@ function matchesCategoryActors (actorName, filters) {
 }
 
 function matchesCategoryProduct (produit, filters) {
-  if (!filters.produit || filters.produit === 'all') return true;
-  return produit === filters.produit;
+  if (!filters.produits || !filters.produits.length) return true;
+  if (!produit) return false;
+  return filters.produits.indexOf(produit) >= 0;
 }
 
 function run () {
@@ -27,12 +28,18 @@ function run () {
   f.actors = ['Cofidis'];
   checks.push(['acteur Cofidis seul', matchesCategoryActors('Cofidis', f) && !matchesCategoryActors('Cetelem', f)]);
 
-  f.produit = 'pb';
+  f.produits = ['pb'];
   checks.push(['produit PB', matchesCategoryProduct('pb', f) && !matchesCategoryProduct(null, f) && !matchesCategoryProduct('cr', f)]);
 
   f = defaultCategoryFilters();
   f.actors = ['Cofidis', 'Cetelem'];
   checks.push(['multi acteurs', matchesCategoryActors('Cofidis', f) && matchesCategoryActors('Cetelem', f)]);
+
+  f.produits = ['pb', 'cr'];
+  checks.push(['multi produits', matchesCategoryProduct('pb', f) && matchesCategoryProduct('cr', f) && !matchesCategoryProduct('nxcb', f)]);
+
+  f.actors = ['Cofidis'];
+  checks.push(['acteur + multi produits combinés', matchesCategoryActors('Cofidis', f) && matchesCategoryProduct('pb', f) && matchesCategoryProduct('cr', f)]);
 
   console.log('Category filter logic:\n');
   var allOk = true;
