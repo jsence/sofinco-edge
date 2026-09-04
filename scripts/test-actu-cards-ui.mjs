@@ -100,6 +100,29 @@ async function run () {
       var body = document.getElementById('detail-body').textContent;
       return body.indexOf('Résumé complet de test') >= 0 && body.split('…').length === 1;
     })]);
+    checks.push(['modal — titre repositionné et agrandi', await page.evaluate(function () {
+      var modal = document.getElementById('modal-detail');
+      var body = document.getElementById('detail-body');
+      var titleInHeader = document.getElementById('detail-title').textContent.trim();
+      var titleEl = body.querySelector('.actu-detail-title');
+      var meta = body.querySelector('.actu-detail-meta');
+      var badges = body.querySelector('.actu-detail-badges');
+      var resume = body.querySelector('.actu-detail-resume');
+      var grid = body.querySelector('.detail-grid');
+      var source = body.querySelector('.actu-detail-source-block');
+      if (!modal.classList.contains('modal-actu-detail') || titleInHeader) return false;
+      if (!titleEl || titleEl.textContent.indexOf('Actu test cartes enrichies') < 0) return false;
+      var titleSize = parseFloat(window.getComputedStyle(titleEl).fontSize);
+      if (titleSize < 20) return false;
+      var nodes = Array.from(body.children);
+      var iMeta = nodes.indexOf(meta);
+      var iBadges = nodes.indexOf(badges);
+      var iTitle = nodes.indexOf(titleEl);
+      var iResume = nodes.indexOf(resume);
+      var iGrid = nodes.indexOf(grid);
+      var iSource = nodes.indexOf(source);
+      return iMeta < iBadges && iBadges < iTitle && iTitle < iResume && iResume < iGrid && iGrid < iSource;
+    })]);
     checks.push(['modal — lien source', await page.evaluate(function () {
       return !!document.querySelector('#detail-body .actu-detail-source a[href*="example.com"]');
     })]);
