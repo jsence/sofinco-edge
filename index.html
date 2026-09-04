@@ -511,9 +511,17 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .actu-detail-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .actu-detail-title {
+      font-size: 24px; font-weight: 800; color: var(--navy); line-height: 1.3;
+      margin-bottom: 14px;
+    }
     .actu-detail-resume { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 20px; white-space: pre-wrap; }
     .actu-detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .actu-detail-source-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
     .actu-detail-source a { color: var(--tq-ink); word-break: break-all; }
+    #modal-detail.modal-actu-detail .modal-hd { justify-content: flex-end; border-bottom: none; padding-bottom: 8px; }
+    #modal-detail.modal-actu-detail #detail-title { display: none; }
+    #modal-detail.modal-actu-detail .modal-body { padding-top: 0; }
     .news-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .d-pb { background: var(--tq); }
     .d-cr { background: var(--green); }
@@ -2842,12 +2850,15 @@
   function openActuDetail (idx) {
     var e = actuList()[idx];
     if (!e) return;
-    $('detail-title').textContent = e.titre;
+    var modal = $('modal-detail');
+    modal.classList.add('modal-actu-detail');
+    $('detail-title').textContent = '';
     var html = '<div class="actu-detail-meta">' + fmtDate(e.date) + '</div>';
     html += '<div class="actu-detail-badges">';
     html += renderActuBadgesRow(e);
     html += renderActuImpactBadge(e);
     html += '</div>';
+    html += '<div class="actu-detail-title">' + esc(e.titre) + '</div>';
     if (e.resume) {
       html += '<div class="actu-detail-resume">' + esc(e.resume) + '</div>';
     }
@@ -2867,13 +2878,15 @@
     } else if (e.fiabilite === 'confirmee') {
       html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">Confirmée</div></div>';
     }
-    if (e.source) {
-      html += '<div class="detail-ac" style="grid-column:1/-1"><div class="detail-ac-name">Source</div>';
-      html += '<div class="detail-ac-val actu-detail-source"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div></div>';
-    }
     html += '</div>';
+    if (e.source) {
+      html += '<div class="actu-detail-source-block">';
+      html += '<div class="detail-ac-name">Source</div>';
+      html += '<div class="actu-detail-source"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div>';
+      html += '</div>';
+    }
     $('detail-body').innerHTML = html;
-    $('modal-detail').classList.add('show');
+    modal.classList.add('show');
   }
 
   function renderHome () {
@@ -5102,6 +5115,7 @@ cb.checked = on;
     if (!row) return;
 
     $('detail-title').textContent = critere;
+    $('modal-detail').classList.remove('modal-actu-detail');
     var html = '<div class="detail-grid">';
     p.acteurs.forEach(function (actor) {
       var isUs = actor === 'Sofinco';
@@ -5238,6 +5252,7 @@ cb.checked = on;
     html += '</div>';
 
     $('detail-title').textContent = actor + ' — ' + p.label;
+    $('modal-detail').classList.remove('modal-actu-detail');
     $('detail-body').innerHTML = html;
     $('modal-detail').classList.add('show');
   }
