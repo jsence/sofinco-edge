@@ -364,6 +364,14 @@
     .category-actor-tag.active::before {
       content: '✓'; display: inline-block; margin-right: 5px; font-size: 10px; font-weight: 800;
     }
+    .category-produit-tag.active {
+      background: var(--tq-light); border-color: rgba(79,216,216,0.55); color: var(--tq-ink);
+      box-shadow: inset 0 0 0 1px rgba(79,216,216,0.28);
+      padding-left: 10px;
+    }
+    .category-produit-tag.active::before {
+      content: '✓'; display: inline-block; margin-right: 5px; font-size: 10px; font-weight: 800;
+    }
     .category-filter-bar { margin-bottom: 18px; align-items: flex-start; }
     .category-filter-bar .home-cat-tags { margin-bottom: 0; flex: 1; }
     .category-filter-block { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
@@ -2095,6 +2103,7 @@
   }
 
   function pLabel (id) { var p = productById(id); return p ? p.shortLabel : id.toUpperCase(); }
+  function pFullLabel (id) { var p = productById(id); return p ? p.label : id; }
 
   function faviconImg (actor, size) {
     size = size || 38;
@@ -2791,7 +2800,7 @@
 
   function renderActuProductBadge (e) {
     if (!e.produit) return '';
-    return '<span class="actu-badge actu-badge-prod actu-prod-' + esc(e.produit) + '">' + esc(pLabel(e.produit)) + '</span>';
+    return '<span class="actu-badge actu-badge-prod actu-prod-' + esc(e.produit) + '">' + esc(pFullLabel(e.produit)) + '</span>';
   }
 
   function renderActuTypeBadge (e) {
@@ -2957,9 +2966,6 @@
         { id: 'tableau',          icon: 'ti-table',      label: 'Tableau' },
         { id: 'differenciateurs', icon: 'ti-star',       label: 'Différenciateurs' }
       ];
-      if (p.id === 'pb' || p.id === 'cr' || p.id === 'rac') {
-        TABS.push({ id: 'taux', icon: 'ti-chart-bar', label: 'Taux' });
-      }
       TABS.push({ id: 'promos', icon: 'ti-tag', label: 'Promos' });
       TABS.push({ id: 'actualites', icon: 'ti-news', label: 'Actualités' });
     }
@@ -3025,12 +3031,21 @@
   }
 
   function defaultCategoryFilters () {
-    return { actors: [], produit: 'all' };
+    return { actors: [], produits: [] };
+  }
+
+  function normalizeCategoryFilters (f) {
+    if (!Array.isArray(f.actors)) f.actors = [];
+    if (!Array.isArray(f.produits)) {
+      f.produits = (f.produit && f.produit !== 'all') ? [f.produit] : [];
+      delete f.produit;
+    }
+    return f;
   }
 
   function getCategoryFilters (catId) {
     if (!state.categoryFilters[catId]) state.categoryFilters[catId] = defaultCategoryFilters();
-    return state.categoryFilters[catId];
+    return normalizeCategoryFilters(state.categoryFilters[catId]);
   }
 
   function resetCategoryFilters (catId) {
@@ -3043,10 +3058,11 @@
     return filters.actors.indexOf(actorName) >= 0;
   }
 
-  /** Sans filtre produit : tout visible. Avec filtre : uniquement les entrées rattachées à ce produit. */
+  /** Sans filtre produit : tout visible. Avec filtre : entrées rattachées à l'un des produits sélectionnés. */
   function matchesCategoryProduct (produit, filters) {
-    if (!filters.produit || filters.produit === 'all') return true;
-    return produit === filters.produit;
+    if (!filters.produits || !filters.produits.length) return true;
+    if (!produit) return false;
+    return filters.produits.indexOf(produit) >= 0;
   }
 
   function categoryActorOptions (cat) {
@@ -3081,9 +3097,10 @@
     html += '<div class="category-filter-block category-filter-produit">';
     html += '<span class="actu-filter-label">Produit</span>';
     html += '<div class="home-cat-tags">';
-    html += '<button type="button" class="home-cat-tag category-produit-all' + (f.produit === 'all' ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '">Tous</button>';
+    html += '<button type="button" class="home-cat-tag category-produit-all' + (!f.produits.length ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '">Tous</button>';
     coreProducts().forEach(function (p) {
-      html += '<button type="button" class="home-cat-tag category-produit-tag' + (f.produit === p.id ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '" data-produit="' + esc(p.id) + '">' + esc(p.label) + '</button>';
+      var on = f.produits.indexOf(p.id) >= 0;
+      html += '<button type="button" class="home-cat-tag category-produit-tag' + (on ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '" data-produit="' + esc(p.id) + '">' + esc(p.label) + '</button>';
     });
     html += '</div></div>';
 
@@ -3104,8 +3121,23 @@
     renderCategory();
   }
 
+  function toggleCategoryProduct (catId, produit) {
+    var f = getCategoryFilters(catId);
+    var idx = f.produits.indexOf(produit);
+    if (idx >= 0) f.produits.splice(idx, 1);
+    else f.produits.push(produit);
+    renderCategory();
+  }
+
+  function clearCategoryProducts (catId) {
+    getCategoryFilters(catId).produits = [];
+    renderCategory();
+  }
+
   function setCategoryProduct (catId, produit) {
-    getCategoryFilters(catId).produit = produit || 'all';
+    var f = getCategoryFilters(catId);
+    if (!produit || produit === 'all') f.produits = [];
+    else f.produits = [produit];
     renderCategory();
   }
 
@@ -4249,7 +4281,10 @@
     return String(v).trim();
   }
 
+  var TAUX_TAB_UI_ENABLED = false;
+
   function productHasTauxTab (productId) {
+    if (!TAUX_TAB_UI_ENABLED) return false;
     return productId === 'pb' || productId === 'cr' || productId === 'rac';
   }
 
@@ -6325,10 +6360,10 @@ cb.checked = on;
       var actor = btn.getAttribute('data-actor');
       if (actor != null && actor !== '') toggleCategoryActor(catId, actor);
     } else if (btn.classList.contains('category-produit-all')) {
-      setCategoryProduct(catId, 'all');
+      clearCategoryProducts(catId);
     } else if (btn.classList.contains('category-produit-tag')) {
       var produit = btn.getAttribute('data-produit');
-      if (produit) setCategoryProduct(catId, produit);
+      if (produit) toggleCategoryProduct(catId, produit);
     }
   }
 
@@ -6590,6 +6625,8 @@ cb.checked = on;
   };
   window.toggleCategoryActor = toggleCategoryActor;
   window.clearCategoryActors = clearCategoryActors;
+  window.toggleCategoryProduct = toggleCategoryProduct;
+  window.clearCategoryProducts = clearCategoryProducts;
   window.setCategoryProduct = setCategoryProduct;
   window.__parseDecryptageSheet = parseDecryptageSheet;
   window.__normalizeImportCategorie = normalizeImportCategorie;

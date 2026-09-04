@@ -36,8 +36,8 @@ function buildFixture () {
   return {
     data: {
       produits: [
-        { id: 'pb', label: 'Prêt personnel', excelSheet: 'PB', acteurs: ['Sofinco', 'Cofidis'], sections: [] },
-        { id: 'cr', label: 'Crédit renouvelable', excelSheet: 'CR', acteurs: ['Sofinco'], sections: [] },
+        { id: 'pb', label: 'Prêt personnel', shortLabel: 'PP', excelSheet: 'PB', acteurs: ['Sofinco', 'Cofidis'], sections: [] },
+        { id: 'cr', label: 'Crédit renouvelable', shortLabel: 'CR', excelSheet: 'CR', acteurs: ['Sofinco'], sections: [] },
         { id: 'nxcb', label: 'NxCB', excelSheet: 'NxCB', acteurs: ['Sofinco'], sections: [] },
         { id: 'rac', label: 'RAC', excelSheet: 'RAC', acteurs: ['Sofinco'], sections: [] },
         { id: 'carte', label: 'Carte', excelSheet: 'CARTE', acteurs: ['Sofinco'], sections: [] }
@@ -145,8 +145,9 @@ async function run () {
     })]);
 
     await page.evaluate(function () { window.clearCategoryActors('produit_tarification'); });
+    await page.evaluate(function () { window.clearCategoryProducts('produit_tarification'); });
     await page.evaluate(function () { window.toggleCategoryActor('produit_tarification', 'Cofidis'); });
-    await page.evaluate(function () { window.setCategoryProduct('produit_tarification', 'pb'); });
+    await page.evaluate(function () { window.toggleCategoryProduct('produit_tarification', 'pb'); });
     await page.waitForFunction(function () {
       return document.querySelectorAll('#view-category .news-item').length === 1;
     });
@@ -155,7 +156,41 @@ async function run () {
       return texts.length === 1 && texts[0].indexOf('Cofidis PB') >= 0;
     })]);
 
-    await page.evaluate(function () { window.switchCategoryTab('differenciateurs'); });
+    await page.evaluate(function () {
+      window.clearCategoryActors('produit_tarification');
+      window.clearCategoryProducts('produit_tarification');
+      window.toggleCategoryProduct('produit_tarification', 'pb');
+      window.toggleCategoryProduct('produit_tarification', 'cr');
+    });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 2;
+    });
+    checks.push(['2 actualités filtre PB+CR (multi produit)', await page.evaluate(function () {
+      var active = Array.from(document.querySelectorAll('#view-category .category-produit-tag.active'))
+        .map(function (el) { return el.getAttribute('data-produit'); });
+      var titles = Array.from(document.querySelectorAll('#view-category .actu-card-title')).map(function (el) { return el.textContent; });
+      return active.indexOf('pb') >= 0 && active.indexOf('cr') >= 0 &&
+        titles.length === 2 &&
+        titles.some(function (t) { return t.indexOf('Cofidis PB') >= 0; }) &&
+        titles.some(function (t) { return t.indexOf('Cetelem CR') >= 0; });
+    })]);
+
+    await page.evaluate(function () {
+      window.toggleCategoryActor('produit_tarification', 'Cofidis');
+    });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 1;
+    });
+    checks.push(['acteur+produit combinés (Cofidis + PB+CR)', await page.evaluate(function () {
+      var texts = Array.from(document.querySelectorAll('#view-category .actu-card-title')).map(function (el) { return el.textContent; });
+      return texts.length === 1 && texts[0].indexOf('Cofidis PB') >= 0;
+    })]);
+
+    await page.evaluate(function () {
+      window.clearCategoryActors('produit_tarification');
+      window.setCategoryProduct('produit_tarification', 'pb');
+      window.switchCategoryTab('differenciateurs');
+    });
     checks.push(['diff masqué si filtre produit PB actif', await page.evaluate(function () {
       return document.querySelectorAll('#view-category .diff-card').length === 0;
     })]);
@@ -180,6 +215,29 @@ async function run () {
     checks.push(['page produit charge', await page.evaluate(function () {
       return document.getElementById('view-product').classList.contains('active') &&
         document.querySelector('#view-product .prod-title') !== null;
+    })]);
+
+    checks.push(['onglet Taux absent (PB)', await page.evaluate(function () {
+      var tabs = Array.from(document.querySelectorAll('#view-product .tab-btn')).map(function (b) { return b.textContent.trim(); });
+      return tabs.indexOf('Taux') < 0;
+    })]);
+
+    await page.evaluate(function () { window.navigate('cr'); });
+    await page.waitForFunction(function () {
+      return document.getElementById('view-product').classList.contains('active');
+    });
+    checks.push(['onglet Taux absent (CR)', await page.evaluate(function () {
+      var tabs = Array.from(document.querySelectorAll('#view-product .tab-btn')).map(function (b) { return b.textContent.trim(); });
+      return tabs.indexOf('Taux') < 0;
+    })]);
+
+    await page.evaluate(function () { window.navigate('rac'); });
+    await page.waitForFunction(function () {
+      return document.getElementById('view-product').classList.contains('active');
+    });
+    checks.push(['onglet Taux absent (RAC)', await page.evaluate(function () {
+      var tabs = Array.from(document.querySelectorAll('#view-product .tab-btn')).map(function (b) { return b.textContent.trim(); });
+      return tabs.indexOf('Taux') < 0;
     })]);
 
     await page.evaluate(function () { window.navigate('commercial_communication'); });
