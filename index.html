@@ -356,6 +356,9 @@
     }
     .home-cat-tag:hover { border-color: var(--tq); color: var(--tq-ink); }
     .home-cat-tag.active { background: var(--tq-light); border-color: rgba(79,216,216,0.4); color: var(--tq-ink); }
+    .category-filter-bar { margin-bottom: 18px; align-items: flex-start; }
+    .category-filter-bar .home-cat-tags { margin-bottom: 0; flex: 1; }
+    .category-filter-block { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
     .home-feed-wide .news-item { padding: 18px 22px; }
     .home-feed-wide .news-text { font-size: 15px; font-weight: 500; }
     .home-feed-wide .news-meta { font-size: 12px; margin-bottom: 4px; }
@@ -1863,7 +1866,8 @@
     actuFiltersGlobal: { produit: 'all', acteur: 'all', type: 'all', periode: 'all' },
     actuFiltersProd: {},
     indicateurCategorie: 'all',
-    homeActuCategory: 'all'
+    homeActuCategory: 'all',
+    categoryFilters: {}
   };
 
   var tauxSort       = { col: 'b1', dir: -1 };
@@ -2851,6 +2855,8 @@
     });
     html += '</div>';
 
+    html += renderCategoryFilterBar(cat);
+
     html += '<div id="tab-content">';
     if (state.categoryTab === 'actualites') html += renderActusCategory(cat);
     else if (state.categoryTab === 'differenciateurs') html += renderDifferenciateursCategory(cat);
@@ -2860,15 +2866,104 @@
     $('view-category').innerHTML = html;
   }
 
+  function defaultCategoryFilters () {
+    return { actors: [], produit: 'all' };
+  }
+
+  function getCategoryFilters (catId) {
+    if (!state.categoryFilters[catId]) state.categoryFilters[catId] = defaultCategoryFilters();
+    return state.categoryFilters[catId];
+  }
+
+  function resetCategoryFilters (catId) {
+    state.categoryFilters[catId] = defaultCategoryFilters();
+  }
+
+  function matchesCategoryActors (actorName, filters) {
+    if (!filters.actors || !filters.actors.length) return true;
+    if (!actorName) return false;
+    return filters.actors.indexOf(actorName) >= 0;
+  }
+
+  /** Sans filtre produit : tout visible. Avec filtre : uniquement les entrées rattachées à ce produit. */
+  function matchesCategoryProduct (produit, filters) {
+    if (!filters.produit || filters.produit === 'all') return true;
+    return produit === filters.produit;
+  }
+
+  function categoryActorOptions (cat) {
+    var seen = {};
+    actuList().forEach(function (e) {
+      if (e.categorie === cat.id && e.acteur) seen[e.acteur] = 1;
+    });
+    var diffs = (DATA.differenciateursByCategorie && DATA.differenciateursByCategorie[cat.id]) || {};
+    Object.keys(diffs).forEach(function (a) { if (a) seen[a] = 1; });
+    var tends = (DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || [];
+    tends.forEach(function (t) {
+      (t.acteurs || []).forEach(function (a) { if (a) seen[a] = 1; });
+    });
+    return Object.keys(seen).sort();
+  }
+
+  function renderCategoryFilterBar (cat) {
+    var f = getCategoryFilters(cat.id);
+    var actors = categoryActorOptions(cat);
+    var html = '<div class="actu-filter-bar category-filter-bar">';
+
+    html += '<div class="category-filter-block">';
+    html += '<span class="actu-filter-label">Acteur</span>';
+    html += '<div class="home-cat-tags">';
+    html += '<button type="button" class="home-cat-tag' + (!f.actors.length ? ' active' : '') + '" onclick="clearCategoryActors(\'' + cat.id + '\')">Tous</button>';
+    actors.forEach(function (a) {
+      var on = f.actors.indexOf(a) >= 0;
+      html += '<button type="button" class="home-cat-tag' + (on ? ' active' : '') + '" onclick="toggleCategoryActor(\'' + cat.id + '\',\'' + esc(a).replace(/'/g, "\\'") + '\')">' + esc(a) + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="category-filter-block">';
+    html += '<span class="actu-filter-label">Produit</span>';
+    html += '<div class="home-cat-tags">';
+    html += '<button type="button" class="home-cat-tag' + (f.produit === 'all' ? ' active' : '') + '" onclick="setCategoryProduct(\'' + cat.id + '\',\'all\')">Tous</button>';
+    coreProducts().forEach(function (p) {
+      html += '<button type="button" class="home-cat-tag' + (f.produit === p.id ? ' active' : '') + '" onclick="setCategoryProduct(\'' + cat.id + '\',\'' + p.id + '\')">' + esc(p.label) + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function toggleCategoryActor (catId, actor) {
+    var f = getCategoryFilters(catId);
+    var idx = f.actors.indexOf(actor);
+    if (idx >= 0) f.actors.splice(idx, 1);
+    else f.actors.push(actor);
+    renderCategory();
+  }
+
+  function clearCategoryActors (catId) {
+    getCategoryFilters(catId).actors = [];
+    renderCategory();
+  }
+
+  function setCategoryProduct (catId, produit) {
+    getCategoryFilters(catId).produit = produit || 'all';
+    renderCategory();
+  }
+
   function renderActusCategory (cat) {
+    var f = getCategoryFilters(cat.id);
     var items = actuList().filter(function (e) {
-      return e.categorie === cat.id;
+      if (e.categorie !== cat.id) return false;
+      if (!matchesCategoryActors(e.acteur, f)) return false;
+      if (!matchesCategoryProduct(e.produit, f)) return false;
+      return true;
     }).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
 
     var html = '<div class="news-feed">';
     if (!items.length) {
       html += '<div class="empty-state"><i class="ti ti-inbox"></i>';
-      html += '<div>Aucune actualité pour cette catégorie</div></div>';
+      html += '<div>Aucune actualité ne correspond aux filtres</div></div>';
     } else {
       items.forEach(function (e, pos) { html += renderActuItem(e, pos); });
     }
@@ -2877,13 +2972,16 @@
   }
 
   function renderDifferenciateursCategory (cat) {
+    var f = getCategoryFilters(cat.id);
     var diffs = (DATA.differenciateursByCategorie && DATA.differenciateursByCategorie[cat.id]) || {};
-    var actors = orderTableActors(Object.keys(diffs));
+    var actors = orderTableActors(Object.keys(diffs)).filter(function (actor) {
+      return matchesCategoryActors(actor, f) && matchesCategoryProduct(null, f);
+    });
     var html = '';
 
     if (!actors.length) {
       html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
-      html += '<div>Aucun différenciateur pour cette catégorie</div></div>';
+      html += '<div>Aucun différenciateur ne correspond aux filtres</div></div>';
       return html;
     }
 
@@ -2913,9 +3011,18 @@
   }
 
   function renderDecryptageCategory (cat) {
-    var tendances = (DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || [];
+    var f = getCategoryFilters(cat.id);
+    var tendances = ((DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || []).filter(function (t) {
+      if (!matchesCategoryProduct(t.produit, f)) return false;
+      if (!f.actors || !f.actors.length) return true;
+      var actors = t.acteurs || [];
+      for (var i = 0; i < f.actors.length; i++) {
+        if (actors.indexOf(f.actors[i]) >= 0) return true;
+      }
+      return false;
+    });
     if (!tendances.length) {
-      return '<div class="empty-state"><i class="ti ti-bulb-off"></i><div>Aucun décryptage pour cette catégorie</div></div>';
+      return '<div class="empty-state"><i class="ti ti-bulb-off"></i><div>Aucun décryptage ne correspond aux filtres</div></div>';
     }
     return renderDecryptageSection({ id: cat.id }, tendances);
   }
@@ -5047,6 +5154,7 @@ cb.checked = on;
         state.view = 'actus'; state.productId = null; state.categoryId = null;
       } else if (isCategoryNav(id)) {
         state.view = 'category'; state.categoryId = id; state.productId = null; state.categoryTab = 'actualites';
+        resetCategoryFilters(id);
       } else if (isNavigableProduct(id)) {
         state.view = 'product'; state.productId = id; state.categoryId = null; state.tab = 'tableau';
       } else {
@@ -6339,6 +6447,15 @@ cb.checked = on;
     renderTopbarMeta();
     return document.getElementById('topbar-last-update').textContent;
   };
+  window.__testApplyLoadedData = function (result) {
+    applyLoadedData(result);
+    dataReady = true;
+    var loading = $('data-loading');
+    if (loading) loading.style.display = 'none';
+  };
+  window.toggleCategoryActor = toggleCategoryActor;
+  window.clearCategoryActors = clearCategoryActors;
+  window.setCategoryProduct = setCategoryProduct;
   window.__parseDecryptageSheet = parseDecryptageSheet;
   window.__normalizeImportCategorie = normalizeImportCategorie;
 
