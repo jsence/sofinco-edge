@@ -467,12 +467,45 @@
       border-radius: var(--r-sm);
       border: 1px solid var(--border);
       padding: 14px 20px;
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: flex-start; gap: 14px;
       box-shadow: var(--sh);
       cursor: pointer;
       transition: box-shadow 220ms ease, transform 220ms ease;
     }
     .news-item:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+    .actu-card-main { flex: 1; min-width: 0; }
+    .actu-card-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .actu-card-date { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .actu-card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .actu-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 600; line-height: 1.2;
+      padding: 4px 9px; border-radius: 99px; white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .actu-badge-actor { background: var(--bg); border-color: var(--border); color: var(--text); }
+    .actu-badge-actor .ac-favicon,
+    .actu-badge-actor .ac-placeholder { width: 20px !important; height: 20px !important; font-size: 8px; border-radius: 6px; padding: 2px; }
+    .actu-badge-cat.actu-cat-pt { background: rgba(79,216,216,0.14); color: var(--tq-ink); border-color: rgba(79,216,216,0.25); }
+    .actu-badge-cat.actu-cat-cc { background: rgba(225,45,45,0.12); color: var(--red); border-color: rgba(225,45,45,0.22); }
+    .actu-badge-cat.actu-cat-sc { background: rgba(0,75,60,0.12); color: var(--green); border-color: rgba(0,75,60,0.2); }
+    .actu-badge-cat.actu-cat-rse { background: rgba(14,116,144,0.12); color: #0e7490; border-color: rgba(14,116,144,0.22); }
+    .actu-badge-cat.actu-cat-is { background: rgba(124,58,237,0.12); color: var(--purple); border-color: rgba(124,58,237,0.22); }
+    .actu-badge-prod.actu-prod-pb { background: rgba(79,216,216,0.14); color: var(--tq-ink); border-color: rgba(79,216,216,0.25); }
+    .actu-badge-prod.actu-prod-cr { background: rgba(0,75,60,0.12); color: var(--green); border-color: rgba(0,75,60,0.2); }
+    .actu-badge-prod.actu-prod-nxcb { background: rgba(225,45,45,0.12); color: var(--red); border-color: rgba(225,45,45,0.22); }
+    .actu-badge-prod.actu-prod-rac { background: rgba(245,158,11,0.14); color: var(--orange); border-color: rgba(245,158,11,0.25); }
+    .actu-badge-prod.actu-prod-carte { background: rgba(124,58,237,0.12); color: var(--purple); border-color: rgba(124,58,237,0.22); }
+    .actu-card-title { font-size: 14px; font-weight: 600; color: var(--navy); line-height: 1.4; }
+    .home-feed-wide .actu-card-title { font-size: 15px; }
+    .actu-card-resume {
+      font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.45;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .actu-detail-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .actu-detail-resume { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 20px; white-space: pre-wrap; }
+    .actu-detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .actu-detail-source a { color: var(--tq-ink); word-break: break-all; }
     .news-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .d-pb { background: var(--tq); }
     .d-cr { background: var(--green); }
@@ -1108,7 +1141,7 @@
     }
     .indic-filter-btn:hover { color: var(--text); }
     .indic-filter-btn.if-active { background: var(--surface); color: var(--text); box-shadow: var(--sh); }
-    .actu-type-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; padding: 1px 6px; border-radius: 4px; }
+    .actu-type-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; padding: 4px 8px; border-radius: 99px; border: 1px solid transparent; }
     .at-produit  { background: rgba(79,216,216,0.12); color: var(--tq-ink); }
     .at-marketing{ background: rgba(124,58,237,0.12); color: var(--purple); }
     .at-digital  { background: rgba(0,75,60,0.12); color: var(--green); }
@@ -2698,37 +2731,141 @@
   }
 
   function renderHomeFeatured (actu) {
-    var idx = actuList().indexOf(actu);
-    var html = '<div class="home-featured" onclick="openActuDetail(' + idx + ')">';
+    var idx = actuListIndex(actu);
+    var html = '<div class="home-featured"' + (idx >= 0 ? ' onclick="openActuDetail(' + idx + ')"' : '') + '>';
     html += '<div class="home-featured-kicker"><i class="ti ti-star-filled"></i> À la une</div>';
+    html += '<div class="actu-card-badges" style="margin-bottom:12px">' + renderActuBadgesRow(actu) + '</div>';
     html += '<div class="home-featured-title">' + esc(actu.titre) + '</div>';
-    html += '<div class="home-featured-meta">';
-    html += fmtDate(actu.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(actu.acteur));
-    if (actu.categorie) html += ' &nbsp;·&nbsp; ' + esc(actuCategoryLabel(actu.categorie));
-    else if (actu.produit) html += ' &nbsp;·&nbsp; ' + esc(pLabel(actu.produit));
-    html += '</div>';
-    if (actu.resume) html += '<div class="home-featured-resume">' + esc(actu.resume) + '</div>';
+    html += '<div class="home-featured-meta">' + fmtDate(actu.date) + '</div>';
+    if (actu.resume) html += '<div class="home-featured-resume">' + esc(truncateActuText(actu.resume, 220)) + '</div>';
     else html += '<div class="home-featured-resume text-muted">Cliquez pour voir le détail de cette actualité.</div>';
     html += '</div>';
     return html;
   }
 
-  function renderHomeActuItem (e, idx, pos) {
-    var delay = typeof pos === 'number' ? ' style="animation-delay:' + (Math.min(pos, 12) * 50) + 'ms"' : '';
-    var html = '<div class="news-item stagger-item"' + delay + ' onclick="openActuDetail(' + idx + ')">';
-    html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
-    html += '<div class="news-body">';
-    html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(e.acteur));
-    if (e.categorie) html += ' &nbsp;·&nbsp; ' + esc(actuCategoryLabel(e.categorie));
-    else if (e.produit) html += ' &nbsp;·&nbsp; ' + esc(pLabel(e.produit));
+  function actuListIndex (e) {
+    var list = actuList();
+    if (e && e.id) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === e.id) return i;
+      }
+    }
+    return list.indexOf(e);
+  }
+
+  function truncateActuText (text, max) {
+    var s = String(text || '').trim();
+    if (!s || s.length <= max) return s;
+    return s.slice(0, max).trim() + '…';
+  }
+
+  function renderActuActorBadge (e) {
+    if (!e.acteur) return '';
+    return '<span class="actu-badge actu-badge-actor">' + faviconImg(e.acteur, 20) +
+      '<span>' + esc(e.acteur) + '</span></span>';
+  }
+
+  function renderActuCategoryBadge (e) {
+    if (!e.categorie) return '';
+    var meta = ACTU_CAT_BADGE[e.categorie];
+    var label = meta ? meta.short : actuCategoryLabel(e.categorie);
+    var cls = meta ? meta.cls : '';
+    return '<span class="actu-badge actu-badge-cat ' + cls + '">' + esc(label) + '</span>';
+  }
+
+  function renderActuProductBadge (e) {
+    if (!e.produit) return '';
+    return '<span class="actu-badge actu-badge-prod actu-prod-' + esc(e.produit) + '">' + esc(pLabel(e.produit)) + '</span>';
+  }
+
+  function renderActuTypeBadge (e) {
+    if (!e.type) return '';
+    return '<span class="actu-badge actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span>';
+  }
+
+  function renderActuFiabiliteBadge (e) {
+    if (e.fiabilite !== 'a_verifier') return '';
+    return '<span class="actu-badge actu-fiabilite-badge"><i class="ti ti-alert-circle" style="font-size:10px"></i>À vérifier</span>';
+  }
+
+  function renderActuImpactBadge (e) {
+    if (!e.impact) return '';
+    return '<span class="actu-badge impact-badge ' + (IMPACT_CLS[e.impact] || 'impact-neutre') + '">' + esc(e.impact) + '</span>';
+  }
+
+  function renderActuBadgesRow (e) {
+    var html = '';
+    html += renderActuActorBadge(e);
+    html += renderActuCategoryBadge(e);
+    html += renderActuProductBadge(e);
+    html += renderActuTypeBadge(e);
+    html += renderActuFiabiliteBadge(e);
+    return html;
+  }
+
+  function renderActuCard (e, listPos) {
+    var idx = actuListIndex(e);
+    var delay = typeof listPos === 'number' ? ' style="animation-delay:' + (Math.min(listPos, 12) * 50) + 'ms"' : '';
+    var html = '<div class="news-item actu-card stagger-item"' + delay;
+    if (idx >= 0) html += ' onclick="openActuDetail(' + idx + ')"';
+    html += '>';
+    html += '<div class="actu-card-main">';
+    html += '<div class="actu-card-date">' + fmtDate(e.date) + '</div>';
+    html += '<div class="actu-card-badges">' + renderActuBadgesRow(e) + '</div>';
+    html += '<div class="actu-card-title">' + esc(e.titre) + '</div>';
+    if (e.resume) html += '<div class="actu-card-resume">' + esc(truncateActuText(e.resume, 160)) + '</div>';
     html += '</div>';
-    html += '<div class="news-text">' + esc(e.titre) + '</div>';
-    if (e.resume) html += '<div class="news-resume">' + esc(e.resume) + '</div>';
-    html += '</div>';
-    if (e.impact) html += '<span class="impact-badge ' + (IMPACT_CLS[e.impact] || 'impact-neutre') + '">' + esc(e.impact) + '</span>';
+    html += '<div class="actu-card-side">';
+    html += renderActuImpactBadge(e);
     if (isNew(e.date)) html += '<span class="badge b-new">Nouveau</span>';
     html += '</div>';
+    html += '</div>';
     return html;
+  }
+
+  function renderHomeActuItem (e, idx, pos) {
+    return renderActuCard(e, pos);
+  }
+
+  function renderActuItem (e, listPos) {
+    return renderActuCard(e, listPos);
+  }
+
+  function openActuDetail (idx) {
+    var e = actuList()[idx];
+    if (!e) return;
+    $('detail-title').textContent = e.titre;
+    var html = '<div class="actu-detail-meta">' + fmtDate(e.date) + '</div>';
+    html += '<div class="actu-detail-badges">';
+    html += renderActuBadgesRow(e);
+    html += renderActuImpactBadge(e);
+    html += '</div>';
+    if (e.resume) {
+      html += '<div class="actu-detail-resume">' + esc(e.resume) + '</div>';
+    }
+    html += '<div class="detail-grid">';
+    html += '<div class="detail-ac"><div class="detail-ac-name">Acteur</div><div class="detail-ac-val">' + renderActuActorBadge(e) + '</div></div>';
+    if (e.categorie) {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Catégorie</div><div class="detail-ac-val">' + renderActuCategoryBadge(e) + '</div></div>';
+    }
+    html += '<div class="detail-ac"><div class="detail-ac-name">Produit</div><div class="detail-ac-val">' +
+      (e.produit ? renderActuProductBadge(e) : '<span class="text-muted">Transverse</span>') + '</div></div>';
+    html += '<div class="detail-ac"><div class="detail-ac-name">Type</div><div class="detail-ac-val">' + renderActuTypeBadge(e) + '</div></div>';
+    if (e.impact) {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Impact</div><div class="detail-ac-val">' + renderActuImpactBadge(e) + '</div></div>';
+    }
+    if (e.fiabilite === 'a_verifier') {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">' + renderActuFiabiliteBadge(e) + '</div></div>';
+    } else if (e.fiabilite === 'confirmee') {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">Confirmée</div></div>';
+    }
+    if (e.source) {
+      html += '<div class="detail-ac" style="grid-column:1/-1"><div class="detail-ac-name">Source</div>';
+      html += '<div class="detail-ac-val actu-detail-source"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div></div>';
+    }
+    html += '</div>';
+    $('detail-body').innerHTML = html;
+    $('modal-detail').classList.add('show');
   }
 
   function renderHome () {
@@ -3482,6 +3619,13 @@
      RENDER — ACTUALITÉS
   ────────────────────────────────────────── */
   var ACTU_TYPE_CLS = { Produit: 'at-produit', Marketing: 'at-marketing', Digital: 'at-digital', Corporate: 'at-corporate', Presse: 'at-presse' };
+  var ACTU_CAT_BADGE = {
+    produit_tarification: { cls: 'actu-cat-pt', short: 'P&T' },
+    commercial_communication: { cls: 'actu-cat-cc', short: 'C&C' },
+    strategie_corporate: { cls: 'actu-cat-sc', short: 'S&C' },
+    rse_juridique: { cls: 'actu-cat-rse', short: 'RSE' },
+    innovation_securite: { cls: 'actu-cat-is', short: 'I&S' }
+  };
 
   function actuList () { return DATA.actualites || []; }
 
@@ -3514,61 +3658,8 @@
     return out.sort();
   }
 
-  function renderActuItem (e, idx) {
-    var delay = typeof idx === 'number' ? ' style="animation-delay:' + (Math.min(idx, 12) * 50) + 'ms"' : '';
-    var html = '<div class="news-item stagger-item"' + delay + '>';
-    html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
-    html += '<div class="news-body">';
-    html += '<div class="news-meta">' + fmtDate(e.date) + ' &nbsp;·&nbsp; ' + esc(actuActorLabel(e.acteur)) +
-      (e.produit ? ' &nbsp;·&nbsp; ' + pLabel(e.produit) : ' &nbsp;·&nbsp; Transverse') + '</div>';
-    html += '<div class="news-text"><span class="actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span>&nbsp; ' + esc(e.titre);
-    if (e.fiabilite === 'a_verifier') {
-      html += ' <span class="actu-fiabilite-badge"><i class="ti ti-alert-circle" style="font-size:10px"></i>À vérifier</span>';
-    }
-    if (e.source) html += ' <a href="' + esc(e.source) + '" target="_blank" rel="noopener" style="font-size:11px">(source)</a>';
-    html += '</div>';
-    if (e.resume) html += '<div class="news-resume">' + esc(e.resume) + '</div>';
-    if (e.impact) html += '<div class="news-impact">Impact : <strong>' + esc(e.impact) + '</strong></div>';
-    html += '</div>';
-    if (isNew(e.date)) html += '<span class="badge b-new">Nouveau</span>';
-    html += '</div>';
-    return html;
-  }
-
   function renderActuMiniItem (e, idx, pos) {
-    var delay = typeof pos === 'number' ? ' style="animation-delay:' + (pos * 60) + 'ms"' : '';
-    var html = '<div class="news-item stagger-item"' + delay + ' onclick="openActuDetail(' + idx + ')">';
-    html += '<div class="news-dot ' + (P_DOT[e.produit] || 'd-pb') + '" style="' + (e.produit ? '' : 'background:var(--muted)') + '"></div>';
-    html += '<div class="news-body">';
-    html += '<div class="news-meta">' + esc(actuActorLabel(e.acteur)) + ' &nbsp;·&nbsp; ' +
-      (e.produit ? pLabel(e.produit) : e.type) + ' &nbsp;·&nbsp; ' + timeAgo(e.date) + '</div>';
-    html += '<div class="news-text">' + esc(e.titre) + '</div>';
-    html += '</div>';
-    if (e.impact) html += '<span class="impact-badge ' + (IMPACT_CLS[e.impact] || 'impact-neutre') + '">' + esc(e.impact) + '</span>';
-    html += '</div>';
-    return html;
-  }
-
-  function openActuDetail (idx) {
-    var e = actuList()[idx];
-    if (!e) return;
-    $('detail-title').textContent = e.titre;
-    var html = '<div class="detail-grid">';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Acteur</div><div class="detail-ac-val">' + esc(actuActorLabel(e.acteur)) + '</div></div>';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Type</div><div class="detail-ac-val"><span class="actu-type-tag ' + (ACTU_TYPE_CLS[e.type] || 'at-corporate') + '">' + esc(e.type) + '</span></div></div>';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Produit</div><div class="detail-ac-val">' + (e.produit ? esc(pLabel(e.produit)) : 'Transverse') + '</div></div>';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Date</div><div class="detail-ac-val">' + fmtDate(e.date) + '</div></div>';
-    if (e.impact) html += '<div class="detail-ac"><div class="detail-ac-name">Impact</div><div class="detail-ac-val">' + esc(e.impact) + '</div></div>';
-    if (e.fiabilite === 'a_verifier') {
-      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val"><span class="actu-fiabilite-badge">À vérifier</span></div></div>';
-    } else if (e.fiabilite === 'confirmee') {
-      html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">Confirmée</div></div>';
-    }
-    if (e.resume) html += '<div class="detail-ac" style="grid-column:1/-1"><div class="detail-ac-name">Résumé</div><div class="detail-ac-val">' + esc(e.resume) + '</div></div>';
-    if (e.source) html += '<div class="detail-ac"><div class="detail-ac-name">Source</div><div class="detail-ac-val"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div></div>';
-    html += '</div>';
-    $('detail-body').innerHTML = html;
-    $('modal-detail').classList.add('show');
+    return renderActuCard(e, pos);
   }
 
   function renderActusGlobal () {
