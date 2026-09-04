@@ -135,7 +135,8 @@
         description: t.description,
         acteurs: (t.acteurs_concernes || []).map(function (id) { return nomById[id]; }).filter(Boolean),
         status: t.status || undefined,
-        portee: t.portee || 'produit'
+        portee: t.portee || 'produit',
+        produit: t.produit_id || null
       };
       if (t.categorie) {
         if (!tendByCategorie[t.categorie]) tendByCategorie[t.categorie] = [];
