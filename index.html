@@ -356,6 +356,14 @@
     }
     .home-cat-tag:hover { border-color: var(--tq); color: var(--tq-ink); }
     .home-cat-tag.active { background: var(--tq-light); border-color: rgba(79,216,216,0.4); color: var(--tq-ink); }
+    .category-actor-tag.active {
+      background: var(--tq-light); border-color: rgba(79,216,216,0.55); color: var(--tq-ink);
+      box-shadow: inset 0 0 0 1px rgba(79,216,216,0.28);
+      padding-left: 10px;
+    }
+    .category-actor-tag.active::before {
+      content: '✓'; display: inline-block; margin-right: 5px; font-size: 10px; font-weight: 800;
+    }
     .category-filter-bar { margin-bottom: 18px; align-items: flex-start; }
     .category-filter-bar .home-cat-tags { margin-bottom: 0; flex: 1; }
     .category-filter-block { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
@@ -3047,22 +3055,22 @@
     var actors = categoryActorOptions(cat);
     var html = '<div class="actu-filter-bar category-filter-bar">';
 
-    html += '<div class="category-filter-block">';
+    html += '<div class="category-filter-block category-filter-actors">';
     html += '<span class="actu-filter-label">Acteur</span>';
     html += '<div class="home-cat-tags">';
-    html += '<button type="button" class="home-cat-tag' + (!f.actors.length ? ' active' : '') + '" onclick="clearCategoryActors(\'' + cat.id + '\')">Tous</button>';
+    html += '<button type="button" class="home-cat-tag category-actor-all' + (!f.actors.length ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '">Tous</button>';
     actors.forEach(function (a) {
       var on = f.actors.indexOf(a) >= 0;
-      html += '<button type="button" class="home-cat-tag' + (on ? ' active' : '') + '" onclick="toggleCategoryActor(\'' + cat.id + '\',\'' + esc(a).replace(/'/g, "\\'") + '\')">' + esc(a) + '</button>';
+      html += '<button type="button" class="home-cat-tag category-actor-tag' + (on ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '" data-actor="' + esc(a) + '">' + esc(a) + '</button>';
     });
     html += '</div></div>';
 
-    html += '<div class="category-filter-block">';
+    html += '<div class="category-filter-block category-filter-produit">';
     html += '<span class="actu-filter-label">Produit</span>';
     html += '<div class="home-cat-tags">';
-    html += '<button type="button" class="home-cat-tag' + (f.produit === 'all' ? ' active' : '') + '" onclick="setCategoryProduct(\'' + cat.id + '\',\'all\')">Tous</button>';
+    html += '<button type="button" class="home-cat-tag category-produit-all' + (f.produit === 'all' ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '">Tous</button>';
     coreProducts().forEach(function (p) {
-      html += '<button type="button" class="home-cat-tag' + (f.produit === p.id ? ' active' : '') + '" onclick="setCategoryProduct(\'' + cat.id + '\',\'' + p.id + '\')">' + esc(p.label) + '</button>';
+      html += '<button type="button" class="home-cat-tag category-produit-tag' + (f.produit === p.id ? ' active' : '') + '" data-cat-id="' + esc(cat.id) + '" data-produit="' + esc(p.id) + '">' + esc(p.label) + '</button>';
     });
     html += '</div></div>';
 
@@ -6291,11 +6299,32 @@ cb.checked = on;
   /* ──────────────────────────────────────────
      INIT
   ────────────────────────────────────────── */
+  function onCategoryFilterClick (e) {
+    var btn = e.target.closest('.category-actor-all, .category-actor-tag, .category-produit-all, .category-produit-tag');
+    if (!btn || !btn.closest('#view-category')) return;
+    var catId = btn.getAttribute('data-cat-id');
+    if (!catId) return;
+    if (btn.classList.contains('category-actor-all')) {
+      clearCategoryActors(catId);
+    } else if (btn.classList.contains('category-actor-tag')) {
+      var actor = btn.getAttribute('data-actor');
+      if (actor != null && actor !== '') toggleCategoryActor(catId, actor);
+    } else if (btn.classList.contains('category-produit-all')) {
+      setCategoryProduct(catId, 'all');
+    } else if (btn.classList.contains('category-produit-tag')) {
+      var produit = btn.getAttribute('data-produit');
+      if (produit) setCategoryProduct(catId, produit);
+    }
+  }
+
   function init () {
     /* Navigation latérale */
     document.querySelectorAll('[data-nav]').forEach(function (el) {
       el.addEventListener('click', function () { navigate(el.getAttribute('data-nav')); });
     });
+
+    var content = $('content');
+    if (content) content.addEventListener('click', onCategoryFilterClick);
 
     /* Burger */
     $('burger').addEventListener('click', function () {

@@ -107,6 +107,45 @@ async function run () {
       return document.querySelectorAll('#view-category .news-item').length === 2;
     })]);
 
+    await page.evaluate(function () { window.toggleCategoryActor('produit_tarification', 'Cetelem'); });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 3;
+    });
+    checks.push(['3 actualités filtre Cofidis+Cetelem (multi)', await page.evaluate(function () {
+      var activeActors = Array.from(document.querySelectorAll('#view-category .category-actor-tag.active'))
+        .map(function (el) { return el.getAttribute('data-actor'); });
+      var titles = Array.from(document.querySelectorAll('#view-category .actu-card-title')).map(function (el) { return el.textContent; });
+      return activeActors.indexOf('Cofidis') >= 0 && activeActors.indexOf('Cetelem') >= 0 &&
+        titles.length === 3 &&
+        titles.some(function (t) { return t.indexOf('Cofidis PB') >= 0; }) &&
+        titles.some(function (t) { return t.indexOf('Cetelem CR') >= 0; }) &&
+        titles.some(function (t) { return t.indexOf('transverse') >= 0; });
+    })]);
+
+    await page.evaluate(function () { window.clearCategoryActors('produit_tarification'); });
+    checks.push(['Tous réinitialise acteurs', await page.evaluate(function () {
+      return document.querySelectorAll('#view-category .category-actor-tag.active').length === 0 &&
+        document.querySelector('#view-category .category-actor-all.active') !== null &&
+        document.querySelectorAll('#view-category .news-item').length === 3;
+    })]);
+
+    await page.evaluate(function () {
+      document.querySelector('#view-category .category-actor-tag[data-actor="Cofidis"]').click();
+      document.querySelector('#view-category .category-actor-tag[data-actor="Cetelem"]').click();
+    });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 3 &&
+        document.querySelectorAll('#view-category .category-actor-tag.active').length === 2;
+    });
+    checks.push(['clic UI multi-acteurs (délégation)', await page.evaluate(function () {
+      var active = Array.from(document.querySelectorAll('#view-category .category-actor-tag.active'))
+        .map(function (el) { return el.getAttribute('data-actor'); });
+      return active.indexOf('Cofidis') >= 0 && active.indexOf('Cetelem') >= 0 &&
+        document.querySelectorAll('#view-category .news-item').length === 3;
+    })]);
+
+    await page.evaluate(function () { window.clearCategoryActors('produit_tarification'); });
+    await page.evaluate(function () { window.toggleCategoryActor('produit_tarification', 'Cofidis'); });
     await page.evaluate(function () { window.setCategoryProduct('produit_tarification', 'pb'); });
     await page.waitForFunction(function () {
       return document.querySelectorAll('#view-category .news-item').length === 1;
@@ -148,8 +187,8 @@ async function run () {
       return document.getElementById('view-category').classList.contains('active');
     });
     checks.push(['changement catégorie réinitialise filtres', await page.evaluate(function () {
-      var actorBtn = document.querySelector('#view-category .home-cat-tag[onclick*="clearCategoryActors"]');
-      var prodBtn = document.querySelector('#view-category .home-cat-tag[onclick*="setCategoryProduct"][onclick*="all"]');
+      var actorBtn = document.querySelector('#view-category .category-actor-all');
+      var prodBtn = document.querySelector('#view-category .category-produit-all');
       return actorBtn && actorBtn.classList.contains('active') &&
         prodBtn && prodBtn.classList.contains('active');
     })]);
