@@ -500,8 +500,11 @@
       border: 1px solid transparent;
     }
     .actu-badge-actor { background: var(--bg); border-color: var(--border); color: var(--text); }
-    .actu-badge-actor .ac-favicon,
-    .actu-badge-actor .ac-placeholder { width: 20px !important; height: 20px !important; font-size: 8px; border-radius: 6px; padding: 2px; }
+    .actu-badge-actor .actu-badge-logo,
+    .actu-badge-actor .actu-badge-logo-fallback {
+      width: 20px !important; height: 20px !important; font-size: 8px; border-radius: 6px; padding: 2px;
+    }
+    .actu-badge-logo-wrap { display: inline-flex; flex-shrink: 0; align-items: center; }
     .actu-badge-cat.actu-cat-pt { background: rgba(79,216,216,0.14); color: var(--tq-ink); border-color: rgba(79,216,216,0.25); }
     .actu-badge-cat.actu-cat-cc { background: rgba(225,45,45,0.12); color: var(--red); border-color: rgba(225,45,45,0.22); }
     .actu-badge-cat.actu-cat-sc { background: rgba(0,75,60,0.12); color: var(--green); border-color: rgba(0,75,60,0.2); }
@@ -600,16 +603,31 @@
     .actor-card.is-us { border-color: var(--tq); background: rgba(79,216,216,0.015); }
 
     .ac-top { display: flex; align-items: center; gap: 9px; }
+    .actor-card-logo-wrap,
+    .actor-inline-logo-wrap,
+    .fiche-logo-wrap { display: inline-flex; flex-shrink: 0; align-items: center; position: relative; }
+    .actor-card-logo,
     .ac-favicon {
       width: 34px; height: 34px; border-radius: 8px;
       border: 1px solid var(--border);
       object-fit: contain; background: #fff; padding: 4px; flex-shrink: 0;
     }
+    .actor-card-logo-fallback,
     .ac-placeholder {
       width: 34px; height: 34px; border-radius: 8px;
       border: 1px solid var(--border); background: var(--bg);
       display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    }
+    .actor-inline-logo {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 1px solid var(--border); object-fit: contain; background: #fff; padding: 2px; flex-shrink: 0;
+    }
+    .actor-inline-logo-fallback {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: var(--muted); flex-shrink: 0;
     }
     .ac-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
     .ac-group { font-size: 10px; color: var(--muted); line-height: 1.4; }
@@ -2105,18 +2123,37 @@
   function pLabel (id) { var p = productById(id); return p ? p.shortLabel : id.toUpperCase(); }
   function pFullLabel (id) { var p = productById(id); return p ? p.label : id; }
 
-  function faviconImg (actor, size) {
-    size = size || 38;
-    var domain = DOMAINS[actor];
+  function normalizeActorDomain (actor) {
+    var raw = DOMAINS[actor];
+    if (!raw) return '';
+    return String(raw).trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+  }
+
+  function actorLogoHtml (actor, size, context) {
+    size = size || 34;
+    context = context || 'card';
+    var domain = normalizeActorDomain(actor);
     var initials = String(actor || '').slice(0, 2).toUpperCase();
-    if (domain) {
-      var url = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
-      return '<img src="' + esc(url) + '" alt="' + esc(actor) + '" class="ac-favicon"' +
-        ' style="width:' + size + 'px;height:' + size + 'px"' +
-        ' onerror="this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\'https://icons.duckduckgo.com/ip3/' + domain + '.ico\'">' +
-        '<div class="ac-placeholder" style="display:none;width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
+    var wrapCls = { badge: 'actu-badge-logo-wrap', card: 'actor-card-logo-wrap', inline: 'actor-inline-logo-wrap', fiche: 'fiche-logo-wrap' }[context] || 'actor-card-logo-wrap';
+    var imgCls = { badge: 'actu-badge-logo', card: 'actor-card-logo', inline: 'actor-inline-logo', fiche: 'fiche-favicon' }[context] || 'actor-card-logo';
+    var phCls = { badge: 'actu-badge-logo-fallback', card: 'actor-card-logo-fallback', inline: 'actor-inline-logo-fallback', fiche: 'fiche-placeholder' }[context] || 'actor-card-logo-fallback';
+    var sizeStyle = 'width:' + size + 'px;height:' + size + 'px';
+
+    if (!domain) {
+      return '<span class="' + wrapCls + '"><span class="' + phCls + '" style="' + sizeStyle + '" aria-hidden="true">' + esc(initials) + '</span></span>';
     }
-    return '<div class="ac-placeholder" style="width:' + size + 'px;height:' + size + 'px">' + esc(initials) + '</div>';
+
+    var googleUrl = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
+    var ddgUrl = 'https://icons.duckduckgo.com/ip3/' + domain + '.ico';
+    return '<span class="' + wrapCls + '">' +
+      '<img src="' + googleUrl + '" alt="" class="' + imgCls + '" width="' + size + '" height="' + size + '" loading="lazy" decoding="async"' +
+      ' onerror="var i=this,f=i.nextElementSibling;if(i.dataset.fallback){i.style.display=\'none\';if(f)f.style.display=\'flex\';return;}i.dataset.fallback=1;i.src=\'' + ddgUrl + '\';">' +
+      '<span class="' + phCls + '" style="display:none;' + sizeStyle + '" aria-hidden="true">' + esc(initials) + '</span>' +
+      '</span>';
+  }
+
+  function faviconImg (actor, size) {
+    return actorLogoHtml(actor, size, 'card');
   }
 
   function renderCell (v) {
@@ -2786,7 +2823,7 @@
 
   function renderActuActorBadge (e) {
     if (!e.acteur) return '';
-    return '<span class="actu-badge actu-badge-actor">' + faviconImg(e.acteur, 20) +
+    return '<span class="actu-badge actu-badge-actor">' + actorLogoHtml(e.acteur, 20, 'badge') +
       '<span>' + esc(e.acteur) + '</span></span>';
   }
 
@@ -3186,7 +3223,7 @@
       html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
       html += renderDiffStatusBadge(d.status);
       html += '<div class="diff-actor-hd">';
-      html += faviconImg(actor, 36);
+      html += actorLogoHtml(actor, 36, 'card');
       html += '<div>';
       html += '<div class="ac-name">' + esc(actor);
       if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
@@ -3256,7 +3293,7 @@
 
       html += '<div class="actor-card stagger-item' + (isUs ? ' is-us' : '') + '" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms"' + cardClick + '>';
       html += '<div class="ac-top">';
-      html += faviconImg(actor, 34);
+      html += actorLogoHtml(actor, 34, 'card');
       html += '<div style="min-width:0">';
       html += '<div class="ac-name">' + esc(actor);
       if (isUs) html += '&nbsp;<span class="badge b-tq" style="font-size:9px">Nous</span>';
@@ -3307,7 +3344,7 @@
       html += '<label class="cmp-check-lbl' + (on ? ' on' : '') + (isUs ? ' locked' : '') + '"';
       if (!isUs) html += ' onclick="toggleCompare(\'' + p.id + '\',\'' + esc(actor) + '\')"';
       html += '>';
-      html += faviconImg(actor, 20);
+      html += actorLogoHtml(actor, 20, 'inline');
       html += ' ' + esc(actor);
       if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
       html += '</label>';
@@ -3460,7 +3497,7 @@
         html += '<div class="tendance-actors">';
         t.acteurs.forEach(function (actor) {
           html += '<span class="tendance-actor-badge">';
-          html += faviconImg(actor, 18);
+          html += actorLogoHtml(actor, 18, 'inline');
           html += esc(actor) + '</span>';
         });
         html += '</div>';
@@ -3503,7 +3540,7 @@
 
       html += '<tr' + (isUs ? ' class="diff-sum-us"' : '') + '>';
       html += '<td style="font-weight:600;white-space:nowrap">';
-      html += faviconImg(actor, 22);
+      html += actorLogoHtml(actor, 22, 'inline');
       html += ' ' + esc(actor);
       if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
       html += '</td>';
@@ -3564,7 +3601,7 @@
         html += '<div id="' + esc(cardId) + '" class="diff-card' + (isUs ? ' is-us' : '') + (d.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
         html += renderDiffStatusBadge(d.status);
         html += '<div class="diff-actor-hd">';
-        html += faviconImg(actor, 36);
+        html += actorLogoHtml(actor, 36, 'card');
         html += '<div>';
         html += '<div class="ac-name">' + esc(actor);
         if (isUs) html += ' <span class="badge b-tq" style="font-size:9px">Nous</span>';
@@ -5212,10 +5249,9 @@ cb.checked = on;
     if (!p) return;
 
     var isUs    = actor === 'Sofinco';
-    var domain  = DOMAINS[actor] || '';
+    var domain  = normalizeActorDomain(actor);
     var siteUrl = domain ? 'https://www.' + domain : '#';
     var prodUrl = (PROD_URLS[productId] && PROD_URLS[productId][actor]) || siteUrl;
-    var initials = String(actor).slice(0, 2).toUpperCase();
 
     /* Promo pour cet acteur */
     var promo = null;
@@ -5236,14 +5272,7 @@ cb.checked = on;
 
     /* En-tête */
     html += '<div class="fiche-hd">';
-    if (domain) {
-      var furl = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
-      html += '<img src="' + esc(furl) + '" class="fiche-favicon" alt="' + esc(actor) + '"' +
-        ' onerror="this.onerror=function(){this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'};this.src=\'https://icons.duckduckgo.com/ip3/' + domain + '.ico\'">' +
-        '<div class="fiche-placeholder" style="display:none">' + esc(initials) + '</div>';
-    } else {
-      html += '<div class="fiche-placeholder">' + esc(initials) + '</div>';
-    }
+    html += actorLogoHtml(actor, 52, 'fiche');
     html += '<div>';
     html += '<div class="fiche-actor-name">' + esc(actor);
     if (isUs) html += ' <span class="badge b-tq" style="font-size:10px">Nous</span>';
