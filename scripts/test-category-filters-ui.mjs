@@ -112,7 +112,7 @@ async function run () {
       return document.querySelectorAll('#view-category .news-item').length === 1;
     });
     checks.push(['1 actualité Cofidis+PB', await page.evaluate(function () {
-      var texts = Array.from(document.querySelectorAll('#view-category .news-text')).map(function (el) { return el.textContent; });
+      var texts = Array.from(document.querySelectorAll('#view-category .actu-card-title')).map(function (el) { return el.textContent; });
       return texts.length === 1 && texts[0].indexOf('Cofidis PB') >= 0;
     })]);
 
