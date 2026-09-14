@@ -1,0 +1,39 @@
+{
+  "executed_at": "2026-09-14",
+  "operation": "DELETE tendances seed PB status=genere",
+  "select_before": [
+    {
+      "id": "43975064-a097-4706-a523-e85b2cb7427c",
+      "produit_id": "pb",
+      "categorie": null,
+      "titre": "Accélération du 100 % digital",
+      "status": "genere",
+      "portee": "produit",
+      "created_at": "2026-06-30T15:02:09.738063+00:00"
+    },
+    {
+      "id": "889772d9-1885-488c-8203-5aeb2aaa650c",
+      "produit_id": "pb",
+      "categorie": null,
+      "titre": "Guerre des durées maximales",
+      "status": "genere",
+      "portee": "produit",
+      "created_at": "2026-06-30T15:02:09.738063+00:00"
+    },
+    {
+      "id": "51ae9877-4567-4c89-b9b8-b31cbe8959ea",
+      "produit_id": "pb",
+      "categorie": null,
+      "titre": "Mouvement sur les taux promo",
+      "status": "genere",
+      "portee": "produit",
+      "created_at": "2026-06-30T15:02:09.738063+00:00"
+    }
+  ],
+  "deleted": [
+    { "id": "51ae9877-4567-4c89-b9b8-b31cbe8959ea", "titre": "Mouvement sur les taux promo" },
+    { "id": "43975064-a097-4706-a523-e85b2cb7427c", "titre": "Accélération du 100 % digital" },
+    { "id": "889772d9-1885-488c-8203-5aeb2aaa650c", "titre": "Guerre des durées maximales" }
+  ],
+  "select_after": []
+}

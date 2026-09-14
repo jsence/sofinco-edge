@@ -10,7 +10,7 @@
       "valeurs": 921,
       "promos": 5,
       "differenciateurs": 8,
-      "tendances": 3,
+      "tendances": 0,
       "actualites": 4,
       "taux_cr": 18,
       "produits_texte_libre": 1
@@ -6124,43 +6124,7 @@
       "status": "valide"
     }
   ],
-  "tendances": [
-    {
-      "produit_id": "pb",
-      "titre": "Mouvement sur les taux promo",
-      "description": "3 concurrents ont ajusté leurs taux promotionnels sur le prêt personnel ce mois-ci, avec une baisse moyenne de 0,2 point de TAEG.",
-      "acteurs_concernes": [
-        "cetelem",
-        "cofidis",
-        "oney"
-      ],
-      "status": "genere",
-      "portee": "produit"
-    },
-    {
-      "produit_id": "pb",
-      "titre": "Accélération du 100 % digital",
-      "description": "Deux acteurs renforcent leur parcours entièrement en ligne, sans passage en agence obligatoire.",
-      "acteurs_concernes": [
-        "younited",
-        "cofidis"
-      ],
-      "status": "genere",
-      "portee": "produit"
-    },
-    {
-      "produit_id": "pb",
-      "titre": "Guerre des durées maximales",
-      "description": "Plusieurs acteurs mettent en avant leur durée de remboursement maximale dans leurs campagnes marketing print et digital.",
-      "acteurs_concernes": [
-        "oney",
-        "franfinance",
-        "cetelem"
-      ],
-      "status": "genere",
-      "portee": "produit"
-    }
-  ],
+  "tendances": [],
   "actualites": [
     {
       "date": "2026-06-15",
