@@ -46,14 +46,27 @@ function buildFixture () {
         { id: 'cr', label: 'Crédit renouvelable', shortLabel: 'CR', excelSheet: 'CR', acteurs: ['Sofinco'], sections: [] }
       ],
       promos: {}, differenciateurs: {}, differenciateursByCategorie: {},
-      tendances: {}, tendancesByCategorie: {
-        produit_tarification: [{
-          titre: 'Accélération des parcours 100 % digitaux',
-          description: LONG_DESC,
-          acteurs: ['Cofidis', 'Cetelem', 'Sofinco'],
-          produit: 'pb',
-          portee: 'produit'
-        }],
+      tendances: {},       tendancesByCategorie: {
+        produit_tarification: [
+          {
+            titre: 'Accélération des parcours 100 % digitaux',
+            description: LONG_DESC,
+            acteurs: ['Cofidis', 'Cetelem'],
+            acteursLabels: ['Cofidis', 'Cetelem'],
+            produit: 'pb',
+            portee: 'produit'
+          },
+          {
+            titre: 'Taux moyen en baisse sur le marché',
+            description:
+              'Le contexte Banque de France et Crédit Mutuel Arkéa illustre la tendance.\n\n' +
+              'Les taux d\'appel reculent légèrement sur les offres sans frais.',
+            acteurs: [],
+            acteursLabels: ['Banque de France', 'Crédit Mutuel Arkéa'],
+            produit: 'pb',
+            portee: 'produit'
+          }
+        ],
         strategie_corporate: [{
           titre: 'Visibilité des campagnes promotionnelles',
           description: LONG_DESC,
@@ -100,11 +113,15 @@ async function run () {
     await new Promise(function (r) { setTimeout(r, 1200); });
     const el = await page.$('#view-category .tendances-section');
     if (!el) throw new Error('Missing tendances-section for ' + cat.id);
-    await el.screenshot({ path: path.join(outDir, cat.file) });
-    if (cat.id === 'produit_tarification' && suffix === 'after') {
+    const sectionPath = cat.id === 'produit_tarification'
+      ? path.join(outDir, 'decryptage-cards-' + suffix + '.png')
+      : path.join(outDir, cat.file);
+    await el.screenshot({ path: sectionPath });
+    if (cat.id === 'produit_tarification') {
       const cards = await page.$$('#view-category .tendance-card');
-      if (cards[0]) await cards[0].screenshot({ path: path.join(outDir, 'decryptage-card-known-actors.png') });
-      if (cards[1]) await cards[1].screenshot({ path: path.join(outDir, 'decryptage-card-unknown-actors.png') });
+      await new Promise(function (r) { setTimeout(r, 300); });
+      if (cards[0]) await cards[0].screenshot({ path: path.join(outDir, 'decryptage-card-known-actors-' + suffix + '.png') });
+      if (cards[1]) await cards[1].screenshot({ path: path.join(outDir, 'decryptage-card-unknown-actors-' + suffix + '.png') });
     }
     console.log('  wrote', cat.file);
   }
