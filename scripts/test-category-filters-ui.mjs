@@ -232,6 +232,41 @@ async function run () {
       return document.querySelectorAll('#view-category .tendance-card').length === 0;
     })]);
 
+    await page.evaluate(function () { window.navigate('rse_juridique'); });
+    await page.waitForSelector('#view-category.active');
+    await page.evaluate(function () { window.switchCategoryTab('actualites'); });
+    await page.waitForSelector('#view-category [data-empty-kind="no-data"]');
+    checks.push(['état vide — actualités sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucune actualité disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.switchCategoryTab('differenciateurs'); });
+    checks.push(['état vide — différenciateurs sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucun différenciateur disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.switchCategoryTab('decryptage'); });
+    checks.push(['état vide — décryptage sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucun décryptage disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.navigate('produit_tarification'); });
+    await page.waitForSelector('#view-category.active');
+    await new Promise(function (r) { setTimeout(r, 350); });
+    await page.evaluate(function () { window.switchCategoryTab('actualites'); });
+    await page.evaluate(function () { window.setCategoryProduct('produit_tarification', 'rac'); });
+    await page.waitForFunction(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="filtered"]');
+      return el && el.textContent.indexOf('ne correspond aux filtres') >= 0;
+    }, { timeout: 15000 });
+    checks.push(['état vide — actualités filtre actif (RAC)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="filtered"]');
+      return el && el.textContent.indexOf('ne correspond aux filtres') >= 0;
+    })]);
+
     await page.evaluate(function () { window.navigate('pb'); });
     await page.waitForFunction(function () {
       return document.getElementById('view-product').classList.contains('active');

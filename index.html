@@ -3150,6 +3150,17 @@
     return filters.produits.indexOf(produit) >= 0;
   }
 
+  function categoryFiltersAreDefault (filters) {
+    var f = normalizeCategoryFilters(filters || {});
+    return !f.actors.length && !f.produits.length;
+  }
+
+  function categoryEmptyStateHtml (iconClass, msgFiltered, msgNoData, filters) {
+    var msg = categoryFiltersAreDefault(filters) ? msgNoData : msgFiltered;
+    return '<div class="empty-state" data-empty-kind="' + (categoryFiltersAreDefault(filters) ? 'no-data' : 'filtered') + '">' +
+      '<i class="' + iconClass + '"></i><div>' + esc(msg) + '</div></div>';
+  }
+
   function categoryActorOptions (cat) {
     var seen = {};
     actuList().forEach(function (e) {
@@ -3237,8 +3248,12 @@
 
     var html = '<div class="news-feed">';
     if (!items.length) {
-      html += '<div class="empty-state"><i class="ti ti-inbox"></i>';
-      html += '<div>Aucune actualité ne correspond aux filtres</div></div>';
+      html += categoryEmptyStateHtml(
+        'ti ti-inbox',
+        'Aucune actualité ne correspond aux filtres',
+        'Aucune actualité disponible pour cette catégorie pour le moment',
+        f
+      );
     } else {
       items.forEach(function (e, pos) { html += renderActuItem(e, pos); });
     }
@@ -3255,8 +3270,12 @@
     var html = '';
 
     if (!actors.length) {
-      html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
-      html += '<div>Aucun différenciateur ne correspond aux filtres</div></div>';
+      html += categoryEmptyStateHtml(
+        'ti ti-star-off',
+        'Aucun différenciateur ne correspond aux filtres',
+        'Aucun différenciateur disponible pour cette catégorie pour le moment',
+        f
+      );
       return html;
     }
 
@@ -3297,7 +3316,12 @@
       return false;
     });
     if (!tendances.length) {
-      return '<div class="empty-state"><i class="ti ti-bulb-off"></i><div>Aucun décryptage ne correspond aux filtres</div></div>';
+      return categoryEmptyStateHtml(
+        'ti ti-bulb-off',
+        'Aucun décryptage ne correspond aux filtres',
+        'Aucun décryptage disponible pour cette catégorie pour le moment',
+        f
+      );
     }
     return renderDecryptageSection({ id: cat.id }, tendances);
   }
