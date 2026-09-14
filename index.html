@@ -547,6 +547,8 @@
     .actu-detail-facts .detail-ac { padding: 10px 12px; }
     .actu-detail-source-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
     .actu-detail-source a { color: var(--tq-ink); word-break: break-all; }
+    .actu-source-text { font-size: 13px; line-height: 1.5; color: var(--text); word-break: break-word; }
+    .actu-source-hint { margin-top: 6px; font-size: 12px; }
     #modal-detail.modal-actu-detail .modal-hd { justify-content: flex-end; border-bottom: none; padding-bottom: 8px; }
     #modal-detail.modal-actu-detail #detail-title { display: none; }
     #modal-detail.modal-actu-detail .modal-body { padding-top: 0; }
@@ -3154,6 +3156,53 @@
     return s.slice(0, max).trim() + '…';
   }
 
+  function isActuSemaphoreSource (source) {
+    return /alerte\s+s[eé]maphore/i.test(String(source || '').trim());
+  }
+
+  function looksLikeBareDomainUrl (source) {
+    var s = String(source || '').trim();
+    if (!s || /^https?:\/\//i.test(s)) return false;
+    if (/\s/.test(s)) return false;
+    return /^[\w.-]+\.[a-z]{2,}([\/?#][^\s]*)?$/i.test(s) || /^www\.[\w.-]+/i.test(s);
+  }
+
+  function normalizeActuSourceHref (source) {
+    var s = String(source || '').trim();
+    if (!s || isActuSemaphoreSource(s)) return null;
+    if (/^https?:\/\//i.test(s)) return s;
+    if (looksLikeBareDomainUrl(s)) return 'https://' + s.replace(/^\/\//, '');
+    return null;
+  }
+
+  function classifyActuSource (source) {
+    var s = String(source || '').trim();
+    if (!s) return { kind: 'empty' };
+    if (isActuSemaphoreSource(s)) return { kind: 'semaphore', text: s };
+    var href = normalizeActuSourceHref(s);
+    if (href) return { kind: 'url', text: s, href: href };
+    return { kind: 'text', text: s };
+  }
+
+  function renderActuSourceBlock (source) {
+    var s = String(source || '').trim();
+    if (!s) return '';
+    var info = classifyActuSource(s);
+    var html = '<div class="actu-detail-source-block">';
+    html += '<div class="detail-ac-name">Source</div>';
+    html += '<div class="actu-detail-source">';
+    if (info.kind === 'semaphore') {
+      html += '<span class="actu-source-text">' + esc(info.text) + '</span>';
+      html += '<div class="actu-source-hint text-muted">Consulter sur Sémaphore</div>';
+    } else if (info.kind === 'url') {
+      html += '<a href="' + esc(info.href) + '" target="_blank" rel="noopener">' + esc(info.text) + '</a>';
+    } else {
+      html += '<span class="actu-source-text">' + esc(info.text) + '</span>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
   function renderActuActorBadge (e) {
     if (!e.acteur) return '';
     return '<span class="actu-badge actu-badge-actor">' + actorLogoHtml(e.acteur, 20, 'badge') +
@@ -3260,12 +3309,7 @@
       html += '<div class="actu-detail-resume">' + esc(e.resume) + '</div>';
     }
     html += renderActuDetailFactsGrid(e);
-    if (e.source) {
-      html += '<div class="actu-detail-source-block">';
-      html += '<div class="detail-ac-name">Source</div>';
-      html += '<div class="actu-detail-source"><a href="' + esc(e.source) + '" target="_blank" rel="noopener">' + esc(e.source) + '</a></div>';
-      html += '</div>';
-    }
+    html += renderActuSourceBlock(e.source);
     $('detail-body').innerHTML = html;
     modal.classList.add('show');
   }
@@ -7085,6 +7129,8 @@ cb.checked = on;
   window.setActuFilter    = setActuFilter;
   window.setIndicateurCategorie = setIndicateurCategorie;
   window.openActuDetail   = openActuDetail;
+  window.__classifyActuSource = classifyActuSource;
+  window.__normalizeActuSourceHref = normalizeActuSourceHref;
   window.scrollToDiffDetail = scrollToDiffDetail;
   window.setHomeActuCategory  = setHomeActuCategory;
   window.__parseActualitesSheet = parseActualitesSheet;
