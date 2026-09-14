@@ -49,9 +49,9 @@ function buildFixture () {
       tendancesByCategorie: {},
       taux: { cr: { actors: [] } },
       actualites: [
-        { id: '1', date: '2026-09-02', acteur: 'Cofidis', type: 'Produit', produit: 'pb', categorie: CAT, titre: 'Actu Cofidis PB', resume: '', source: '' },
+        { id: '1', date: '2026-09-10', acteur: 'Cofidis', type: 'Produit', produit: 'pb', categorie: CAT, titre: 'Actu Cofidis PB', resume: '', source: '' },
         { id: '2', date: '2026-09-02', acteur: 'Cetelem', type: 'Produit', produit: 'cr', categorie: CAT, titre: 'Actu Cetelem CR', resume: '', source: '' },
-        { id: '3', date: '2026-09-02', acteur: 'Cofidis', type: 'Corporate', produit: null, categorie: CAT, titre: 'Actu transverse', resume: '', source: '' }
+        { id: '3', date: '2026-08-15', acteur: 'Cofidis', type: 'Corporate', produit: null, categorie: CAT, titre: 'Actu transverse', resume: '', source: '' }
       ],
       indicateurs: [],
       texteLibre: {},
@@ -113,6 +113,42 @@ async function run () {
     checks.push(['3 actualités sans filtre', await page.evaluate(function () {
       return document.querySelectorAll('#view-category .news-item').length === 3;
     })]);
+
+    checks.push(['filtre date — champs Depuis/Jusqu\'à présents', await page.evaluate(function () {
+      return document.querySelector('#view-category .category-date-from') !== null &&
+        document.querySelector('#view-category .category-date-to') !== null;
+    })]);
+
+    await page.evaluate(function () {
+      window.setCategoryDateBound('produit_tarification', 'from', '2026-09-01');
+      window.setCategoryDateBound('produit_tarification', 'to', '2026-09-05');
+    });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 1;
+    });
+    checks.push(['filtre date — plage seule (1 actu)', await page.evaluate(function () {
+      var t = document.querySelector('#view-category .actu-card-title');
+      return document.querySelectorAll('#view-category .news-item').length === 1 &&
+        t && t.textContent.indexOf('Cetelem CR') >= 0;
+    })]);
+
+    await page.evaluate(function () {
+      window.clearCategoryDates('produit_tarification');
+      window.toggleCategoryActor('produit_tarification', 'Cofidis');
+      window.setCategoryDateBound('produit_tarification', 'from', '2026-09-01');
+    });
+    await page.waitForFunction(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 1;
+    });
+    checks.push(['filtre date + acteur Cofidis', await page.evaluate(function () {
+      var titles = Array.from(document.querySelectorAll('#view-category .actu-card-title')).map(function (el) { return el.textContent; });
+      return titles.length === 1 && titles[0].indexOf('Cofidis PB') >= 0;
+    })]);
+
+    await page.evaluate(function () {
+      window.clearCategoryActors('produit_tarification');
+      window.clearCategoryDates('produit_tarification');
+    });
 
     await page.evaluate(function () { window.toggleCategoryActor('produit_tarification', 'Cofidis'); });
     await page.waitForFunction(function () {
@@ -285,6 +321,23 @@ async function run () {
       var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
       return el && el.textContent.indexOf('Aucun décryptage disponible pour cette catégorie') >= 0;
     })]);
+
+    const categoryIds = [
+      'produit_tarification',
+      'commercial_communication',
+      'strategie_corporate',
+      'rse_juridique',
+      'innovation_securite'
+    ];
+    checks.push(['filtre date sur 5 pages catégorie', await page.evaluate(function (ids) {
+      for (var i = 0; i < ids.length; i++) {
+        window.navigate(ids[i]);
+        window.switchCategoryTab('actualites');
+        if (!document.querySelector('#view-category .category-date-from')) return false;
+        if (!document.querySelector('#view-category .category-date-to')) return false;
+      }
+      return true;
+    }, categoryIds)]);
 
     await page.evaluate(function () { window.navigate('produit_tarification'); });
     await page.waitForSelector('#view-category.active');

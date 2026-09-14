@@ -376,6 +376,16 @@
     .category-filter-bar { margin-bottom: 18px; align-items: flex-start; }
     .category-filter-bar .home-cat-tags { margin-bottom: 0; flex: 1; }
     .category-filter-block { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px; }
+    .category-filter-dates { flex: 0 1 auto; min-width: 240px; }
+    .category-date-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+    .category-date-field { display: flex; align-items: center; gap: 6px; }
+    .category-date-field label { font-size: 11px; font-weight: 500; color: var(--text); white-space: nowrap; }
+    .category-date-input {
+      padding: 6px 10px; border-radius: 7px; font-size: 12px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      font-family: inherit; min-width: 0;
+    }
+    .category-date-input:focus { outline: none; border-color: var(--tq-ink); box-shadow: 0 0 0 3px var(--tq-light); }
     .home-feed-wide .news-item { padding: 18px 22px; }
     .home-feed-wide .news-text { font-size: 15px; font-weight: 500; }
     .home-feed-wide .news-meta { font-size: 12px; margin-bottom: 4px; }
@@ -3389,7 +3399,7 @@
   }
 
   function defaultCategoryFilters () {
-    return { actors: [], produits: [] };
+    return { actors: [], produits: [], dateFrom: '', dateTo: '' };
   }
 
   function normalizeCategoryFilters (f) {
@@ -3398,6 +3408,10 @@
       f.produits = (f.produit && f.produit !== 'all') ? [f.produit] : [];
       delete f.produit;
     }
+    if (f.dateFrom == null) f.dateFrom = '';
+    if (f.dateTo == null) f.dateTo = '';
+    f.dateFrom = String(f.dateFrom).trim();
+    f.dateTo = String(f.dateTo).trim();
     return f;
   }
 
@@ -3425,7 +3439,27 @@
 
   function categoryFiltersAreDefault (filters) {
     var f = normalizeCategoryFilters(filters || {});
-    return !f.actors.length && !f.produits.length;
+    return !f.actors.length && !f.produits.length && !f.dateFrom && !f.dateTo;
+  }
+
+  function normalizeActuDateIso (dateStr) {
+    if (!dateStr) return null;
+    var s = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function matchesCategoryDateRange (dateStr, filters) {
+    var from = filters.dateFrom;
+    var to = filters.dateTo;
+    if (!from && !to) return true;
+    var iso = normalizeActuDateIso(dateStr);
+    if (!iso) return false;
+    if (from && iso < from) return false;
+    if (to && iso > to) return false;
+    return true;
   }
 
   function categoryEmptyStateHtml (iconClass, msgFiltered, msgNoData, filters) {
@@ -3529,6 +3563,21 @@
     });
     html += '</div></div>';
 
+    if (state.categoryTab === 'actualites') {
+      html += '<div class="category-filter-block category-filter-dates">';
+      html += '<span class="actu-filter-label">Période</span>';
+      html += '<div class="category-date-row">';
+      html += '<div class="category-date-field">';
+      html += '<label for="cat-date-from-' + esc(cat.id) + '">Depuis</label>';
+      html += '<input type="date" class="category-date-input category-date-from" id="cat-date-from-' + esc(cat.id) + '" data-cat-id="' + esc(cat.id) + '" data-date-bound="from" value="' + esc(f.dateFrom) + '" onchange="setCategoryDateBound(\'' + esc(cat.id).replace(/'/g, "\\'") + '\',\'from\',this.value)">';
+      html += '</div>';
+      html += '<div class="category-date-field">';
+      html += '<label for="cat-date-to-' + esc(cat.id) + '">Jusqu\'à</label>';
+      html += '<input type="date" class="category-date-input category-date-to" id="cat-date-to-' + esc(cat.id) + '" data-cat-id="' + esc(cat.id) + '" data-date-bound="to" value="' + esc(f.dateTo) + '" onchange="setCategoryDateBound(\'' + esc(cat.id).replace(/'/g, "\\'") + '\',\'to\',this.value)">';
+      html += '</div>';
+      html += '</div></div>';
+    }
+
     html += '</div>';
     return html;
   }
@@ -3566,12 +3615,28 @@
     renderCategory();
   }
 
+  function setCategoryDateBound (catId, bound, value) {
+    var f = getCategoryFilters(catId);
+    var v = (value == null ? '' : String(value).trim());
+    if (bound === 'from') f.dateFrom = v;
+    else if (bound === 'to') f.dateTo = v;
+    renderCategory();
+  }
+
+  function clearCategoryDates (catId) {
+    var f = getCategoryFilters(catId);
+    f.dateFrom = '';
+    f.dateTo = '';
+    renderCategory();
+  }
+
   function renderActusCategory (cat) {
     var f = getCategoryFilters(cat.id);
     var items = actuList().filter(function (e) {
       if (e.categorie !== cat.id) return false;
       if (!matchesCategoryActors(e.acteur, f)) return false;
       if (!matchesCategoryProduct(e.produit, f)) return false;
+      if (!matchesCategoryDateRange(e.date, f)) return false;
       return true;
     }).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
 
@@ -7121,6 +7186,8 @@ cb.checked = on;
   window.toggleCategoryProduct = toggleCategoryProduct;
   window.clearCategoryProducts = clearCategoryProducts;
   window.setCategoryProduct = setCategoryProduct;
+  window.setCategoryDateBound = setCategoryDateBound;
+  window.clearCategoryDates = clearCategoryDates;
   window.__parseDecryptageSheet = parseDecryptageSheet;
   window.__normalizeImportCategorie = normalizeImportCategorie;
 
