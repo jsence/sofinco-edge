@@ -140,10 +140,15 @@
     var tendObj = {};
     var tendByCategorie = {};
     tendances.forEach(function (t) {
+      var resolvedActors = (t.acteurs_concernes || []).map(function (id) { return nomById[id]; }).filter(Boolean);
+      var labelList = (t.acteurs_concernes_noms && t.acteurs_concernes_noms.length)
+        ? t.acteurs_concernes_noms.map(function (n) { return String(n || '').trim(); }).filter(Boolean)
+        : resolvedActors.slice();
       var item = {
         titre: t.titre,
         description: t.description,
-        acteurs: (t.acteurs_concernes || []).map(function (id) { return nomById[id]; }).filter(Boolean),
+        acteurs: resolvedActors,
+        acteursLabels: labelList,
         status: t.status || undefined,
         portee: t.portee || 'produit',
         produit: t.produit_id || null
@@ -842,8 +847,12 @@
       var produitId = categorie ? null : row.produit_id;
       if (!categorie && !produitId) return;
       var acteurIds = [];
+      var acteurNoms = [];
       (row.acteurs_concernes || []).forEach(function (nom) {
-        var id = resolveActorIdFromMap(nom, map);
+        var label = String(nom || '').trim();
+        if (!label) return;
+        acteurNoms.push(label);
+        var id = resolveActorIdFromMap(label, map);
         if (id) acteurIds.push(id);
       });
       dbRows.push({
@@ -852,6 +861,7 @@
         titre: titre,
         description: row.description ? String(row.description).trim() : '',
         acteurs_concernes: acteurIds,
+        acteurs_concernes_noms: acteurNoms,
         portee: row.portee === 'benchmark' ? 'benchmark' : 'produit',
         status: null
       });
@@ -950,11 +960,13 @@
     }
     if (!titre) throw new Error('Titre requis pour une tendance.');
     var description = String(payload.detail || '').trim();
+    var acteurNoms = payload.acteur ? [String(payload.acteur).trim()].filter(Boolean) : [];
     var row = {
       produit_id: payload.produit_id,
       titre: titre,
       description: description,
       acteurs_concernes: acteurIds,
+      acteurs_concernes_noms: acteurNoms,
       status: 'valide',
       portee: payload.portee === 'benchmark' ? 'benchmark' : 'produit'
     };

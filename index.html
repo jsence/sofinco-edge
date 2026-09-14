@@ -862,16 +862,28 @@
       font-size: 19px; font-weight: 700; color: var(--navy);
       margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
     }
-    .tendances-grid { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .tendances-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 980px; }
     .tendance-card {
-      background: linear-gradient(135deg, #F8FAFB 0%, #F0FAFA 100%);
+      background: var(--surface);
       border: 1px solid var(--border); border-radius: var(--r);
-      padding: 20px 22px; box-shadow: var(--sh);
+      box-shadow: var(--sh);
       position: relative;
-      width: fit-content;
-      max-width: 100%;
+      width: 100%;
+      overflow: hidden;
+      transition: box-shadow 220ms ease, transform 220ms ease;
     }
-    .tendance-card.has-status { padding-top: 38px; }
+    .tendance-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+    .tendance-card--alt { background: linear-gradient(180deg, #FAFCFD 0%, var(--surface) 100%); }
+    .tendance-card-accent {
+      height: 3px;
+      background: linear-gradient(90deg, var(--tq) 0%, rgba(79,216,216,0.15) 100%);
+    }
+    .tendance-card--alt .tendance-card-accent {
+      background: linear-gradient(90deg, var(--navy) 0%, rgba(11,43,74,0.12) 100%);
+    }
+    .tendance-card-content { padding: 20px 22px 22px; }
+    .tendance-card.has-status { padding-top: 0; }
+    .tendance-card.has-status .tendance-card-content { padding-top: 34px; }
     .tendance-card-inner {
       display: flex;
       flex-wrap: wrap;
@@ -903,8 +915,9 @@
       }
     }
     .tendance-title {
-      font-size: 15px; font-weight: 700; color: var(--navy);
-      margin-bottom: 8px; padding-right: 8px; line-height: 1.35;
+      font-size: 16px; font-weight: 700; color: var(--navy);
+      margin-bottom: 10px; padding-right: 8px; line-height: 1.35;
+      letter-spacing: -0.01em;
     }
     .tendance-desc-wrap { margin-bottom: 0; }
     .tendance-desc-p {
@@ -923,10 +936,17 @@
     .tendance-actors { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .tendance-actor-badge {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 4px 10px 4px 6px; background: var(--surface);
+      padding: 4px 10px 4px 6px; background: var(--bg);
       border: 1px solid var(--border); border-radius: 99px;
-      font-size: 11px; font-weight: 500;
+      font-size: 11px; font-weight: 500; line-height: 1.3;
     }
+    .tendance-actor-badge.is-unresolved {
+      background: #F8FAFB;
+      border-style: dashed;
+      color: var(--text);
+      padding-left: 10px;
+    }
+    .tendance-actor-name { max-width: 220px; }
 
     /* ── PROMOS ───────────────────────────────── */
     .promos-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
@@ -3414,6 +3434,60 @@
       '<i class="' + iconClass + '"></i><div>' + esc(msg) + '</div></div>';
   }
 
+  function resolveDecryptageActorNom (label) {
+    var s = String(label || '').trim();
+    if (!s) return { nom: '', known: false };
+    if (GROUPS[s] !== undefined || actorIdByNom[s]) return { nom: s, known: true };
+    var keys = Object.keys(actorIdByNom);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === s.toLowerCase()) return { nom: keys[i], known: true };
+    }
+    return { nom: s, known: false };
+  }
+
+  function getDecryptageActorEntries (t) {
+    var labels = (t.acteursLabels && t.acteursLabels.length)
+      ? t.acteursLabels
+      : (t.acteurs || []);
+    var seen = {};
+    var out = [];
+    labels.forEach(function (label) {
+      var entry = resolveDecryptageActorNom(label);
+      if (!entry.nom) return;
+      var key = entry.nom.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = 1;
+      out.push(entry);
+    });
+    return out;
+  }
+
+  function tendanceMatchesActorFilters (t, filters) {
+    if (!filters.actors || !filters.actors.length) return true;
+    var entries = getDecryptageActorEntries(t);
+    for (var i = 0; i < filters.actors.length; i++) {
+      var fa = filters.actors[i].toLowerCase();
+      for (var j = 0; j < entries.length; j++) {
+        if (entries[j].nom.toLowerCase() === fa) return true;
+      }
+    }
+    return false;
+  }
+
+  function renderDecryptageActorAside (entries) {
+    if (!entries.length) return '';
+    var html = '<div class="tendance-card-aside">';
+    html += '<div class="tendance-actors-lbl">Acteurs concernés</div>';
+    html += '<div class="tendance-actors">';
+    entries.forEach(function (entry) {
+      html += '<span class="tendance-actor-badge' + (entry.known ? '' : ' is-unresolved') + '">';
+      if (entry.known) html += actorLogoHtml(entry.nom, 18, 'inline');
+      html += '<span class="tendance-actor-name">' + esc(entry.nom) + '</span></span>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
   function categoryActorOptions (cat) {
     var seen = {};
     actuList().forEach(function (e) {
@@ -3423,7 +3497,9 @@
     Object.keys(diffs).forEach(function (a) { if (a) seen[a] = 1; });
     var tends = (DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || [];
     tends.forEach(function (t) {
-      (t.acteurs || []).forEach(function (a) { if (a) seen[a] = 1; });
+      getDecryptageActorEntries(t).forEach(function (e) {
+        if (e.known && e.nom) seen[e.nom] = 1;
+      });
     });
     return Object.keys(seen).sort();
   }
@@ -3561,12 +3637,7 @@
     var f = getCategoryFilters(cat.id);
     var tendances = ((DATA.tendancesByCategorie && DATA.tendancesByCategorie[cat.id]) || []).filter(function (t) {
       if (!matchesCategoryProduct(t.produit, f)) return false;
-      if (!f.actors || !f.actors.length) return true;
-      var actors = t.acteurs || [];
-      for (var i = 0; i < f.actors.length; i++) {
-        if (actors.indexOf(f.actors[i]) >= 0) return true;
-      }
-      return false;
+      return tendanceMatchesActorFilters(t, f);
     });
     if (!tendances.length) {
       return categoryEmptyStateHtml(
@@ -3853,26 +3924,19 @@
   function renderDecryptageCards (items) {
     var html = '<div class="tendances-grid">';
     items.forEach(function (t, idx) {
-      var hasActors = t.acteurs && t.acteurs.length;
-      html += '<div class="tendance-card' + (t.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (idx * 60) + 'ms">';
+      var entries = getDecryptageActorEntries(t);
+      var altCls = idx % 2 === 1 ? ' tendance-card--alt' : '';
+      html += '<div class="tendance-card' + altCls + (t.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (Math.min(idx, 10) * 50) + 'ms">';
+      html += '<div class="tendance-card-accent"></div>';
+      html += '<div class="tendance-card-content">';
       html += renderDiffStatusBadge(t.status);
-      html += '<div class="tendance-card-inner' + (hasActors ? '' : ' tendance-card-inner--solo') + '">';
+      html += '<div class="tendance-card-inner' + (entries.length ? '' : ' tendance-card-inner--solo') + '">';
       html += '<div class="tendance-card-main">';
       html += '<div class="tendance-title">' + esc(t.titre || '') + '</div>';
       html += formatDecryptageDescription(t.description || '');
       html += '</div>';
-      if (hasActors) {
-        html += '<div class="tendance-card-aside">';
-        html += '<div class="tendance-actors-lbl">Acteurs concernés</div>';
-        html += '<div class="tendance-actors">';
-        t.acteurs.forEach(function (actor) {
-          html += '<span class="tendance-actor-badge">';
-          html += actorLogoHtml(actor, 18, 'inline');
-          html += esc(actor) + '</span>';
-        });
-        html += '</div>';
-        html += '</div>';
-      }
+      html += renderDecryptageActorAside(entries);
+      html += '</div>';
       html += '</div>';
       html += '</div>';
     });
