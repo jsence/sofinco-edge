@@ -862,37 +862,60 @@
       font-size: 19px; font-weight: 700; color: var(--navy);
       margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
     }
-    .tendances-grid { display: flex; flex-direction: column; gap: 12px; }
+    .tendances-grid { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
     .tendance-card {
       background: linear-gradient(135deg, #F8FAFB 0%, #F0FAFA 100%);
       border: 1px solid var(--border); border-radius: var(--r);
       padding: 20px 22px; box-shadow: var(--sh);
       position: relative;
+      width: fit-content;
+      max-width: 100%;
     }
     .tendance-card.has-status { padding-top: 38px; }
+    .tendance-card-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 16px 28px;
+    }
+    .tendance-card-inner--solo { max-width: 760px; }
+    .tendance-card-main {
+      flex: 1 1 280px;
+      max-width: 760px;
+      min-width: 0;
+    }
+    .tendance-card-aside {
+      flex: 0 1 220px;
+      min-width: 180px;
+      margin-top: 2px;
+    }
+    @media (min-width: 880px) {
+      .tendance-card-aside {
+        border-left: 1px solid rgba(11, 43, 74, 0.08);
+        padding-left: 22px;
+      }
+    }
+    @media (max-width: 879px) {
+      .tendance-card-aside {
+        flex-basis: 100%;
+        padding-top: 12px;
+        border-top: 1px solid rgba(11, 43, 74, 0.08);
+      }
+    }
     .tendance-title {
-      font-size: 16px; font-weight: 700; color: var(--navy);
-      margin-bottom: 12px; padding-right: 8px; line-height: 1.35;
+      font-size: 15px; font-weight: 700; color: var(--navy);
+      margin-bottom: 8px; padding-right: 8px; line-height: 1.35;
     }
-    .tendance-desc-wrap {
-      max-width: 68ch;
-      margin-bottom: 4px;
-    }
+    .tendance-desc-wrap { margin-bottom: 0; }
     .tendance-desc-p {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.7;
-      margin: 0 0 12px;
-      font-weight: 400;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 10px;
     }
     .tendance-desc-p:last-child { margin-bottom: 0; }
     /* legacy bloc (texte libre digital) */
     .tendance-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
-    .tendance-card-footer {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(11, 43, 74, 0.08);
-    }
     .tendance-actors-lbl {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.4px; color: var(--muted); margin-bottom: 8px;
@@ -1043,6 +1066,57 @@
     .drop-zone i { font-size: 40px; color: var(--tq-ink); display: block; margin-bottom: 12px; }
     .drop-zone p { color: var(--muted); font-size: 13px; }
     .drop-zone .dz-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .drop-zone.is-importing { pointer-events: none; opacity: 0.55; }
+    .contrib-import-progress {
+      margin-top: 18px; padding: 16px 18px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      box-shadow: var(--sh);
+    }
+    .contrib-import-progress.is-error { border-color: rgba(225, 45, 45, 0.35); background: rgba(225, 45, 45, 0.04); }
+    .contrib-import-progress.is-success { border-color: rgba(0, 75, 60, 0.25); }
+    .contrib-import-progress-hd {
+      display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
+      color: var(--navy); margin-bottom: 12px;
+    }
+    .contrib-import-progress-hd i { color: var(--tq-ink); font-size: 18px; }
+    .contrib-import-progress-bar {
+      height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .contrib-import-progress-fill {
+      height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--tq), var(--tq-ink));
+      transition: width 280ms ease;
+    }
+    .contrib-import-progress.is-active .contrib-import-progress-fill.indeterminate {
+      width: 42% !important;
+      animation: import-progress-indet 1.2s ease-in-out infinite;
+    }
+    @keyframes import-progress-indet {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(320%); }
+    }
+    .contrib-import-progress.is-error .contrib-import-progress-fill {
+      background: var(--red); width: 100% !important;
+    }
+    .contrib-import-progress-status {
+      font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45;
+    }
+    .contrib-import-progress.is-error .contrib-import-progress-status { color: var(--red); font-weight: 500; }
+    .contrib-import-progress-steps {
+      list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px;
+    }
+    .contrib-import-progress-steps li {
+      font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px;
+    }
+    .contrib-import-progress-steps li::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%; background: #D1D5DB; flex-shrink: 0;
+    }
+    .contrib-import-progress-steps li.step-active { color: var(--text); font-weight: 600; }
+    .contrib-import-progress-steps li.step-active::before { background: var(--tq); box-shadow: 0 0 0 3px var(--tq-light); }
+    .contrib-import-progress-steps li.step-done { color: var(--green); }
+    .contrib-import-progress-steps li.step-done::before { background: var(--green); }
+    .contrib-import-progress-steps li.step-error { color: var(--red); }
+    .contrib-import-progress-steps li.step-error::before { background: var(--red); }
 
     .mail-ta {
       width: 100%; height: 300px;
@@ -1562,6 +1636,17 @@
           <p>ou cliquer pour sélectionner — format .xlsx uniquement</p>
         </div>
         <input type="file" id="file-input" accept=".xlsx" style="display:none">
+        <div id="contrib-import-progress" class="contrib-import-progress contrib-step-hidden" aria-live="polite" data-import-state="idle">
+          <div class="contrib-import-progress-hd">
+            <i class="ti ti-loader-2" id="contrib-import-progress-icon"></i>
+            <span id="contrib-import-progress-title">Import en cours</span>
+          </div>
+          <div class="contrib-import-progress-bar">
+            <div class="contrib-import-progress-fill" id="contrib-import-progress-fill"></div>
+          </div>
+          <p class="contrib-import-progress-status" id="contrib-import-progress-status"></p>
+          <ul class="contrib-import-progress-steps" id="contrib-import-progress-steps"></ul>
+        </div>
         <div class="bg-note mt-4">
           <strong>Onglets attendus :</strong> PB &nbsp;·&nbsp; CR &nbsp;·&nbsp; NxCB &nbsp;·&nbsp; RAC &nbsp;·&nbsp; TAUX_PB &nbsp;·&nbsp; TAUX_CR &nbsp;·&nbsp; TAUX_RAC &nbsp;·&nbsp; PROMOS &nbsp;·&nbsp; DIFFERENCIATEURS &nbsp;·&nbsp; DECRYPTAGE &nbsp;·&nbsp; ACTUALITES
           <br><span class="text-sm text-muted">Colonnes optionnelles <strong>Categorie</strong> / <strong>Catégorie</strong> sur ACTUALITES, DIFFERENCIATEURS et DECRYPTAGE (slugs : produit_tarification, commercial_communication, strategie_corporate, rse_juridique, innovation_securite). Si renseignée et valide, la catégorie prime sur <strong>Produit</strong> (produit ignoré). Slug invalide : ligne ignorée, import poursuivi.</span>
@@ -2566,11 +2651,172 @@
     $('modal-import-result').classList.add('show');
   }
 
+  var IMPORT_PROGRESS_STEPS = [
+    { id: 'read', label: 'Lecture du fichier' },
+    { id: 'parse', label: 'Analyse des onglets Excel' },
+    { id: 'undo', label: 'Préparation de l\'annulation' },
+    { id: 'sync', label: 'Enregistrement dans la base' },
+    { id: 'finish', label: 'Finalisation' }
+  ];
+
+  function importProgressThrottle () {
+    var ms = globalThis.__IMPORT_PROGRESS_THROTTLE_MS;
+    if (!ms) return Promise.resolve();
+    return new Promise(function (r) { setTimeout(r, Number(ms) || 0); });
+  }
+
+  function resetImportProgressUI () {
+    var panel = $('contrib-import-progress');
+    var zone = $('drop-zone');
+    if (!panel) return;
+    panel.classList.add('contrib-step-hidden');
+    panel.classList.remove('is-active', 'is-error', 'is-success');
+    panel.setAttribute('data-import-state', 'idle');
+    if (zone) zone.classList.remove('is-importing');
+    var fill = $('contrib-import-progress-fill');
+    if (fill) {
+      fill.classList.remove('indeterminate');
+      fill.style.width = '0%';
+    }
+    var title = $('contrib-import-progress-title');
+    if (title) title.textContent = 'Import en cours';
+    var status = $('contrib-import-progress-status');
+    if (status) status.textContent = '';
+    var steps = $('contrib-import-progress-steps');
+    if (steps) steps.innerHTML = '';
+    var icon = $('contrib-import-progress-icon');
+    if (icon) icon.className = 'ti ti-loader-2';
+  }
+
+  function renderImportProgressSteps (activeId, states) {
+    var ul = $('contrib-import-progress-steps');
+    if (!ul) return;
+    var html = '';
+    IMPORT_PROGRESS_STEPS.forEach(function (step) {
+      var st = (states && states[step.id]) || (step.id === activeId ? 'active' : 'pending');
+      var cls = st === 'done' ? 'step-done' : (st === 'active' ? 'step-active' : (st === 'error' ? 'step-error' : ''));
+      html += '<li class="' + cls + '" data-step="' + esc(step.id) + '">' + esc(step.label) + '</li>';
+    });
+    ul.innerHTML = html;
+  }
+
+  function beginImportProgressUI (fileName) {
+    var panel = $('contrib-import-progress');
+    var zone = $('drop-zone');
+    if (!panel) return;
+    panel.classList.remove('contrib-step-hidden', 'is-error', 'is-success');
+    panel.classList.add('is-active');
+    panel.setAttribute('data-import-state', 'running');
+    if (zone) zone.classList.add('is-importing');
+    $('contrib-import-progress-title').textContent = 'Import en cours — ' + (fileName || 'fichier');
+    setImportProgressPercent(4, true);
+    setImportProgressStatus('Démarrage de l\'import…');
+    renderImportProgressSteps('read', { read: 'active' });
+  }
+
+  function setImportProgressPercent (pct, indeterminate) {
+    var fill = $('contrib-import-progress-fill');
+    if (!fill) return;
+    if (indeterminate) {
+      fill.classList.add('indeterminate');
+      fill.style.width = '35%';
+    } else {
+      fill.classList.remove('indeterminate');
+      fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+  }
+
+  function setImportProgressStatus (text) {
+    var el = $('contrib-import-progress-status');
+    if (el) el.textContent = text || '';
+  }
+
+  function advanceImportProgressStep (stepId, statusText, percent) {
+    var states = {};
+    var found = false;
+    IMPORT_PROGRESS_STEPS.forEach(function (step) {
+      if (step.id === stepId) {
+        states[step.id] = 'active';
+        found = true;
+      } else if (!found) {
+        states[step.id] = 'done';
+      }
+    });
+    renderImportProgressSteps(stepId, states);
+    if (statusText) setImportProgressStatus(statusText);
+    if (percent != null) setImportProgressPercent(percent, false);
+  }
+
+  function completeImportProgressStep (stepId) {
+    var states = {};
+    var markDone = true;
+    IMPORT_PROGRESS_STEPS.forEach(function (step) {
+      if (step.id === stepId) {
+        states[step.id] = 'done';
+        markDone = false;
+      } else if (markDone) {
+        states[step.id] = 'done';
+      }
+    });
+    renderImportProgressSteps(null, states);
+  }
+
+  function failImportProgressUI (message, stepId) {
+    var panel = $('contrib-import-progress');
+    var zone = $('drop-zone');
+    if (panel) {
+      panel.classList.remove('is-active', 'is-success');
+      panel.classList.add('is-error');
+      panel.classList.remove('contrib-step-hidden');
+      panel.setAttribute('data-import-state', 'error');
+    }
+    if (zone) zone.classList.remove('is-importing');
+    setImportProgressPercent(100, false);
+    var fill = $('contrib-import-progress-fill');
+    if (fill) fill.classList.remove('indeterminate');
+    setImportProgressStatus(message || 'L\'import a échoué.');
+    $('contrib-import-progress-title').textContent = 'Échec de l\'import';
+    var icon = $('contrib-import-progress-icon');
+    if (icon) icon.className = 'ti ti-alert-circle';
+    if (stepId) {
+      var states = {};
+      var before = true;
+      IMPORT_PROGRESS_STEPS.forEach(function (step) {
+        if (step.id === stepId) {
+          states[step.id] = 'error';
+          before = false;
+        } else if (before) {
+          states[step.id] = 'done';
+        }
+      });
+      renderImportProgressSteps(stepId, states);
+    }
+  }
+
+  function succeedImportProgressUI () {
+    var panel = $('contrib-import-progress');
+    if (!panel) return;
+    panel.classList.remove('is-active');
+    panel.classList.add('is-success');
+    panel.setAttribute('data-import-state', 'success');
+    setImportProgressPercent(100, false);
+    var fill = $('contrib-import-progress-fill');
+    if (fill) fill.classList.remove('indeterminate');
+    setImportProgressStatus('Import terminé. Ouverture du résumé…');
+    $('contrib-import-progress-title').textContent = 'Import terminé';
+    var icon = $('contrib-import-progress-icon');
+    if (icon) icon.className = 'ti ti-check';
+    completeImportProgressStep('finish');
+  }
+
   async function handleWorkbook (wb) {
     if (!dataReady || !sbClient) {
-      alert('Données non chargées — import impossible.');
+      failImportProgressUI('Données non chargées — import impossible.', 'parse');
       return;
     }
+    try {
+      advanceImportProgressStep('parse', 'Analyse des onglets Excel…', 18);
+      await importProgressThrottle();
     var oldSnap = makeSnapshot();
     var importDate = today();
     var importedProductIds = [];
@@ -2607,6 +2853,10 @@
     pendingDecryptageImport = decryptParse.rows;
     importSkipped = importSkipped.concat(decryptParse.skipped || []);
 
+      completeImportProgressStep('parse');
+      advanceImportProgressStep('undo', 'Préparation de l\'instantané d\'annulation…', 38);
+      await importProgressThrottle();
+
     var undoScope = SofincoImportUndo.buildImportUndoScope(wb, DATA, {
       importedProductIds: importedProductIds,
       diffsByCategorie: pendingDiffsByCategorieImport,
@@ -2621,12 +2871,17 @@
       console.warn('Instantané import (annulation) non capturé :', undoCaptureError);
     }
 
+      completeImportProgressStep('undo');
+      advanceImportProgressStep('sync', 'Enregistrement des données (produits, promos, diffs…)…', 52);
+      await importProgressThrottle();
+
     var importStats = { updated: 0, changes: 0, actualites: 0, decryptage: 0, skipped: importSkipped };
-    try {
       var syncResult = await SofincoSupabase.syncAllFromImport(sbClient, DATA, actorIdByNom, GROUPS, DOMAINS, importedProductIds);
       Object.assign(actorIdByNom, syncResult.map);
       importStats.updated = syncResult.stats.updated || 0;
       importStats.changes = syncResult.stats.changes || 0;
+      setImportProgressStatus('Enregistrement des différenciateurs et catégories…');
+      setImportProgressPercent(62, false);
       if (pendingDiffsByCategorieImport && Object.keys(pendingDiffsByCategorieImport).length) {
         var diffCatRes = await SofincoSupabase.syncDifferenciateursByCategorieFromImport(
           sbClient, pendingDiffsByCategorieImport, syncResult.map, GROUPS, DOMAINS);
@@ -2637,6 +2892,8 @@
         await SofincoSupabase.syncTauxCrFromImport(sbClient, pendingTauxImport, syncResult.map, GROUPS, DOMAINS);
         pendingTauxImport = null;
       }
+      setImportProgressStatus('Enregistrement des actualités et décryptages…');
+      setImportProgressPercent(74, false);
       if (pendingActualitesImport && pendingActualitesImport.length) {
         var actuImportRes = await SofincoSupabase.syncActualitesFromImport(
           sbClient, pendingActualitesImport, syncResult.map, GROUPS, DOMAINS);
@@ -2671,24 +2928,28 @@
       if (!undoSaved) {
         importStats.undoError = undoCaptureError || undoSaveError || (!undoPayload ? 'capture vide' : null);
       }
+      completeImportProgressStep('sync');
+      advanceImportProgressStep('finish', 'Rechargement des données…', 88);
+      await importProgressThrottle();
       await SofincoSupabase.recordLastImportAt(sbClient, importDate);
       var reload = await SofincoSupabase.loadAllData(sbClient);
       applyLoadedData(reload);
-    } catch (e) {
-      alert('Erreur lors de l\'enregistrement Supabase : ' + (e.message || e));
-      return;
-    }
 
     var newSnap = makeSnapshot();
     var entries = diffSnapshots(oldSnap, newSnap, importDate);
     if (entries.length) pushChangelog(entries);
     setBaseline(newSnap);
 
+    succeedImportProgressUI();
     $('modal-contributeur').classList.remove('show');
     resetContribModalUI();
     render();
     showImportSummary(importStats);
     refreshImportUndoUI();
+    } catch (e) {
+      failImportProgressUI('Erreur lors de l\'import : ' + (e.message || e), 'sync');
+      return;
+    }
   }
 
   function readXlsx (file) {
@@ -2697,14 +2958,29 @@
       return;
     }
     if (!file.name.match(/\.xlsx$/i)) { alert('Fichier .xlsx requis.'); return; }
+    resetImportProgressUI();
+    beginImportProgressUI(file.name);
     var r = new FileReader();
     r.onload = function (e) {
-      try {
-        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-        handleWorkbook(wb);
-      } catch (err) {
-        alert('Erreur de lecture : ' + err.message);
-      }
+      (async function () {
+        try {
+          advanceImportProgressStep('read', 'Lecture du fichier Excel…', 12);
+          await importProgressThrottle();
+          var bytes = new Uint8Array(e.target.result);
+          if (bytes.length < 4 || bytes[0] !== 0x50 || bytes[1] !== 0x4B) {
+            failImportProgressUI('Fichier Excel invalide ou corrompu.', 'read');
+            return;
+          }
+          var wb = XLSX.read(bytes, { type: 'array' });
+          completeImportProgressStep('read');
+          await handleWorkbook(wb);
+        } catch (err) {
+          failImportProgressUI('Erreur de lecture du fichier : ' + (err.message || err), 'read');
+        }
+      })();
+    };
+    r.onerror = function () {
+      failImportProgressUI('Impossible de lire le fichier.', 'read');
     };
     r.readAsArrayBuffer(file);
   }
@@ -3127,6 +3403,17 @@
     return filters.produits.indexOf(produit) >= 0;
   }
 
+  function categoryFiltersAreDefault (filters) {
+    var f = normalizeCategoryFilters(filters || {});
+    return !f.actors.length && !f.produits.length;
+  }
+
+  function categoryEmptyStateHtml (iconClass, msgFiltered, msgNoData, filters) {
+    var msg = categoryFiltersAreDefault(filters) ? msgNoData : msgFiltered;
+    return '<div class="empty-state" data-empty-kind="' + (categoryFiltersAreDefault(filters) ? 'no-data' : 'filtered') + '">' +
+      '<i class="' + iconClass + '"></i><div>' + esc(msg) + '</div></div>';
+  }
+
   function categoryActorOptions (cat) {
     var seen = {};
     actuList().forEach(function (e) {
@@ -3214,8 +3501,12 @@
 
     var html = '<div class="news-feed">';
     if (!items.length) {
-      html += '<div class="empty-state"><i class="ti ti-inbox"></i>';
-      html += '<div>Aucune actualité ne correspond aux filtres</div></div>';
+      html += categoryEmptyStateHtml(
+        'ti ti-inbox',
+        'Aucune actualité ne correspond aux filtres',
+        'Aucune actualité disponible pour cette catégorie pour le moment',
+        f
+      );
     } else {
       items.forEach(function (e, pos) { html += renderActuItem(e, pos); });
     }
@@ -3232,8 +3523,12 @@
     var html = '';
 
     if (!actors.length) {
-      html += '<div class="empty-state"><i class="ti ti-star-off"></i>';
-      html += '<div>Aucun différenciateur ne correspond aux filtres</div></div>';
+      html += categoryEmptyStateHtml(
+        'ti ti-star-off',
+        'Aucun différenciateur ne correspond aux filtres',
+        'Aucun différenciateur disponible pour cette catégorie pour le moment',
+        f
+      );
       return html;
     }
 
@@ -3274,7 +3569,12 @@
       return false;
     });
     if (!tendances.length) {
-      return '<div class="empty-state"><i class="ti ti-bulb-off"></i><div>Aucun décryptage ne correspond aux filtres</div></div>';
+      return categoryEmptyStateHtml(
+        'ti ti-bulb-off',
+        'Aucun décryptage ne correspond aux filtres',
+        'Aucun décryptage disponible pour cette catégorie pour le moment',
+        f
+      );
     }
     return renderDecryptageSection({ id: cat.id }, tendances);
   }
@@ -3553,12 +3853,16 @@
   function renderDecryptageCards (items) {
     var html = '<div class="tendances-grid">';
     items.forEach(function (t, idx) {
+      var hasActors = t.acteurs && t.acteurs.length;
       html += '<div class="tendance-card' + (t.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (idx * 60) + 'ms">';
       html += renderDiffStatusBadge(t.status);
+      html += '<div class="tendance-card-inner' + (hasActors ? '' : ' tendance-card-inner--solo') + '">';
+      html += '<div class="tendance-card-main">';
       html += '<div class="tendance-title">' + esc(t.titre || '') + '</div>';
       html += formatDecryptageDescription(t.description || '');
-      if (t.acteurs && t.acteurs.length) {
-        html += '<div class="tendance-card-footer">';
+      html += '</div>';
+      if (hasActors) {
+        html += '<div class="tendance-card-aside">';
         html += '<div class="tendance-actors-lbl">Acteurs concernés</div>';
         html += '<div class="tendance-actors">';
         t.acteurs.forEach(function (actor) {
@@ -3569,6 +3873,7 @@
         html += '</div>';
         html += '</div>';
       }
+      html += '</div>';
       html += '</div>';
     });
     html += '</div>';
@@ -5662,6 +5967,7 @@ cb.checked = on;
   }
 
   function resetContribModalUI () {
+    resetImportProgressUI();
     contribMode = 'actu';
     hideAllContribSteps();
     $('contrib-access-code').value = '';
@@ -6718,6 +7024,33 @@ cb.checked = on;
     dataReady = true;
     var loading = $('data-loading');
     if (loading) loading.style.display = 'none';
+  };
+  window.resetImportProgressUI = resetImportProgressUI;
+  window.beginImportProgressUI = beginImportProgressUI;
+  window.advanceImportProgressStep = advanceImportProgressStep;
+  window.completeImportProgressStep = completeImportProgressStep;
+  window.__testImportProgressDemo = async function () {
+    resetImportProgressUI();
+    beginImportProgressUI('fixture-import.xlsx');
+    advanceImportProgressStep('read', 'Lecture du fichier Excel…', 14);
+    await importProgressThrottle();
+    completeImportProgressStep('read');
+    advanceImportProgressStep('parse', 'Analyse des onglets Excel…', 32);
+    await importProgressThrottle();
+    completeImportProgressStep('parse');
+    advanceImportProgressStep('undo', 'Préparation de l\'annulation…', 48);
+    await importProgressThrottle();
+    completeImportProgressStep('undo');
+    advanceImportProgressStep('sync', 'Enregistrement dans la base…', 68);
+    await importProgressThrottle();
+    completeImportProgressStep('sync');
+    advanceImportProgressStep('finish', 'Finalisation…', 92);
+    await importProgressThrottle();
+    succeedImportProgressUI();
+    showImportSummary({
+      updated: 2, changes: 3, actualites: 1, decryptage: 1, skipped: [],
+      undoAvailable: true, undoAttempted: true
+    });
   };
   window.toggleCategoryActor = toggleCategoryActor;
   window.clearCategoryActors = clearCategoryActors;
