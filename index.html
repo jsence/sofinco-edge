@@ -44,6 +44,7 @@
       --border: #E5E7EB;
       --purple: #7C3AED;
       --sw: 240px;
+      --header-bar-height: 54px;
       --r: 12px;
       --r-sm: 8px;
       --sh: 0 1px 2px rgba(11,43,74,0.04), 0 8px 24px rgba(11,43,74,0.08);
@@ -109,7 +110,9 @@
     }
 
     .sb-logo {
-      padding: 18px 18px 16px;
+      height: var(--header-bar-height);
+      min-height: var(--header-bar-height);
+      padding: 0 18px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -226,7 +229,8 @@
     #main { margin-left: var(--sw); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
     #topbar {
-      height: 54px;
+      height: var(--header-bar-height);
+      min-height: var(--header-bar-height);
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center;
@@ -1171,6 +1175,7 @@
       #sidebar.open { transform: translateX(0); box-shadow: var(--sh-md); }
       #main { margin-left: 0; }
       #burger { display: flex; }
+      .sb-logo { padding: 0 14px; }
       #topbar { padding: 0 16px; gap: 8px; }
       .topbar-actions { gap: 8px; }
       #content { padding: 20px 16px; }
