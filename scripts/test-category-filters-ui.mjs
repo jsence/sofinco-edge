@@ -206,7 +206,7 @@ async function run () {
     checks.push(['décryptage — paragraphes lisibles', await page.evaluate(function () {
       var wrap = document.querySelector('#view-category .tendance-desc-wrap');
       var paras = document.querySelectorAll('#view-category .tendance-desc-p');
-      var footer = document.querySelector('#view-category .tendance-card-footer');
+      var footer = document.querySelector('#view-category .tendance-card-aside');
       var badges = document.querySelectorAll('#view-category .tendance-actor-badge');
       return !!wrap && paras.length >= 1 && !!footer && badges.length >= 1;
     })]);
@@ -230,6 +230,41 @@ async function run () {
     });
     checks.push(['décryptage masqué filtre CR', await page.evaluate(function () {
       return document.querySelectorAll('#view-category .tendance-card').length === 0;
+    })]);
+
+    await page.evaluate(function () { window.navigate('rse_juridique'); });
+    await page.waitForSelector('#view-category.active');
+    await page.evaluate(function () { window.switchCategoryTab('actualites'); });
+    await page.waitForSelector('#view-category [data-empty-kind="no-data"]');
+    checks.push(['état vide — actualités sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucune actualité disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.switchCategoryTab('differenciateurs'); });
+    checks.push(['état vide — différenciateurs sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucun différenciateur disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.switchCategoryTab('decryptage'); });
+    checks.push(['état vide — décryptage sans donnée (Tous)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="no-data"]');
+      return el && el.textContent.indexOf('Aucun décryptage disponible pour cette catégorie') >= 0;
+    })]);
+
+    await page.evaluate(function () { window.navigate('produit_tarification'); });
+    await page.waitForSelector('#view-category.active');
+    await new Promise(function (r) { setTimeout(r, 350); });
+    await page.evaluate(function () { window.switchCategoryTab('actualites'); });
+    await page.evaluate(function () { window.setCategoryProduct('produit_tarification', 'rac'); });
+    await page.waitForFunction(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="filtered"]');
+      return el && el.textContent.indexOf('ne correspond aux filtres') >= 0;
+    }, { timeout: 15000 });
+    checks.push(['état vide — actualités filtre actif (RAC)', await page.evaluate(function () {
+      var el = document.querySelector('#view-category [data-empty-kind="filtered"]');
+      return el && el.textContent.indexOf('ne correspond aux filtres') >= 0;
     })]);
 
     await page.evaluate(function () { window.navigate('pb'); });
