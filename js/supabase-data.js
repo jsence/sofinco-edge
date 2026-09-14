@@ -15,6 +15,16 @@
     });
   }
 
+  function resolveActorDomain (nom, domaineFromDb, domainsMap) {
+    var fromMap = domainsMap && domainsMap[nom];
+    if (fromMap != null && String(fromMap).trim()) return String(fromMap).trim();
+    if (domaineFromDb != null && String(domaineFromDb).trim()) return String(domaineFromDb).trim();
+    var defs = global.SofincoActorDomainDefaults;
+    if (defs && defs.resolveWithDb) return defs.resolveWithDb(nom, null);
+    if (defs && defs.resolve) return defs.resolve(nom) || '';
+    return '';
+  }
+
   function toActorId(nom) {
     return String(nom)
       .toLowerCase()
@@ -48,7 +58,7 @@
     var domains = {};
     acteurs.forEach(function (a) {
       groups[a.nom] = a.groupe || '';
-      domains[a.nom] = a.domaine || '';
+      domains[a.nom] = resolveActorDomain(a.nom, a.domaine, null);
     });
 
     var produitsData = produits.map(function (p) {
@@ -318,11 +328,12 @@
       var id = toActorId(nom);
       if (seenIds[id]) return;
       seenIds[id] = 1;
+      var domaine = resolveActorDomain(nom, null, domains) || null;
       rows.push({
         id: id,
         nom: nom,
         groupe: (groups && groups[nom]) || null,
-        domaine: (domains && domains[nom]) || null,
+        domaine: domaine,
         est_nous: nom === 'Sofinco'
       });
     });
