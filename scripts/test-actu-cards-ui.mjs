@@ -82,7 +82,10 @@ async function run () {
       return card.querySelectorAll('.actu-badge').length >= 5 &&
         card.querySelector('.actu-card-side .impact-badge') !== null &&
         card.textContent.indexOf('Prêt personnel') >= 0 &&
-        card.textContent.indexOf('PP') < 0;
+        card.textContent.indexOf('PP') < 0 &&
+        card.querySelector('.actu-badge-cat') &&
+        card.querySelector('.actu-badge-cat').textContent.indexOf('Produit & Tarification') >= 0 &&
+        card.textContent.indexOf('P&T') < 0;
     })]);
 
     checks.push(['accueil — résumé tronqué', await page.evaluate(function () {

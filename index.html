@@ -516,6 +516,7 @@
       width: 20px !important; height: 20px !important; font-size: 8px; border-radius: 6px; padding: 2px;
     }
     .actu-badge-logo-wrap { display: inline-flex; flex-shrink: 0; align-items: center; }
+    .actu-badge-cat { white-space: normal; max-width: 100%; }
     .actu-badge-cat.actu-cat-pt { background: rgba(79,216,216,0.14); color: var(--tq-ink); border-color: rgba(79,216,216,0.25); }
     .actu-badge-cat.actu-cat-cc { background: rgba(225,45,45,0.12); color: var(--red); border-color: rgba(225,45,45,0.22); }
     .actu-badge-cat.actu-cat-sc { background: rgba(0,75,60,0.12); color: var(--green); border-color: rgba(0,75,60,0.2); }
@@ -1423,27 +1424,22 @@
     <div class="nav-item nav-item-cat" data-nav="produit_tarification">
       <span class="nav-ic nav-ic-cat-pt"><i class="ti ti-receipt-2"></i></span>
       <span>Produit &amp; Tarification</span>
-      <span class="nb nb-cat">P&amp;T</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="commercial_communication">
       <span class="nav-ic nav-ic-cat-cc"><i class="ti ti-speakerphone"></i></span>
       <span>Commercial &amp; Communication</span>
-      <span class="nb nb-cat">C&amp;C</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="strategie_corporate">
       <span class="nav-ic nav-ic-cat-sc"><i class="ti ti-building-skyscraper"></i></span>
       <span>Stratégie &amp; Corporate</span>
-      <span class="nb nb-cat">S&amp;C</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="rse_juridique">
       <span class="nav-ic nav-ic-cat-rse"><i class="ti ti-scale"></i></span>
       <span>RSE &amp; Juridique</span>
-      <span class="nb nb-cat">RSE</span>
     </div>
     <div class="nav-item nav-item-cat" data-nav="innovation_securite">
       <span class="nav-ic nav-ic-cat-is"><i class="ti ti-shield-lock"></i></span>
       <span>Innovation &amp; Sécurité</span>
-      <span class="nb nb-cat">I&amp;S</span>
     </div>
     <div class="sb-nav-sep"></div>
     <div class="sb-nav-label">Offres</div>
@@ -3160,9 +3156,8 @@
 
   function renderActuCategoryBadge (e) {
     if (!e.categorie) return '';
-    var meta = ACTU_CAT_BADGE[e.categorie];
-    var label = meta ? meta.short : actuCategoryLabel(e.categorie);
-    var cls = meta ? meta.cls : '';
+    var cls = ACTU_CAT_BADGE_CLS[e.categorie] || '';
+    var label = actuCategoryLabel(e.categorie);
     return '<span class="actu-badge actu-badge-cat ' + cls + '">' + esc(label) + '</span>';
   }
 
@@ -4210,14 +4205,13 @@
      RENDER — ACTUALITÉS
   ────────────────────────────────────────── */
   var ACTU_TYPE_CLS = { Produit: 'at-produit', Marketing: 'at-marketing', Digital: 'at-digital', Corporate: 'at-corporate', Presse: 'at-presse' };
-  var ACTU_CAT_BADGE = {
-    produit_tarification: { cls: 'actu-cat-pt', short: 'P&T' },
-    commercial_communication: { cls: 'actu-cat-cc', short: 'C&C' },
-    strategie_corporate: { cls: 'actu-cat-sc', short: 'S&C' },
-    rse_juridique: { cls: 'actu-cat-rse', short: 'RSE' },
-    innovation_securite: { cls: 'actu-cat-is', short: 'I&S' }
+  var ACTU_CAT_BADGE_CLS = {
+    produit_tarification: 'actu-cat-pt',
+    commercial_communication: 'actu-cat-cc',
+    strategie_corporate: 'actu-cat-sc',
+    rse_juridique: 'actu-cat-rse',
+    innovation_securite: 'actu-cat-is'
   };
-
   function actuList () { return DATA.actualites || []; }
 
   function actuWithinPeriode (dateStr, periode) {
