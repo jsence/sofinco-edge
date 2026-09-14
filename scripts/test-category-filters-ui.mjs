@@ -83,7 +83,22 @@ async function run () {
       Cofidis: { difference: 'Diff test', conclusion: 'ok', tags: [] }
     };
     fixture.data.tendancesByCategorie[CAT] = [
-      { titre: 'Tendance PB', description: 'desc', acteurs: ['Cofidis'], produit: 'pb', portee: 'produit' }
+      {
+        titre: 'Tendance PB reconnue',
+        description: 'desc',
+        acteurs: ['Cofidis'],
+        acteursLabels: ['Cofidis'],
+        produit: 'pb',
+        portee: 'produit'
+      },
+      {
+        titre: 'Taux moyen en baisse',
+        description: 'Le contexte Banque de France et Crédit Mutuel Arkéa illustre la tendance.',
+        acteurs: [],
+        acteursLabels: ['Banque de France', 'Crédit Mutuel Arkéa'],
+        produit: 'pb',
+        portee: 'produit'
+      }
     ];
 
     await page.evaluate(function (result) {
@@ -200,7 +215,13 @@ async function run () {
       window.switchCategoryTab('decryptage');
     });
     checks.push(['décryptage visible produit tous', await page.evaluate(function () {
-      return document.querySelectorAll('#view-category .tendance-card').length === 1;
+      return document.querySelectorAll('#view-category .tendance-card').length === 2;
+    })]);
+
+    checks.push(['décryptage — acteurs non reconnus en badge texte', await page.evaluate(function () {
+      var unresolved = document.querySelectorAll('#view-category .tendance-actor-badge.is-unresolved');
+      return unresolved.length >= 2 &&
+        document.body.textContent.indexOf('Banque de France') >= 0;
     })]);
 
     checks.push(['décryptage — paragraphes lisibles', await page.evaluate(function () {
@@ -230,6 +251,18 @@ async function run () {
     });
     checks.push(['décryptage masqué filtre CR', await page.evaluate(function () {
       return document.querySelectorAll('#view-category .tendance-card').length === 0;
+    })]);
+
+    await page.evaluate(function () {
+      window.setCategoryProduct('produit_tarification', 'all');
+      window.switchCategoryTab('decryptage');
+    });
+    checks.push(['décryptage — carte Cofidis conserve logo', await page.evaluate(function () {
+      var card = Array.from(document.querySelectorAll('#view-category .tendance-card')).find(function (c) {
+        return c.textContent.indexOf('Tendance PB reconnue') >= 0;
+      });
+      if (!card) return false;
+      return card.querySelector('.tendance-actor-badge:not(.is-unresolved) .actor-inline-logo') !== null;
     })]);
 
     await page.evaluate(function () { window.navigate('rse_juridique'); });

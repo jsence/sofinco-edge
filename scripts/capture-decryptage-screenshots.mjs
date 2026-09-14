@@ -101,6 +101,11 @@ async function run () {
     const el = await page.$('#view-category .tendances-section');
     if (!el) throw new Error('Missing tendances-section for ' + cat.id);
     await el.screenshot({ path: path.join(outDir, cat.file) });
+    if (cat.id === 'produit_tarification' && suffix === 'after') {
+      const cards = await page.$$('#view-category .tendance-card');
+      if (cards[0]) await cards[0].screenshot({ path: path.join(outDir, 'decryptage-card-known-actors.png') });
+      if (cards[1]) await cards[1].screenshot({ path: path.join(outDir, 'decryptage-card-unknown-actors.png') });
+    }
     console.log('  wrote', cat.file);
   }
 
