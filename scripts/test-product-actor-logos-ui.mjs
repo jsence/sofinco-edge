@@ -124,6 +124,63 @@ async function run () {
       var w = img ? parseFloat(getComputedStyle(img).width) : 0;
       return w > 0 && w <= 22;
     })]);
+
+    var algoanFixture = {
+      data: {
+        produits: [{
+          id: 'pb', label: 'Prêt personnel', shortLabel: 'PP', excelSheet: 'PB',
+          acteurs: ['Algoan', 'Cofidis'],
+          sections: [{ title: 'Offre', rows: [{ critere: 'Nom', values: { Algoan: 'A', Cofidis: 'B' } }] }]
+        }],
+        promos: {}, differenciateurs: {}, differenciateursByCategorie: {}, tendances: {}, tendancesByCategorie: {},
+        taux: {}, actualites: [{
+          id: '2', date: '2026-09-02', acteur: 'Algoan', type: 'Produit', produit: 'pb',
+          categorie: 'produit_tarification', titre: 'Actu Algoan logo', resume: '', source: ''
+        }],
+        indicateurs: [], texteLibre: {}, lastImportAt: null
+      },
+      groups: { Algoan: 'Fintech', Cofidis: 'Groupe' },
+      domains: {},
+      idByNom: {}, nomById: {}
+    };
+    await page.evaluate(function (f) { window.__testApplyLoadedData(f); }, algoanFixture);
+    await page.evaluate(function () { window.navigate('pb'); });
+    await page.waitForSelector('#view-product .actor-card');
+    await new Promise(function (r) { setTimeout(r, 2500); });
+    checks.push(['Algoan — carte produit logo (domaine défaut)', await page.evaluate(function () {
+      var card = Array.from(document.querySelectorAll('#view-product .actor-card')).find(function (c) {
+        return c.textContent.indexOf('Algoan') >= 0;
+      });
+      if (!card) return false;
+      var img = card.querySelector('.actor-card-logo');
+      var ph = card.querySelector('.actor-card-logo-fallback');
+      return !!img && !!ph && getComputedStyle(ph).display === 'none' && parseFloat(getComputedStyle(img).width) >= 30;
+    })]);
+    await page.evaluate(function () {
+      var card = Array.from(document.querySelectorAll('#view-product .actor-card')).find(function (c) {
+        return c.textContent.indexOf('Algoan') >= 0;
+      });
+      if (card) card.click();
+    });
+    await page.waitForSelector('#modal-detail.show');
+    checks.push(['Algoan — fiche modal logo', await page.evaluate(function () {
+      var img = document.querySelector('#modal-detail .fiche-favicon');
+      var ph = document.querySelector('#modal-detail .fiche-placeholder');
+      return !!img && !!ph && getComputedStyle(ph).display === 'none';
+    })]);
+    await page.click('#detail-close');
+    await page.evaluate(function () { window.navigate('home'); });
+    await page.waitForFunction(function () {
+      return document.body.textContent.indexOf('Actu Algoan logo') >= 0;
+    });
+    checks.push(['Algoan — badge actu logo', await page.evaluate(function () {
+      var badge = Array.from(document.querySelectorAll('.actu-badge-actor')).find(function (b) {
+        return b.textContent.indexOf('Algoan') >= 0;
+      });
+      if (!badge) return false;
+      var img = badge.querySelector('.actu-badge-logo');
+      return !!img && parseFloat(getComputedStyle(img).width) > 0;
+    })]);
   } finally {
     await browser.close();
     server.close();
