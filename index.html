@@ -537,13 +537,14 @@
       font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.45;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .actu-detail-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
     .actu-detail-title {
       font-size: 24px; font-weight: 800; color: var(--navy); line-height: 1.3;
       margin-bottom: 14px;
     }
-    .actu-detail-resume { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 20px; white-space: pre-wrap; }
-    .actu-detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .actu-detail-resume { font-size: 14px; line-height: 1.65; color: var(--text); margin-bottom: 22px; white-space: pre-wrap; }
+    .actu-detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .actu-detail-facts { margin-top: 4px; }
+    .actu-detail-facts .detail-ac { padding: 10px 12px; }
     .actu-detail-source-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
     .actu-detail-source a { color: var(--tq-ink); word-break: break-all; }
     #modal-detail.modal-actu-detail .modal-hd { justify-content: flex-end; border-bottom: none; padding-bottom: 8px; }
@@ -3224,29 +3225,17 @@
     return renderActuCard(e, listPos);
   }
 
-  function openActuDetail (idx) {
-    var e = actuList()[idx];
-    if (!e) return;
-    var modal = $('modal-detail');
-    modal.classList.add('modal-actu-detail');
-    $('detail-title').textContent = '';
-    var html = '<div class="actu-detail-meta">' + fmtDate(e.date) + '</div>';
-    html += '<div class="actu-detail-badges">';
-    html += renderActuBadgesRow(e);
-    html += renderActuImpactBadge(e);
-    html += '</div>';
-    html += '<div class="actu-detail-title">' + esc(e.titre) + '</div>';
-    if (e.resume) {
-      html += '<div class="actu-detail-resume">' + esc(e.resume) + '</div>';
-    }
-    html += '<div class="detail-grid">';
+  function renderActuDetailFactsGrid (e) {
+    var html = '<div class="detail-grid actu-detail-facts">';
     html += '<div class="detail-ac"><div class="detail-ac-name">Acteur</div><div class="detail-ac-val">' + renderActuActorBadge(e) + '</div></div>';
     if (e.categorie) {
       html += '<div class="detail-ac"><div class="detail-ac-name">Catégorie</div><div class="detail-ac-val">' + renderActuCategoryBadge(e) + '</div></div>';
     }
     html += '<div class="detail-ac"><div class="detail-ac-name">Produit</div><div class="detail-ac-val">' +
       (e.produit ? renderActuProductBadge(e) : '<span class="text-muted">Transverse</span>') + '</div></div>';
-    html += '<div class="detail-ac"><div class="detail-ac-name">Type</div><div class="detail-ac-val">' + renderActuTypeBadge(e) + '</div></div>';
+    if (e.type) {
+      html += '<div class="detail-ac"><div class="detail-ac-name">Type</div><div class="detail-ac-val">' + renderActuTypeBadge(e) + '</div></div>';
+    }
     if (e.impact) {
       html += '<div class="detail-ac"><div class="detail-ac-name">Impact</div><div class="detail-ac-val">' + renderActuImpactBadge(e) + '</div></div>';
     }
@@ -3256,6 +3245,21 @@
       html += '<div class="detail-ac"><div class="detail-ac-name">Fiabilité</div><div class="detail-ac-val">Confirmée</div></div>';
     }
     html += '</div>';
+    return html;
+  }
+
+  function openActuDetail (idx) {
+    var e = actuList()[idx];
+    if (!e) return;
+    var modal = $('modal-detail');
+    modal.classList.add('modal-actu-detail');
+    $('detail-title').textContent = '';
+    var html = '<div class="actu-detail-meta">' + fmtDate(e.date) + '</div>';
+    html += '<div class="actu-detail-title">' + esc(e.titre) + '</div>';
+    if (e.resume) {
+      html += '<div class="actu-detail-resume">' + esc(e.resume) + '</div>';
+    }
+    html += renderActuDetailFactsGrid(e);
     if (e.source) {
       html += '<div class="actu-detail-source-block">';
       html += '<div class="detail-ac-name">Source</div>';

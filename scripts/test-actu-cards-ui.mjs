@@ -105,28 +105,39 @@ async function run () {
       var body = document.getElementById('detail-body').textContent;
       return body.indexOf('Résumé complet de test') >= 0 && body.split('…').length === 1;
     })]);
-    checks.push(['modal — titre repositionné et agrandi', await page.evaluate(function () {
+    checks.push(['modal — hiérarchie titre puis métadonnées', await page.evaluate(function () {
       var modal = document.getElementById('modal-detail');
       var body = document.getElementById('detail-body');
       var titleInHeader = document.getElementById('detail-title').textContent.trim();
       var titleEl = body.querySelector('.actu-detail-title');
       var meta = body.querySelector('.actu-detail-meta');
-      var badges = body.querySelector('.actu-detail-badges');
       var resume = body.querySelector('.actu-detail-resume');
-      var grid = body.querySelector('.detail-grid');
+      var grid = body.querySelector('.actu-detail-facts');
       var source = body.querySelector('.actu-detail-source-block');
       if (!modal.classList.contains('modal-actu-detail') || titleInHeader) return false;
       if (!titleEl || titleEl.textContent.indexOf('Actu test cartes enrichies') < 0) return false;
+      if (body.querySelector('.actu-detail-badges')) return false;
       var titleSize = parseFloat(window.getComputedStyle(titleEl).fontSize);
       if (titleSize < 20) return false;
       var nodes = Array.from(body.children);
       var iMeta = nodes.indexOf(meta);
-      var iBadges = nodes.indexOf(badges);
       var iTitle = nodes.indexOf(titleEl);
       var iResume = nodes.indexOf(resume);
       var iGrid = nodes.indexOf(grid);
       var iSource = nodes.indexOf(source);
-      return iMeta < iBadges && iBadges < iTitle && iTitle < iResume && iResume < iGrid && iGrid < iSource;
+      return iMeta < iTitle && iTitle < iResume && iResume < iGrid && iGrid < iSource;
+    })]);
+    checks.push(['modal — pas de doublon acteur/catégorie', await page.evaluate(function () {
+      var names = Array.from(document.querySelectorAll('#detail-body .detail-ac-name')).map(function (el) {
+        return el.textContent.trim();
+      });
+      function count (label) {
+        var n = 0;
+        for (var i = 0; i < names.length; i++) { if (names[i] === label) n++; }
+        return n;
+      }
+      return count('Acteur') === 1 && count('Catégorie') === 1 && count('Produit') === 1 &&
+        count('Type') === 1 && count('Impact') === 1 && count('Fiabilité') === 1;
     })]);
     checks.push(['modal — lien source', await page.evaluate(function () {
       return !!document.querySelector('#detail-body .actu-detail-source a[href*="example.com"]');
