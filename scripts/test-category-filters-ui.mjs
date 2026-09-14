@@ -203,7 +203,31 @@ async function run () {
       return document.querySelectorAll('#view-category .tendance-card').length === 1;
     })]);
 
-    await page.evaluate(function () { window.setCategoryProduct('produit_tarification', 'cr'); });
+    checks.push(['décryptage — paragraphes lisibles', await page.evaluate(function () {
+      var wrap = document.querySelector('#view-category .tendance-desc-wrap');
+      var paras = document.querySelectorAll('#view-category .tendance-desc-p');
+      var footer = document.querySelector('#view-category .tendance-card-footer');
+      var badges = document.querySelectorAll('#view-category .tendance-actor-badge');
+      return !!wrap && paras.length >= 1 && !!footer && badges.length >= 1;
+    })]);
+
+    await page.evaluate(function () { window.switchCategoryTab('actualites'); });
+    checks.push(['onglet Actualités sans régression', await page.evaluate(function () {
+      return document.querySelectorAll('#view-category .news-item').length === 3;
+    })]);
+
+    await page.evaluate(function () {
+      window.setCategoryProduct('produit_tarification', 'all');
+      window.switchCategoryTab('differenciateurs');
+    });
+    checks.push(['onglet Différenciateurs sans régression', await page.evaluate(function () {
+      return document.querySelectorAll('#view-category .diff-card').length >= 1;
+    })]);
+
+    await page.evaluate(function () {
+      window.setCategoryProduct('produit_tarification', 'cr');
+      window.switchCategoryTab('decryptage');
+    });
     checks.push(['décryptage masqué filtre CR', await page.evaluate(function () {
       return document.querySelectorAll('#view-category .tendance-card').length === 0;
     })]);
