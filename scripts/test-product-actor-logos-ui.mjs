@@ -70,6 +70,23 @@ async function run () {
     await page.waitForSelector('#view-product .actor-card');
     await new Promise(function (r) { setTimeout(r, 2500); });
 
+    await page.evaluate(function (f) {
+      f.domains = {};
+      window.__testApplyLoadedData(f);
+    }, buildFixture());
+    await page.evaluate(function () { window.navigate('pb'); });
+    await page.waitForSelector('#view-product .actor-card');
+    await new Promise(function (r) { setTimeout(r, 2500); });
+    checks.push(['domaines DB vides — logos via défaut seed', await page.evaluate(function () {
+      var cards = Array.from(document.querySelectorAll('#view-product .actor-card'));
+      return cards.length === 3 && cards.every(function (card) {
+        var img = card.querySelector('.actor-card-logo');
+        var ph = card.querySelector('.actor-card-logo-fallback');
+        if (!img || !ph) return false;
+        return parseFloat(getComputedStyle(img).width) >= 30 && getComputedStyle(ph).display === 'none';
+      });
+    })]);
+
     checks.push(['cartes acteur — logo img présent (34px)', await page.evaluate(function () {
       var cards = Array.from(document.querySelectorAll('#view-product .actor-card'));
       return cards.length === 3 && cards.every(function (card) {
