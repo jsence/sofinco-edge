@@ -125,6 +125,17 @@ async function run () {
       parsed.rows[1].categorie === null && parsed.rows[1].produit_id === 'cr';
   }, TEST_CAT, MARKER_ACTU_CAT)]);
 
+  checks.push(['parse actualites: catégorie et produit vides → ignorée', await page.evaluate(function () {
+    var rows = [
+      ['Titre', 'Produit', 'Categorie', 'Source', 'Type'],
+      ['Sans routage', '', '', 'https://example.com/x', 'Communication']
+    ];
+    var parsed = window.__parseActualitesSheet(XLSX.utils.aoa_to_sheet(rows));
+    return parsed.rows.length === 0 &&
+      parsed.skipped.length === 1 &&
+      parsed.skipped[0].reason.indexOf('Catégorie et Produit vides') >= 0;
+  })]);
+
   var migrationOk = false;
   try {
     var probe = await sb.from('differenciateurs').select('categorie').limit(1);

@@ -2631,6 +2631,10 @@
       }
       var produitRaw = getCol(row, ['produit', 'produit_id']);
       var produitId = (!catNorm.slug && produitRaw) ? normalizeProduitValue(produitRaw) : '';
+      if (!catNorm.slug && !produitId) {
+        skipped.push(importSkipEntry('ACTUALITES', r + 1, 'Catégorie et Produit vides : renseignez au moins l\'un des deux.'));
+        continue;
+      }
       out.push({
         date: parseImportDateToIso(getCol(row, ['date'])) || today(),
         acteur: getCol(row, ['acteur']),
