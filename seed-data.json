@@ -112,7 +112,7 @@
       "id": "axa_banque",
       "nom": "AXA Banque",
       "groupe": null,
-      "domaine": null,
+      "domaine": "axabanque.fr",
       "est_nous": false
     },
     {

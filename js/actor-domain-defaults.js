@@ -21,7 +21,9 @@
     'La Banque Postale': 'labanquepostale.fr',
     'Carrefour Banque': 'carrefour-banque.fr',
     Revolut: 'revolut.com',
-    Algoan: 'algoan.com'
+    Algoan: 'algoan.com',
+    'Banque de France': 'banque-france.fr',
+    'AXA Banque': 'axabanque.fr'
   };
 
   function resolve (nom) {
