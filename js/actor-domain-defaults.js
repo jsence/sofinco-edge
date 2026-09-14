@@ -20,7 +20,8 @@
     Alma: 'getalma.eu',
     'La Banque Postale': 'labanquepostale.fr',
     'Carrefour Banque': 'carrefour-banque.fr',
-    Revolut: 'revolut.com'
+    Revolut: 'revolut.com',
+    Algoan: 'algoan.com'
   };
 
   function resolve (nom) {
