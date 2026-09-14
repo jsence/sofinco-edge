@@ -870,8 +870,29 @@
       position: relative;
     }
     .tendance-card.has-status { padding-top: 38px; }
-    .tendance-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; padding-right: 8px; }
+    .tendance-title {
+      font-size: 16px; font-weight: 700; color: var(--navy);
+      margin-bottom: 12px; padding-right: 8px; line-height: 1.35;
+    }
+    .tendance-desc-wrap {
+      max-width: 68ch;
+      margin-bottom: 4px;
+    }
+    .tendance-desc-p {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.7;
+      margin: 0 0 12px;
+      font-weight: 400;
+    }
+    .tendance-desc-p:last-child { margin-bottom: 0; }
+    /* legacy bloc (texte libre digital) */
     .tendance-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+    .tendance-card-footer {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(11, 43, 74, 0.08);
+    }
     .tendance-actors-lbl {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.4px; color: var(--muted); margin-bottom: 8px;
@@ -3489,14 +3510,55 @@
     return html;
   }
 
+  function splitDecryptageLongText (text) {
+    var sentences = text.match(/[^.!?…]+[.!?…]+(?:\s+|$)|[^.!?…]+$/g);
+    if (!sentences || sentences.length < 2) return [text];
+    var out = [];
+    var buf = '';
+    sentences.forEach(function (s) {
+      var part = String(s).trim();
+      if (!part) return;
+      if (!buf) {
+        buf = part;
+        return;
+      }
+      if ((buf + ' ' + part).length > 220) {
+        out.push(buf);
+        buf = part;
+      } else {
+        buf = buf + ' ' + part;
+      }
+    });
+    if (buf) out.push(buf);
+    return out.length ? out : [text];
+  }
+
+  function formatDecryptageDescription (raw) {
+    var text = String(raw || '').trim();
+    if (!text) return '';
+    var blocks = text.split(/\r?\n\s*\r?\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+    if (!blocks.length) return '';
+    if (blocks.length === 1 && blocks[0].length > 280) {
+      blocks = splitDecryptageLongText(blocks[0]);
+    }
+    var html = '<div class="tendance-desc-wrap">';
+    blocks.forEach(function (block) {
+      var line = block.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+      if (line) html += '<p class="tendance-desc-p">' + esc(line) + '</p>';
+    });
+    html += '</div>';
+    return html;
+  }
+
   function renderDecryptageCards (items) {
     var html = '<div class="tendances-grid">';
     items.forEach(function (t, idx) {
       html += '<div class="tendance-card' + (t.status ? ' has-status' : '') + ' stagger-item" style="animation-delay:' + (idx * 60) + 'ms">';
       html += renderDiffStatusBadge(t.status);
       html += '<div class="tendance-title">' + esc(t.titre || '') + '</div>';
-      html += '<div class="tendance-desc">' + esc(t.description || '') + '</div>';
+      html += formatDecryptageDescription(t.description || '');
       if (t.acteurs && t.acteurs.length) {
+        html += '<div class="tendance-card-footer">';
         html += '<div class="tendance-actors-lbl">Acteurs concernés</div>';
         html += '<div class="tendance-actors">';
         t.acteurs.forEach(function (actor) {
@@ -3504,6 +3566,7 @@
           html += actorLogoHtml(actor, 18, 'inline');
           html += esc(actor) + '</span>';
         });
+        html += '</div>';
         html += '</div>';
       }
       html += '</div>';
