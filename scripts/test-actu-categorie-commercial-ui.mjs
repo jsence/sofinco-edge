@@ -30,10 +30,10 @@ function startServer () {
   });
 }
 
-function actu (id, titre, type, acteur) {
+function actu (id, titre, type, acteur, categorie, date) {
   return {
-    id, date: '2026-09-10', acteur, type, produit: 'pb',
-    categorie: CAT, titre, resume: 'Résumé test', source: 'https://example.com/x'
+    id, date: date || '2026-09-10', acteur, type, produit: 'pb',
+    categorie: categorie, titre, resume: 'Résumé test', source: 'https://example.com/x'
   };
 }
 
@@ -54,9 +54,9 @@ async function run () {
       promos: {}, differenciateurs: {}, differenciateursByCategorie: {}, tendances: {}, tendancesByCategorie: {},
       taux: {},
       actualites: [
-        actu('a1', titles[0], 'Communication', 'Sofinco'),
-        actu('a2', titles[1], 'Changement de taux', 'AXA Banque'),
-        actu('a3', titles[2], 'Opération commerciale', 'Cetelem')
+        actu('a1', titles[0], 'Communication', 'Sofinco', CAT),
+        actu('a2', titles[1], 'Changement de taux', 'AXA Banque', 'produit_tarification'),
+        actu('a3', titles[2], 'Opération commerciale', 'Cetelem', CAT, '2026-09-12')
       ],
       indicateurs: [], texteLibre: {}, lastImportAt: null
     },
@@ -72,28 +72,38 @@ async function run () {
     await page.evaluate(function () { window.navigate('commercial_communication'); });
     await page.waitForFunction(function () {
       return document.getElementById('view-category').classList.contains('active');
-    });
+    }, { timeout: 15000 });
+    await page.waitForSelector('#view-category .actu-card', { timeout: 15000 });
 
-    const ok = await page.evaluate(function (titles) {
-      var cards = document.querySelectorAll('#view-category .actu-card');
-      if (cards.length < 3) return false;
+    const okCommercial = await page.evaluate(function () {
       var text = document.getElementById('view-category').textContent;
-      for (var i = 0; i < titles.length; i++) {
-        if (text.indexOf(titles[i].slice(0, 40)) < 0) return false;
-      }
-      return true;
-    }, titles);
+      return text.indexOf('Sofinco promeut') >= 0 && text.indexOf('Cetelem finance') >= 0;
+    });
 
     await page.screenshot({
       path: '/opt/cursor/artifacts/screenshots/actu-categorie-commercial-after-backfill.png',
       fullPage: true
     });
 
-    if (!ok) {
-      console.error('FAIL: les 3 actus ne sont pas toutes visibles sur Commercial & Communication');
+    await page.evaluate(function () { window.navigate('produit_tarification'); });
+    await page.waitForFunction(function () {
+      return document.getElementById('view-category').classList.contains('active') &&
+        document.getElementById('view-category').textContent.indexOf('Produit & Tarification') >= 0;
+    }, { timeout: 15000 });
+    await page.waitForSelector('#view-category .actu-card', { timeout: 15000 });
+    const okPt = await page.evaluate(function () {
+      return document.getElementById('view-category').textContent.indexOf('AXA Banque revoit') >= 0;
+    });
+    await page.screenshot({
+      path: '/opt/cursor/artifacts/screenshots/actu-categorie-pt-axa-after-backfill.png',
+      fullPage: true
+    });
+
+    if (!okCommercial || !okPt) {
+      console.error('FAIL: routage catégorie fixture (commercial ou produit_tarification)');
       process.exit(1);
     }
-    console.log('OK: 3 actus visibles sur la page catégorie Commercial & Communication (fixture locale post-mapping).');
+    console.log('OK: Sofinco + Cetelem sur Commercial ; AXA sur Produit & Tarification (fixture post-mapping).');
   } finally {
     await browser.close();
     server.close();
