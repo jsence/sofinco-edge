@@ -206,7 +206,7 @@ async function run () {
     checks.push(['décryptage — paragraphes lisibles', await page.evaluate(function () {
       var wrap = document.querySelector('#view-category .tendance-desc-wrap');
       var paras = document.querySelectorAll('#view-category .tendance-desc-p');
-      var footer = document.querySelector('#view-category .tendance-card-footer');
+      var footer = document.querySelector('#view-category .tendance-card-aside');
       var badges = document.querySelectorAll('#view-category .tendance-actor-badge');
       return !!wrap && paras.length >= 1 && !!footer && badges.length >= 1;
     })]);
