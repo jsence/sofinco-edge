@@ -23,7 +23,20 @@
     Revolut: 'revolut.com',
     Algoan: 'algoan.com',
     'Banque de France': 'banque-france.fr',
-    'AXA Banque': 'axabanque.fr'
+    'AXA Banque': 'axabanque.fr',
+    'Banque Populaire': 'banquepopulaire.fr',
+    'BNP Paribas': 'bnpparibas.com',
+    'Caisse d\'Épargne': 'caisse-epargne.fr',
+    'Caisse d\'Épargne Île-de-France': 'caisse-epargne.fr',
+    'Cetelem / Cofinoga': 'cetelem.fr',
+    CIC: 'cic.fr',
+    'Crédit Mutuel': 'creditmutuel.fr',
+    'Crédit Mutuel Arkéa': 'arkea.com',
+    'Hello bank!': 'hellobank.fr',
+    LCL: 'lcl.fr',
+    Monabanq: 'monabanq.fr',
+    SG: 'societegenerale.fr',
+    'FLOA (hors promo)': 'floa.fr'
   };
 
   function resolve (nom) {
