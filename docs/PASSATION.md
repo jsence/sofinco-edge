@@ -4,10 +4,10 @@
 
 | Élément | Détail |
 |--------|--------|
-| **URL du site (déployé)** | **https://jsence.github.io/sofinco-edge-v2/** |
-| **URL à ne pas utiliser** | `https://jsence.github.io/sofinco-edge/` → **404** (ancien chemin Pages) |
+| **URL du site (déployé)** | **https://jsence.github.io/sofinco-edge/** |
+| **URL obsolète** | `https://jsence.github.io/sofinco-edge-v2/` → **404** (ancien chemin Pages) |
 | **Code d’accès site** (première visite, hors localhost) | `EDGE-2026-SFC` — vérification SHA-256 dans `js/access-gate.js` ; mémorisé dans `localStorage` (`sofinco_edge_gate_v1`). Navigation privée → code redemandé. |
-| **Dépôt GitHub** | [jsence/sofinco-edge-v2](https://github.com/jsence/sofinco-edge-v2) (branche `main` ; l’ancien nom `sofinco-edge` redirige vers ce dépôt) |
+| **Dépôt GitHub** | [jsence/sofinco-edge](https://github.com/jsence/sofinco-edge) (branche `main`) |
 | **Déploiement** | Push sur `main` → workflow **Deploy SofincoEdge to Pages** (`.github/workflows/deploy-pages.yml`) ; homepage du dépôt = URL ci-dessus |
 | **Base Supabase** | Projet lié à `supabase-config.js` (racine, copié dans l’artefact Pages). Clé **anon / publishable** côté client ; droits réels = RLS Supabase. |
 
