@@ -1181,12 +1181,121 @@
       .prod-hd-actions { width: 100%; justify-content: flex-start; }
     }
     @media (max-width: 640px) {
+      html { overflow-x: hidden; }
+      #main { overflow-x: hidden; max-width: 100%; }
+
+      .home-title { font-size: 34px; letter-spacing: -0.4px; }
+      .home-subtitle { font-size: 14px; }
+      .home-featured { padding: 20px 16px; }
+      .home-featured-title { font-size: 20px; }
+      .home-featured-resume { font-size: 14px; }
+      .shortcuts-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .shortcut-card { min-height: 112px; padding: 16px 10px; }
+      .shortcut-label { font-size: 11px; }
+
+      .category-filter-bar { flex-direction: column; width: 100%; gap: 14px; }
+      .category-filter-block,
+      .category-filter-dates { min-width: 0; width: 100%; max-width: 100%; }
+      .category-date-row { width: 100%; }
+      .category-date-field { flex: 1 1 100%; }
+      .category-date-input { width: 100%; min-height: 44px; font-size: 16px; }
+      .home-cat-tag,
+      .category-actor-tag,
+      .category-produit-tag {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      #burger {
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .topbar-title { font-size: 14px; }
+
+      .tabs {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .tab-btn {
+        flex: 1 1 calc(50% - 4px);
+        min-height: 44px;
+        justify-content: center;
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+
+      .prod-hd-actions { gap: 8px; }
+      .prod-hd-actions .btn { min-height: 44px; }
+      .cmp-picker { padding: 16px; }
+      .cmp-check-lbl { min-height: 44px; padding: 10px 12px; }
+
+      .overlay.show { padding: 0; align-items: flex-end; }
+      .overlay.show > .modal,
+      #modal-detail .modal,
+      #modal-contributeur > .modal,
+      #modal-export .modal,
+      #modal-export-general .modal {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: min(92dvh, 100%);
+        margin: 0;
+      }
+      #modal-contributeur > .modal.contrib-gate-mode {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+      }
+      .modal-lg { width: 100%; }
+      .modal-body { padding: 20px 16px 24px; }
+      .modal-hd { padding: 12px 16px; }
+      .modal-x {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .access-gate { padding: 16px; align-items: flex-end; }
+      .access-gate-card {
+        border-radius: 16px 16px 0 0;
+        padding: 24px 20px 28px;
+        max-width: 100%;
+      }
+      .access-gate-input { min-height: 48px; font-size: 16px; }
+      .access-gate-submit { min-height: 48px; }
+
+      .btn { min-height: 44px; }
+      .nav-item { min-height: 44px; display: flex; align-items: center; }
+
+      .tbl-wrap {
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+      }
+
       .actors-grid { grid-template-columns: 1fr; }
       .promo-body { flex-direction: column; align-items: flex-start; }
       .topbar-last-update { display: none; }
       .topbar-btn-label { display: none; }
-      #btn-contributeur.topbar-contrib-btn { padding: 8px 11px; font-size: 12px; }
+      #btn-contributeur.topbar-contrib-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px 11px;
+        font-size: 12px;
+      }
       #btn-contributeur.topbar-contrib-btn i { font-size: 18px; }
+      .contrib-input { min-height: 44px; font-size: 16px; }
+      .contrib-access-input { min-height: 48px; font-size: 16px; }
     }
 
     /* ── UTILS ────────────────────────────────── */
@@ -7044,7 +7153,11 @@ cb.checked = on;
   function init () {
     /* Navigation latérale */
     document.querySelectorAll('[data-nav]').forEach(function (el) {
-      el.addEventListener('click', function () { navigate(el.getAttribute('data-nav')); });
+      el.addEventListener('click', function () {
+        navigate(el.getAttribute('data-nav'));
+        var sb = $('sidebar');
+        if (sb) sb.classList.remove('open');
+      });
     });
 
     var content = $('content');
