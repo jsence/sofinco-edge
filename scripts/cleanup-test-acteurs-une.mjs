@@ -10,12 +10,15 @@ const require = createRequire(import.meta.url);
 const NAMES = ['ActeurTestUne1788366515918', 'ActeurTestUne1788366996755'];
 
 async function deps (sb, id) {
-  const tables = ['actualites', 'differenciateurs', 'promos', 'acteurs_produits', 'valeurs'];
+  const tables = ['actualites', 'differenciateurs', 'promos', 'acteurs_produits', 'valeurs', 'taux_cr'];
   let total = 0;
   for (const t of tables) {
-    const res = await sb.from(t).select('id', { count: 'exact', head: true }).eq('acteur_id', id);
-    if (res.error) throw new Error(t + ': ' + res.error.message);
-    total += res.count || 0;
+    const res = await sb.from(t).select('id').eq('acteur_id', id).limit(1);
+    if (res.error) {
+      if (res.error.message && res.error.message.indexOf('acteur_id') >= 0) continue;
+      throw new Error(t + ': ' + res.error.message);
+    }
+    total += (res.data || []).length;
   }
   return total;
 }
