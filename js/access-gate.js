@@ -1,5 +1,5 @@
 /**
- * Filtre d'accès basique (première visite) — digest SHA-256, pas de secret en clair.
+ * Filtre d'accès basique — digest SHA-256, validation valable pour la journée (fuseau local).
  */
 (function (global) {
   var STORAGE_KEY = 'sofinco_edge_gate_v1';
@@ -14,6 +14,13 @@
     });
   }
 
+  function localTodayIso () {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
   function isGateEnforced () {
     try {
       var loc = global.location;
@@ -26,18 +33,34 @@
     }
   }
 
+  /** Ancien format permanent (digest seul) ou JSON invalide → pas d'accès. */
+  function readStoredGrant () {
+    try {
+      var raw = global.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      if (/^[a-f0-9]{64}$/i.test(raw)) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.digest !== ACCESS_DIGEST) return null;
+      if (typeof parsed.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.day)) return null;
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function isGranted () {
     if (!isGateEnforced()) return true;
-    try {
-      return global.localStorage.getItem(STORAGE_KEY) === ACCESS_DIGEST;
-    } catch (e) {
-      return false;
-    }
+    var stored = readStoredGrant();
+    if (!stored) return false;
+    return stored.day === localTodayIso();
   }
 
   function grant () {
     try {
-      global.localStorage.setItem(STORAGE_KEY, ACCESS_DIGEST);
+      global.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        day: localTodayIso(),
+        digest: ACCESS_DIGEST
+      }));
     } catch (e) { /* ignore */ }
   }
 
@@ -88,6 +111,7 @@
     isGateEnforced: isGateEnforced,
     isGranted: isGranted,
     bind: bind,
+    _localTodayIso: localTodayIso,
     _clearForTests: function () {
       try { global.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
     }
