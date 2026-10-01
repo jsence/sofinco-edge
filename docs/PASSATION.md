@@ -6,7 +6,7 @@
 |--------|--------|
 | **URL du site (déployé)** | **https://jsence.github.io/sofinco-edge/** |
 | **URL obsolète** | `https://jsence.github.io/sofinco-edge-v2/` → **404** (ancien chemin Pages) |
-| **Code d’accès site** (première visite, hors localhost) | `EDGE-2026-SFC` — vérification SHA-256 dans `js/access-gate.js` ; mémorisé dans `localStorage` (`sofinco_edge_gate_v1`). Navigation privée → code redemandé. |
+| **Code d’accès site** (hors localhost) | `EDGE-2026-SFC` — vérification SHA-256 dans `js/access-gate.js` ; mémorisé par jour dans `localStorage` (`sofinco_edge_gate_v1`, date locale AAAA-MM-JJ). **Une saisie par jour et par navigateur** (sécurité). Navigation privée ou lendemain → code redemandé. |
 | **Dépôt GitHub** | [jsence/sofinco-edge](https://github.com/jsence/sofinco-edge) (branche `main`) |
 | **Déploiement** | Push sur `main` → workflow **Deploy SofincoEdge to Pages** (`.github/workflows/deploy-pages.yml`) ; homepage du dépôt = URL ci-dessus |
 | **Base Supabase** | Projet lié à `supabase-config.js` (racine, copié dans l’artefact Pages). Clé **anon / publishable** côté client ; droits réels = RLS Supabase. |
@@ -154,7 +154,7 @@ python3 -m http.server 8080
 Ouvrir `http://localhost:8080/index.html` (ou le port choisi).
 
 - Données runtime : chargement Supabase via `supabase-config.js` (voir ci-dessous).
-- Gate d’accès site : **désactivée** sur `localhost` / `127.0.0.1` ; pour la tester en local : `?enforceAccessGate=1` (code transmis hors dépôt, cf. §1).
+- Gate d’accès site : **désactivée** sur `localhost` / `127.0.0.1` ; pour la tester en local : `?enforceAccessGate=1` (code transmis hors dépôt, cf. §1 — **une saisie par jour**).
 - Pas de build front : pas de `npm run dev` applicatif.
 
 ### Stack technique (résumé)
@@ -176,7 +176,7 @@ Pas de React/Vue/Webpack : déploiement = copie de fichiers statiques.
 | `index.html` | Application (HTML, CSS, JS inline : navigation, rendu, import Excel, exports, contributeur) |
 | `js/supabase-data.js` | Chargement Supabase, sync import, helpers données |
 | `js/import-undo.js` | Instantanés d’annulation d’import (5 niveaux) |
-| `js/access-gate.js` | Gate d’accès visiteurs (première visite) |
+| `js/access-gate.js` | Gate d’accès visiteurs (code journalier, une saisie par jour) |
 | `js/actor-domain-defaults.js` | Domaines / favicons acteurs (fallback logos) |
 | `supabase-config.js` | URL projet + clé anon (client) — **versionné pour Pages** ; ne pas y mettre la service role |
 | `supabase/migrations/` | Schéma SQL versionné (source de vérité) |

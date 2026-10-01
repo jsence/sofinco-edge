@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Écran code d'accès — premier accès, rechargement, contexte isolé (local).
+ * Écran code d'accès — journalier, rechargement, ancien format, contexte isolé (local).
  */
 import http from 'http';
 import fs from 'fs';
@@ -12,6 +12,7 @@ const require = createRequire(import.meta.url);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const GATE_TOKEN = 'ba2f4afe07f6ff7bb9d6ab3f66edb823a9fa2151a801de59d66372e0d9f091d6';
 const VALID_CODE = 'EDGE-2026-SFC';
+const ARTIFACT_DIR = '/opt/cursor/artifacts/screenshots';
 
 function startServer () {
   return new Promise(function (resolve) {
@@ -35,6 +36,7 @@ function startServer () {
 
 async function run () {
   const puppeteer = require('puppeteer');
+  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   const { server, port } = await startServer();
   const base = 'http://127.0.0.1:' + port + '/index.html?enforceAccessGate=1';
   const checks = [];
@@ -42,7 +44,7 @@ async function run () {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
 
   try {
-    // 1) Premier accès — gate visible
+    // 1) Premier accès — gate visible + mention journalière
     const ctx1 = await browser.createBrowserContext();
     const page1 = await ctx1.newPage();
     await page1.goto(base, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -50,7 +52,10 @@ async function run () {
       var g = document.getElementById('access-gate');
       return g && !g.hidden && document.body.classList.contains('access-locked');
     })]);
-    await page1.screenshot({ path: '/opt/cursor/artifacts/screenshots/access-gate-first-visit.png' });
+    checks.push(['mention une fois par jour affichée', await page1.evaluate(function () {
+      return document.body.textContent.indexOf('une fois par jour') >= 0;
+    })]);
+    await page1.screenshot({ path: path.join(ARTIFACT_DIR, 'access-gate-daily-hint.png') });
 
     // Mauvais code
     await page1.type('#access-gate-input', 'WRONG-CODE');
@@ -82,18 +87,47 @@ async function run () {
       return document.querySelector('.sb-logo-text') !== null;
     })]);
 
-    // 2) Rechargement — pas redemandé
+    // 2) Rechargement même jour — pas redemandé
     await page1.reload({ waitUntil: 'domcontentloaded' });
     await page1.waitForFunction(function () {
       return document.getElementById('access-gate').hidden;
     }, { timeout: 5000 });
-    checks.push(['rechargement — pas de nouvel écran', await page1.evaluate(function () {
+    checks.push(['rechargement même jour — pas de nouvel écran', await page1.evaluate(function () {
       return document.getElementById('access-gate').hidden &&
         document.querySelector('#view-home') !== null;
     })]);
+
+    // 3) Jour précédent simulé — code redemandé
+    await page1.evaluate(function (token) {
+      var d = new Date();
+      d.setDate(d.getDate() - 1);
+      var day = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+      localStorage.setItem('sofinco_edge_gate_v1', JSON.stringify({ day: day, digest: token }));
+    }, GATE_TOKEN);
+    await page1.reload({ waitUntil: 'domcontentloaded' });
+    checks.push(['lendemain simulé — code redemandé', await page1.evaluate(function () {
+      var g = document.getElementById('access-gate');
+      return g && !g.hidden && document.body.classList.contains('access-locked');
+    })]);
+
     await ctx1.close();
 
-    // 3) Contexte isolé (équivalent navigation privée)
+    // 4) Ancien format permanent — refusé
+    const ctxOld = await browser.createBrowserContext();
+    const pageOld = await ctxOld.newPage();
+    await pageOld.evaluateOnNewDocument(function (token) {
+      localStorage.setItem('sofinco_edge_gate_v1', token);
+    }, GATE_TOKEN);
+    await pageOld.goto(base, { waitUntil: 'domcontentloaded' });
+    checks.push(['ancien format permanent — code redemandé', await pageOld.evaluate(function () {
+      var g = document.getElementById('access-gate');
+      return g && !g.hidden;
+    })]);
+    await ctxOld.close();
+
+    // 5) Contexte isolé (équivalent navigation privée)
     const ctx2 = await browser.createBrowserContext();
     const page2 = await ctx2.newPage();
     await page2.goto(base, { waitUntil: 'domcontentloaded' });
@@ -103,18 +137,20 @@ async function run () {
     })]);
     await ctx2.close();
 
-    // Régression rapide avec token pré-enregistré (comme utilisateur connu)
+    // Régression rapide avec validation du jour (format JSON)
     const page3 = await browser.newPage();
-    await page3.evaluateOnNewDocument(function (token) {
-      localStorage.setItem('sofinco_edge_gate_v1', token);
+    await page3.goto(base, { waitUntil: 'domcontentloaded' });
+    await page3.evaluate(function (token) {
+      var day = window.SofincoAccessGate._localTodayIso();
+      localStorage.setItem('sofinco_edge_gate_v1', JSON.stringify({ day: day, digest: token }));
     }, GATE_TOKEN);
-    await page3.goto(base, { waitUntil: 'networkidle2', timeout: 120000 });
+    await page3.reload({ waitUntil: 'networkidle2', timeout: 120000 });
     await page3.waitForFunction(function () {
       return document.getElementById('data-loading').style.display === 'none' &&
         typeof window.navigate === 'function';
     }, { timeout: 120000 });
     await page3.evaluate(function () { window.navigate('home'); });
-    checks.push(['régression — navigation après déverrouillage', await page3.evaluate(function () {
+    checks.push(['régression — navigation après déverrouillage (jour courant)', await page3.evaluate(function () {
       return document.getElementById('view-home').classList.contains('active');
     })]);
   } finally {
